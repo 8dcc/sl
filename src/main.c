@@ -36,8 +36,10 @@ static char* input_read(void) {
             /* We are still in level 0, we should have opened an expression.
              * NOTE: This doesn't check if ')' is inside a string, comment,
              * etc. */
-            if (nesting_level <= 0)
+            if (nesting_level <= 0) {
                 ERR("Encountered ')' before starting an expression.");
+                break;
+            }
 
             nesting_level--;
 
