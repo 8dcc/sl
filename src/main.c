@@ -19,8 +19,8 @@ static char* input_read(void) {
     int nesting_level = 0;
 
     char c;
-    size_t i;
-    for (i = 0; (c = getchar()) != EOF; i++) {
+    size_t i = 0;
+    while ((c = getchar()) != EOF) {
         /* If we run out of space, allocate more */
         if (i >= input_sz) {
             input_sz += INPUT_BUFSZ;
@@ -28,7 +28,7 @@ static char* input_read(void) {
         }
 
         /* Store character in string */
-        input[i] = c;
+        input[i++] = c;
 
         if (c == '(') {
             nesting_level++;
@@ -59,7 +59,7 @@ static char* input_read(void) {
 
 int main(void) {
     while (true) {
-        printf("(sl) ");
+        printf("sl> ");
 
         char* input = input_read();
         if (input == NULL)
@@ -67,7 +67,7 @@ int main(void) {
 
         /* TODO */
         printf("%s\n", input);
-        printf("--------------------------------------");
+        printf("--------------------------------------\n");
 
         free(input);
     }
