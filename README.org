@@ -1,25 +1,28 @@
-#+title: Title
+#+title: sl
 #+options: toc:nil
 #+startup: showeverything
 #+author: 8dcc
 
-#+begin_comment
-*TODO*: Change project-name and title
-*TODO*: Change output.out in Makefile
-#+end_comment
-
-*Short description.*
+*Simple LISP interpreter.*
 
 #+TOC: headlines 2
 
 * Description
-Long description.
+Simple LISP interpreter made in C.
+
+For more information, see:
+- [[https://en.wikipedia.org/wiki/Lisp_(programming_language)][LISP (Wikipedia)]]
+- [[https://en.wikipedia.org/wiki/Scheme_(programming_language)#Usage][Scheme (Wikipedia)]]
+- [[https://www.scheme.org/][Official Scheme website]]
+- [[https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/][Scheme R5RS Specification]]
+- [[https://www.buildyourownlisp.com/][Build Your Own Lisp website]] (Although this project doesn't follow the book)
+- [[https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html][SICP website]] (I haven't read the book yet, but you should check it out)
 
 * Building
 
 #+begin_src console
-$ git clone https://github.com/8dcc/project-name
-$ cd project-name
+$ git clone https://github.com/8dcc/sl
+$ cd sl
 $ make
 ...
 #+end_src
@@ -27,6 +30,6 @@ $ make
 * Usage
 
 #+begin_src console
-$ ./project-name.out --help
+$ ./sl --help
 ...
 #+end_src
