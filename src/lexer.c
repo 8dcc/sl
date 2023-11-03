@@ -14,39 +14,55 @@ static inline bool is_token_separator(char c) {
     return isspace(c) || c == '\0' || c == '(' || c == ')';
 }
 
+static inline bool is_number(const char* str) {
+    /* TODO: Floats */
+    while (!is_token_separator(*str)) {
+        if (!isdigit(*str))
+            return false;
+
+        str++;
+    }
+
+    return true;
+}
+
 /* Scan and store the next token from `in` to `out`. Returns the netx character
  * after the token, or NULL if the next char is the end of the string. */
 static char* token_store(Token* out, char* in) {
-    size_t i = 0;
-
     /* Skip spaces, if any */
-    while (isspace(in[i]))
-        i++;
+    while (isspace(*in))
+        in++;
 
-    /* TODO: Might be a good idea to iterate until separator, temporarily end
-     * the string there, and use regex to check what type of token it is. */
-
-    /* TODO: Check for TOKEN_EOF ('\0'), TOKEN_LIST_OPEN, TOKEN_LIST_CLOSE */
-
-    /* Iterate until next token separator, and check if the token was a digit */
-    bool only_digits = true;
-    while (!is_token_separator(in[i])) {
-        if (only_digits && !isdigit(in[i]))
-            only_digits = false;
-
-        i++;
+    /* Check for simple tokens */
+    switch (*in) {
+        case '(':
+            out->type = TOKEN_LIST_OPEN;
+            return in + 1;
+        case ')':
+            out->type = TOKEN_LIST_CLOSE;
+            return in + 1;
+        case '\0':
+            out->type = TOKEN_EOF;
+            return NULL;
+        default:
+            break;
     }
 
-    /* TODO: Floats */
-    if (only_digits) {
-        out->type = TOKEN_NUM;
+    /* Go until next token separator */
+    size_t i;
+    for (i = 0; !is_token_separator(in[i]); i++)
+        ;
 
-        /* We need to temporarily terminate string on the separator for atoi */
-        char tmp   = in[i];
-        in[i]      = '\0';
+    /* Temporarily terminate string at token separator */
+    char tmp = in[i];
+    in[i]    = '\0';
+
+    if (is_number(in)) {
+        /* Number */
+        out->type  = TOKEN_NUM;
         out->val.i = atoi(in);
-        in[i]      = tmp;
     } else {
+        /* Symbol */
         out->type  = TOKEN_SYM;
         out->val.s = malloc(i + 1);
 
@@ -55,19 +71,56 @@ static char* token_store(Token* out, char* in) {
             exit(1);
         }
 
-        strncpy(out->val.s, in, i);
-        out->val.s[i] = '\0';
+        strcpy(out->val.s, in);
     }
 
-    /* Return NULL if we are done with the input, or next char otherwise */
-    return (in[i] == '\0') ? NULL : &in[i];
+    /* Restore the token separator we had overwritten */
+    in[i] = tmp;
+
+    /* Return next char */
+    return &in[i];
 }
 
-Token* scan_tokens(char* input) {
+Token* tokens_scan(char* input) {
     size_t tokens_num = TOKEN_BUFSZ;
     Token* tokens     = calloc(TOKEN_BUFSZ, sizeof(Token));
 
-    /* TODO */
+    for (size_t i = 0; input != NULL; i++) {
+        if (i >= tokens_num) {
+            tokens_num += TOKEN_BUFSZ;
+            tokens = realloc(tokens, tokens_num * sizeof(Token));
+        }
 
-    return NULL;
+        input = token_store(&tokens[i], input);
+    }
+
+    return tokens;
+}
+
+void tokens_print(Token* arr) {
+    printf("[ ");
+
+    while (arr->type != TOKEN_EOF) {
+        switch (arr->type) {
+            case TOKEN_NUM:
+                printf("%d, ", arr->val.i);
+                break;
+            case TOKEN_SYM:
+                printf("\"%s\", ", arr->val.s);
+                break;
+            case TOKEN_LIST_OPEN:
+                printf("LIST_OPEN, ");
+                break;
+            case TOKEN_LIST_CLOSE:
+                printf("LIST_CLOSE, ");
+                break;
+            default:
+                fprintf(stderr, "UNKNOWN, ");
+                break;
+        }
+
+        arr++;
+    }
+
+    printf("EOF ]\n");
 }

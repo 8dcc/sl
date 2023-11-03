@@ -27,6 +27,9 @@ typedef struct Token {
 
 /* Allocate and fill an array of Tokens from the input. Must be freed by the
  * caller. */
-Token* scan_tokens(char* input);
+Token* tokens_scan(char* input);
+
+/* Print all tokens in a TOKEN_EOF terminated array */
+void tokens_print(Token* arr);
 
 #endif /* LEXER_H_ */
