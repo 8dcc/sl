@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "include/util.h"
+#include "include/lexer.h"
 
 #define INPUT_BUFSZ 100
 
@@ -65,11 +66,17 @@ int main(void) {
         if (input == NULL)
             break;
 
-        /* TODO */
-        printf("%s\n", input);
-        printf("--------------------------------------\n");
+        /* Get token array from input */
+        Token* tokens = tokens_scan(input);
 
+        /* We are done with the raw input, free it */
         free(input);
+
+        /* TODO: For now just print the token array */
+        tokens_print(tokens);
+
+        /* We are done with the token array, free it */
+        free(tokens);
     }
 
     return 0;
