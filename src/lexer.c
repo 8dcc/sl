@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h> /* pow */
 #include "include/lexer.h"
 #include "include/util.h"
 
@@ -14,11 +15,37 @@ static inline bool is_token_separator(char c) {
     return isspace(c) || c == '\0' || c == '(' || c == ')';
 }
 
-static inline bool is_number(const char* str) {
-    /* TODO: Floats */
+static bool parse_number(const char* str, double* out) {
+    /* 0 means we are in the integer part of the number */
+    int decimal_position = 0;
+
+    /* First, clear the output */
+    *out = 0.0;
+
     while (!is_token_separator(*str)) {
-        if (!isdigit(*str))
+        if (isdigit(*str)) {
+            if (decimal_position == 0) {
+                /* Shift 1 digit to the left and add new one */
+                *out *= 10;
+                *out += *str - '0';
+            } else {
+                /* '4' -> 0.004 */
+                double tmp = (*str - '0') * pow(10.0, decimal_position);
+                *out += tmp;
+
+                /* If we added 0.01, add 0.001 next */
+                decimal_position--;
+            }
+        } else if (*str == '.') {
+            /* Found dot in the number, but we are already in the decimal part.
+             * Error. */
+            if (decimal_position != 0)
+                return false;
+            decimal_position--;
+        } else {
+            /* Unknown digit, not a number */
             return false;
+        }
 
         str++;
     }
@@ -57,12 +84,13 @@ static char* token_store(Token* out, char* in) {
     char tmp = in[i];
     in[i]    = '\0';
 
-    if (is_number(in)) {
-        /* Number */
+    double parsed;
+    if (parse_number(in, &parsed)) {
+        /* Number (double) */
         out->type  = TOKEN_NUM;
-        out->val.i = atoi(in);
+        out->val.n = parsed;
     } else {
-        /* Symbol */
+        /* Symbol (string) */
         out->type  = TOKEN_SYM;
         out->val.s = malloc(i + 1);
 
@@ -103,7 +131,7 @@ void tokens_print(Token* arr) {
     while (arr->type != TOKEN_EOF) {
         switch (arr->type) {
             case TOKEN_NUM:
-                printf("%d, ", arr->val.i);
+                printf("%f, ", arr->val.n);
                 break;
             case TOKEN_SYM:
                 printf("\"%s\", ", arr->val.s);

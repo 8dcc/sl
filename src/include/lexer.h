@@ -5,8 +5,7 @@ enum ETokenTypes {
     TOKEN_EOF,
 
     /* The following make use of Token.val */
-    TOKEN_NUM, /* Integer */
-    TOKEN_FLT, /* Float */
+    TOKEN_NUM, /* Number (double) */
     TOKEN_SYM, /* Symbol (string) */
 
     /* The rest don't use Token.val */
@@ -19,8 +18,7 @@ enum ETokenTypes {
 typedef struct Token {
     enum ETokenTypes type;
     union {
-        int32_t i;
-        float f;
+        double n;
         char* s;
     } val;
 } Token;

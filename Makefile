@@ -1,7 +1,7 @@
 
 CC=gcc
 CFLAGS=-Wall -Wextra
-LDFLAGS=
+LDFLAGS=-lm
 
 OBJ_FILES=main.c.o util.c.o lexer.c.o
 OBJS=$(addprefix obj/, $(OBJ_FILES))
