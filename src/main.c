@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "include/util.h"
 #include "include/lexer.h"
+#include "include/parser.h"
 
 #define INPUT_BUFSZ 100
 
@@ -72,11 +73,21 @@ int main(void) {
         /* We are done with the raw input, free it */
         free(input);
 
-        /* TODO: For now just print the token array */
+        /* DELME */
         tokens_print(tokens);
+
+        /* Get root expression from token array */
+        Expr* expr = parse(tokens);
 
         /* We are done with the token array, free it */
         free(tokens);
+
+        if (expr == NULL)
+            continue;
+
+        /* TODO: Do something with the expression */
+
+        expr_free(expr);
     }
 
     return 0;
