@@ -8,40 +8,6 @@
 #include "include/lexer.h"
 #include "include/parser.h"
 
-#if 0
-static int expr_count(Token* in) {
-    int ret = 0;
-
-    if (in[0].type != TOKEN_LIST_OPEN) {
-        ERR("Expected list opening.");
-        return 0;
-    }
-
-    for (int i = 1; in[i].type != TOKEN_LIST_CLOSE; i++) {
-        if (in[i].type == TOKEN_EOF) {
-            ERR("Unexpected EOF.");
-            return 0;
-        }
-
-        ret++;
-
-        /* Found nested list, skip children */
-        if (in[i].type == TOKEN_LIST_OPEN) {
-            int depth = 1;
-            while (depth > 0) {
-                i++;
-                if (in[i].type == TOKEN_LIST_OPEN)
-                    depth++;
-                else if (in[i].type == TOKEN_LIST_CLOSE)
-                    depth--;
-            }
-        }
-    }
-
-    return ret;
-}
-#endif
-
 /*
  * TODO:
  *   - "()" -> Just NIL instead of NIL inside LST
