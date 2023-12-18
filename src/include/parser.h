@@ -5,7 +5,7 @@
 
 enum EExprType {
     EXPR_ERR,
-    EXPR_NIL, /* End Of List. Indicates the last item of Expr.val.children */
+    EXPR_NIL, /* End of list. Expr.next will be NULL */
     EXPR_PARENT,
     EXPR_SYMBOL,
     EXPR_CONST,
@@ -14,10 +14,11 @@ enum EExprType {
 typedef struct Expr {
     enum EExprType type;
     union {
-        double num;
-        char* str;
+        double n;
+        char* s;
         struct Expr* children;
     } val;
+    struct Expr* next;
 } Expr;
 
 /*----------------------------------------------------------------------------*/

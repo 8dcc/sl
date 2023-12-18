@@ -73,7 +73,7 @@ int main(void) {
         /* We are done with the raw input, free it */
         free(input);
 
-        /* DELME */
+        /* TODO */
         tokens_print(tokens);
 
         /* Get root expression from token array */
@@ -85,7 +85,8 @@ int main(void) {
         if (expr == NULL)
             continue;
 
-        /* TODO: Do something with the expression */
+        /* TODO */
+        expr_print(expr);
 
         expr_free(expr);
     }
