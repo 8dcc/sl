@@ -16,7 +16,7 @@ For more information, see:
 - [[https://www.scheme.org/][Official Scheme website]]
 - [[https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/][Scheme R5RS Specification]]
 - [[https://www.buildyourownlisp.com/][Build Your Own Lisp website]] (Although this project doesn't follow the book)
-- [[https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html][SICP website]] (I haven't read the book yet, but you should check it out)
+- [[https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html][SICP website]]
 
 * Building
 
