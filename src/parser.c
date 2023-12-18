@@ -17,6 +17,11 @@ static int expr_count(Token* in) {
     }
 
     for (int i = 1; in[i].type != TOKEN_LIST_CLOSE; i++) {
+        if (in[i].type == TOKEN_EOF) {
+            ERR("Unexpected EOF.");
+            return 0;
+        }
+
         ret++;
 
         /* Found nested list, skip children */
