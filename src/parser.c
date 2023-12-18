@@ -38,7 +38,7 @@ Expr* parse(Token* tokens) {
                 cur->type  = EXPR_CONST;
                 cur->val.n = tokens[i].val.n;
                 break;
-            case TOKEN_SYM:
+            case TOKEN_SYMBOL:
                 cur->type  = EXPR_SYMBOL;
                 cur->val.s = tokens[i].val.s;
                 break;

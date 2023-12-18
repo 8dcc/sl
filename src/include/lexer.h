@@ -5,8 +5,8 @@ enum ETokenTypes {
     TOKEN_EOF,
 
     /* The following make use of Token.val */
-    TOKEN_NUM, /* Number (double) */
-    TOKEN_SYM, /* Symbol (string) */
+    TOKEN_NUM,    /* Number (double) */
+    TOKEN_SYMBOL, /* Symbol (string) */
 
     /* The rest don't use Token.val */
     TOKEN_LIST_OPEN,

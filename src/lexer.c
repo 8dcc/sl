@@ -91,7 +91,7 @@ static char* token_store(Token* out, char* in) {
         out->val.n = parsed;
     } else {
         /* Symbol (string) */
-        out->type  = TOKEN_SYM;
+        out->type  = TOKEN_SYMBOL;
         out->val.s = malloc(i + 1);
 
         if (out->val.s == NULL) {
@@ -133,7 +133,7 @@ void tokens_print(Token* arr) {
             case TOKEN_NUM:
                 printf("%f, ", arr->val.n);
                 break;
-            case TOKEN_SYM:
+            case TOKEN_SYMBOL:
                 printf("\"%s\", ", arr->val.s);
                 break;
             case TOKEN_LIST_OPEN:
