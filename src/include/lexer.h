@@ -23,6 +23,10 @@ typedef struct Token {
     } val;
 } Token;
 
+
+/* Is `c` a token separator? */
+bool is_token_separator(char c);
+
 /* Allocate and fill an array of Tokens from the input. Must be freed by the
  * caller. */
 Token* tokens_scan(char* input);

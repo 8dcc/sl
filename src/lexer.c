@@ -10,11 +10,6 @@
 
 #define TOKEN_BUFSZ 50
 
-/* Used by token_store() */
-static inline bool is_token_separator(char c) {
-    return isspace(c) || c == '\0' || c == '(' || c == ')';
-}
-
 static bool parse_number(const char* str, double* out) {
     /* 0 means we are in the integer part of the number */
     int decimal_position = 0;
@@ -107,6 +102,11 @@ static char* token_store(Token* out, char* in) {
 
     /* Return next char */
     return &in[i];
+}
+
+/* Used by token_store() and input_read() */
+bool is_token_separator(char c) {
+    return isspace(c) || c == '\0' || c == '(' || c == ')';
 }
 
 Token* tokens_scan(char* input) {

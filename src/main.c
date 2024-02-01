@@ -10,6 +10,8 @@
 
 /* Allocate buffer and store a LISP expression. Must be freed by the caller */
 static char* input_read(void) {
+    /* Used to indicate the caller that we got EOF, but after sending the
+    expression that contained it. */
     static bool last_call_was_eof = false;
     if (last_call_was_eof)
         return NULL;
@@ -19,6 +21,9 @@ static char* input_read(void) {
 
     /* Will increase when we encounter '(' and decrease with ')' */
     int nesting_level = 0;
+
+    /* If true, we found a symbol/constant with nesting_level at 0 */
+    bool isolated_symbol = false;
 
     char c;
     size_t i = 0;
@@ -47,6 +52,14 @@ static char* input_read(void) {
 
             /* We closed all the expressions we opened, we are done */
             if (nesting_level <= 0)
+                break;
+        } else if (nesting_level == 0) {
+            /* We are reading outside of an expression */
+            if (!isolated_symbol && !is_token_separator(c))
+                /* We found a token outside of a list, it evaluates to itself */
+                isolated_symbol = true;
+            else if (isolated_symbol && is_token_separator(c))
+                /* We just read an isolated symbol, and we found a separator */
                 break;
         }
     }
