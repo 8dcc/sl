@@ -86,7 +86,10 @@ static char* token_store(Token* out, char* in) {
         out->val.n = parsed;
     } else {
         /* Symbol (string) */
-        out->type  = TOKEN_SYMBOL;
+        out->type = TOKEN_SYMBOL;
+
+        /* NOTE: Expressions will use this same pointer, so this will be freed
+         * in expr_free() */
         out->val.s = malloc(i + 1);
 
         if (out->val.s == NULL) {

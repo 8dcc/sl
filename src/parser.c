@@ -20,8 +20,10 @@ Expr* parse(Token* tokens) {
     for (int i = 0; !done; i++) {
         if (tokens[i].type == TOKEN_EOF) {
             /* NOTE: We don't allocate a NIL Expr */
-            cur->next = NULL;
-            done      = true;
+            if (cur != NULL)
+                cur->next = NULL;
+
+            done = true;
             break;
         }
 
@@ -74,8 +76,24 @@ Expr* parse(Token* tokens) {
 }
 
 void expr_free(Expr* root) {
-    /* TODO */
-    (void)root;
+    /* If the expression has an adjacent one, free that one first */
+    if (root->next != NULL)
+        expr_free(root->next);
+
+    switch (root->type) {
+        case EXPR_PARENT:
+            /* If the expression has children, free them */
+            expr_free(root->val.children);
+            break;
+        case EXPR_SYMBOL:
+            free(root->val.s);
+            break;
+        default:
+            break;
+    }
+
+    /* Free the expression itself, that we allocated on parse() */
+    free(root);
 }
 
 #define INDENT_STEP 4
