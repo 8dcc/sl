@@ -95,8 +95,10 @@ int main(void) {
         /* We are done with the token array, free it */
         free(tokens);
 
-        if (expr == NULL)
+        if (expr == NULL) {
+            fprintf(stderr, "Invalid expression, continuing...\n");
             continue;
+        }
 
         /* TODO */
         expr_print(expr);

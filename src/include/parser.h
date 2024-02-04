@@ -4,8 +4,7 @@
 #include <stdint.h>
 
 enum EExprType {
-    EXPR_ERR,
-    EXPR_NIL, /* End of list. Expr.next will be NULL */
+    EXPR_ERR, /* Unused for now */
     EXPR_PARENT,
     EXPR_SYMBOL,
     EXPR_CONST,

@@ -23,6 +23,7 @@ typedef struct Token {
     } val;
 } Token;
 
+/*----------------------------------------------------------------------------*/
 
 /* Is `c` a token separator? */
 bool is_token_separator(char c);

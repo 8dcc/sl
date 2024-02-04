@@ -8,18 +8,16 @@
 #include "include/lexer.h"
 #include "include/parser.h"
 
-/*
- * TODO:
- *   - "()" -> Just NIL instead of NIL inside LST
- */
 Expr* parse(Token* tokens) {
     Expr* root = NULL;
-    Expr* cur  = root;
+    Expr* cur  = NULL;
 
     bool done = false;
     for (int i = 0; !done; i++) {
-        if (tokens[i].type == TOKEN_EOF) {
-            /* NOTE: We don't allocate a NIL Expr */
+        if (tokens[i].type == TOKEN_EOF || tokens[i].type == TOKEN_LIST_CLOSE) {
+            /* NOTE: We don't allocate a NIL Expr, NULL indicates end of lists.
+             * NOTE: Since TOKEN_LIST_CLOSE returns NULL, if Expr.children is
+             *       NULL, it means it's a list with no children, i.e. NIL. */
             if (cur != NULL)
                 cur->next = NULL;
 
@@ -45,10 +43,11 @@ Expr* parse(Token* tokens) {
                 cur->val.s = tokens[i].val.s;
                 break;
             case TOKEN_LIST_OPEN:
+                /* Parse starting from next token. See NIL note at the top. */
                 cur->type         = EXPR_PARENT;
                 cur->val.children = parse(&tokens[i + 1]);
 
-                /* After parsing the nested list, skip the children tokens */
+                /* After parsing the nested list, skip those children tokens */
                 int depth = 1;
                 while (depth > 0) {
                     i++;
@@ -57,13 +56,6 @@ Expr* parse(Token* tokens) {
                     else if (tokens[i].type == TOKEN_LIST_CLOSE)
                         depth--;
                 }
-                break;
-            case TOKEN_LIST_CLOSE:
-                /* Using a NIL token instead of just using `Expr.next = NULL'
-                 * looks redundant, but it is its own Expr type. */
-                cur->type = EXPR_NIL;
-                cur->next = NULL;
-                done      = true;
                 break;
             case TOKEN_EOF:
             default:
@@ -83,9 +75,11 @@ void expr_free(Expr* root) {
     switch (root->type) {
         case EXPR_PARENT:
             /* If the expression has children, free them */
-            expr_free(root->val.children);
+            if (root->val.children != NULL)
+                expr_free(root->val.children);
             break;
         case EXPR_SYMBOL:
+            /* Free the symbol string, allocated in tokens_scan() */
             free(root->val.s);
             break;
         default:
@@ -111,15 +105,18 @@ void expr_print(Expr* e) {
             printf("[SYM] \"%s\"\n", e->val.s);
             break;
         case EXPR_PARENT:
+            /* List with no children: NIL */
+            if (e->val.children == NULL) {
+                printf("[NIL]\n");
+                break;
+            }
+
             printf("[LST]\n");
 
             /* If the token is a parent, indent and print all children */
             indent += INDENT_STEP;
             expr_print(e->val.children);
             indent -= INDENT_STEP;
-            break;
-        case EXPR_NIL:
-            printf("[NIL]\n");
             break;
         case EXPR_ERR:
         default:
