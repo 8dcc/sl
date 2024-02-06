@@ -1,6 +1,8 @@
 #ifndef UTIL_H_
 #define UTIL_H_ 1
 
+#define LENGTH(ARR) ((int)(sizeof(ARR) / sizeof((ARR)[0])))
+
 /* Wrapper for err_msg() */
 #define ERR(...) err_msg(__func__, __VA_ARGS__)
 
