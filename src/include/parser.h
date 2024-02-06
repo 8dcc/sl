@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "lexer.h"
+
 enum EExprType {
     EXPR_ERR, /* Unused for now */
     EXPR_PARENT,
