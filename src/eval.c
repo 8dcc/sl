@@ -29,12 +29,23 @@ static Expr* expr_clone(Expr* e) {
     Expr* ret = malloc(sizeof(Expr));
     ret->type = e->type;
 
-    /* NOTE: We don't copy e->next and e->val.children */
-    if (e->type == EXPR_PARENT)
-        e->val.children = NULL;
-    else
-        ret->val = e->val;
+    switch (e->type) {
+        case EXPR_SYMBOL:
+            /* Allocate a new copy of the string, since the original will be
+             * freed with the expression in expr_free(). */
+            ret->val.s = malloc(strlen(e->val.s));
+            strcpy(ret->val.s, e->val.s);
+            break;
+        case EXPR_CONST:
+            ret->val.n = e->val.n;
+            break;
+        default:
+        case EXPR_PARENT:
+            e->val.children = NULL;
+            break;
+    }
 
+    /* NOTE: We don't copy pointers like e->next or e->val.children  */
     ret->next = NULL;
     return ret;
 }
