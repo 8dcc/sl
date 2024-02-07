@@ -10,16 +10,11 @@
 
 #define INPUT_BUFSZ 100
 
-/* Allocate buffer and store a LISP expression. Must be freed by the caller */
-static char* input_read(void) {
-    /* Used to indicate the caller that we got EOF, but after sending the
-    expression that contained it. */
-    static bool last_call_was_eof = false;
-    if (last_call_was_eof)
-        return NULL;
-
+/* Allocate buffer and store a LISP expression in string format. Must be freed
+ * by the caller. Returns true if it got EOF. */
+static bool input_read(char** input) {
+    *input          = malloc(INPUT_BUFSZ);
     size_t input_sz = INPUT_BUFSZ;
-    char* input     = malloc(INPUT_BUFSZ);
 
     /* Will increase when we encounter '(' and decrease with ')' */
     int nesting_level = 0;
@@ -33,11 +28,11 @@ static char* input_read(void) {
         /* If we run out of space, allocate more */
         if (i >= input_sz) {
             input_sz += INPUT_BUFSZ;
-            input = realloc(input, input_sz);
+            *input = realloc(*input, input_sz);
         }
 
         /* Store character in string */
-        input[i++] = c;
+        (*input)[i++] = c;
 
         if (c == '(') {
             nesting_level++;
@@ -66,21 +61,25 @@ static char* input_read(void) {
         }
     }
 
-    /* Store in static var so we can return NULL on next call */
-    if (c == EOF)
-        last_call_was_eof = true;
+    (*input)[i] = '\0';
 
-    input[i] = '\0';
-    return input;
+    /* Return true if the last char was EOF, so the caller knows to not call us
+     * again after it's done processing this expression. */
+    return c == EOF;
 }
 
 int main(void) {
+    bool got_eof = false;
+
     while (true) {
+        if (got_eof)
+            break;
+
         printf("sl> ");
 
-        char* input = input_read();
-        if (input == NULL)
-            break;
+        /* Allocate buffer and read an expression */
+        char* input = NULL;
+        got_eof     = input_read(&input);
 
         /* Get token array from input */
         Token* tokens = tokens_scan(input);
