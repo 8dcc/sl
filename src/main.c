@@ -2,9 +2,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "include/util.h"
 #include "include/lexer.h"
 #include "include/parser.h"
+#include "include/eval.h"
 
 #define INPUT_BUFSZ 100
 
@@ -86,25 +88,32 @@ int main(void) {
         /* We are done with the raw input, free it */
         free(input);
 
-        /* TODO */
-        tokens_print(tokens);
-
         /* Get root expression from token array */
         Expr* expr = parse(tokens);
 
         /* We are done with the token array, free it */
         free(tokens);
 
-        if (expr == NULL) {
-            fprintf(stderr, "Invalid expression, continuing...\n");
+        if (expr == NULL)
             continue;
-        }
 
-        /* TODO */
-        expr_print(expr);
+        /* Evaluate expression recursivelly */
+        Expr* evaluated = eval(expr);
 
+        /* We are done with the original expression */
         expr_free(expr);
+
+        if (evaluated == NULL)
+            continue;
+
+        expr_print(evaluated);
+
+        /* Free the evaluated expression */
+        expr_free(evaluated);
+
+        putchar('\n');
     }
 
+    putchar('\n');
     return 0;
 }
