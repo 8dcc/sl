@@ -68,6 +68,10 @@ Expr* parse(Token* tokens) {
 }
 
 void expr_free(Expr* root) {
+    /* This function shouldn't be called with NULL */
+    if (root == NULL)
+        return;
+
     /* If the expression has an adjacent one, free that one first */
     if (root->next != NULL)
         expr_free(root->next);
@@ -93,6 +97,12 @@ void expr_free(Expr* root) {
 #define INDENT_STEP 4
 void expr_print(Expr* e) {
     static int indent = 0;
+
+    /* This function shouldn't be called with NULL */
+    if (e == NULL) {
+        printf("[ERR]\n");
+        return;
+    }
 
     for (int i = 0; i < indent; i++)
         putchar(' ');
