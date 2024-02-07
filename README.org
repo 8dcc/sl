@@ -8,7 +8,10 @@
 #+TOC: headlines 2
 
 * Description
-Simple LISP interpreter made in C.
+
+Simple LISP interpreter made in C. This project is still WIP, but I plan on
+explaining the code structure and the interpreter stages soon (lexer, parser,
+etc.).
 
 For more information, see:
 - [[https://en.wikipedia.org/wiki/Lisp_(programming_language)][LISP (Wikipedia)]]
@@ -30,6 +33,12 @@ $ make
 * Usage
 
 #+begin_src console
-$ ./sl --help
-...
+$ ./sl
+sl> (+ 1 2 (- 5 4) (* 3 4))
+[NUM] 16.000000
+
+sl> Hello!
+[SYM] "Hello!"
+
+sl>
 #+end_src
