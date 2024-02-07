@@ -24,19 +24,34 @@ static SymbolFuncPair primitives[] = {
 
 /*----------------------------------------------------------------------------*/
 
+/* Allocate a new expr and copy `e'. Needed to avoid double frees and leaks. */
+static Expr* expr_clone(Expr* e) {
+    Expr* ret = malloc(sizeof(Expr));
+    ret->type = e->type;
+
+    /* NOTE: We don't copy e->next and e->val.children */
+    if (e->type == EXPR_PARENT)
+        e->val.children = NULL;
+    else
+        ret->val = e->val;
+
+    ret->next = NULL;
+    return ret;
+}
+
 Expr* eval(Expr* e) {
     if (e == NULL)
         return NULL;
 
     /* Not a parent, evaluates to itself */
     if (e->type != EXPR_PARENT)
-        return e;
+        return expr_clone(e);
 
     /* It's a parent, get first children of the list */
     Expr* children = e->val.children;
 
     if (children == NULL)
-        return e; /* NIL */
+        return expr_clone(e); /* NIL */
 
     /* First item of the list must be the function name */
     if (children->type != EXPR_SYMBOL) {
@@ -63,21 +78,32 @@ Expr* eval(Expr* e) {
         return NULL;
     }
 
-    /* TODO: This is probably leaking memory? What happens to old arguments
-     * after they are evaluated? We can't just free because they might be in use
-     * somewhere else.
-     *
-     * Perhaps a solution would be to return a copy of the expression when
-     * checking the type, instead of returning that same pointer. That way the
-     * original expression remains untouched and can be freed safely by the
-     * caller.
-     *
-     * If we do that, maybe we should free the old pointer after evaluating? */
+    /* Evaluate each of the arguments before calling primitive. We will save the
+     * evaluated expressions in another linked list to avoid double frees. */
+    Expr* first_arg = NULL;
+    Expr* arg_copy  = NULL;
+    for (Expr* arg_orig = children->next; arg_orig != NULL;
+         arg_orig       = arg_orig->next) {
+        if (arg_copy == NULL) {
+            /* Evaluate original argument, save it in our copy */
+            arg_copy = eval(arg_orig);
 
-    /* Evaluate each of the arguments before calling primitive */
-    for (Expr* i = children; i->next != NULL; i = i->next)
-        i->next = eval(i->next);
+            /* If we haven't saved the first item of the linked list, save it */
+            first_arg = arg_copy;
+        } else {
+            /* If it's not the first copy, keep filling the linked list */
+            arg_copy->next = eval(arg_orig);
+
+            /* Move to the next argument in our copy list */
+            arg_copy = arg_copy->next;
+        }
+    }
 
     /* Finally, call function with the evaluated arguments */
-    return sym_func(children->next);
+    Expr* result = sym_func(first_arg);
+
+    /* Free the arguments we passed to sym_func(), return only final Expr */
+    expr_free(first_arg);
+
+    return result;
 }
