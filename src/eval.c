@@ -25,7 +25,7 @@ static SymbolFuncPair primitives[] = {
 /*----------------------------------------------------------------------------*/
 
 /* Allocate a new expr and copy `e'. Needed to avoid double frees and leaks. */
-static Expr* expr_clone(Expr* e) {
+static Expr* expr_clone(const Expr* e) {
     Expr* ret = malloc(sizeof(Expr));
     ret->type = e->type;
 
@@ -41,7 +41,7 @@ static Expr* expr_clone(Expr* e) {
             break;
         default:
         case EXPR_PARENT:
-            e->val.children = NULL;
+            ret->val.children = NULL;
             break;
     }
 
