@@ -8,6 +8,7 @@
 enum EExprType {
     EXPR_ERR, /* Unused for now */
     EXPR_PARENT,
+    EXPR_QUOTE, /* Identical to PARENT, but should not be evaluated */
     EXPR_SYMBOL,
     EXPR_CONST,
 };

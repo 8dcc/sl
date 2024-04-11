@@ -26,6 +26,9 @@ static SymbolFuncPair primitives[] = {
 
 /* Allocate a new expr and copy `e'. Needed to avoid double frees and leaks. */
 static Expr* expr_clone(const Expr* e) {
+    if (e == NULL)
+        return NULL;
+
     Expr* ret = malloc(sizeof(Expr));
     ret->type = e->type;
 
@@ -48,6 +51,40 @@ static Expr* expr_clone(const Expr* e) {
     /* NOTE: We don't copy pointers like e->next or e->val.children  */
     ret->next = NULL;
     return ret;
+}
+
+/* Same as `expr_clone', but also clones children recursivelly. */
+static Expr* expr_clone_recur(const Expr* e) {
+    if (e == NULL)
+        return NULL;
+
+    Expr* cloned = expr_clone(e);
+
+    /* If the expression we just cloned is a parent */
+    if (e->type == EXPR_PARENT || e->type == EXPR_QUOTE) {
+        Expr* child_copy = NULL;
+
+        /* Clone all children, while linking them together in the new list. This
+         * is similar to how we evaluate function arguments in `eval' */
+        for (Expr* cur_child = e->val.children; cur_child != NULL;
+             cur_child       = cur_child->next) {
+            if (cloned->val.children == NULL) {
+                /* Clone the first children of the original */
+                child_copy = expr_clone_recur(cur_child);
+
+                /* Store that this was the first one for later */
+                cloned->val.children = child_copy;
+            } else {
+                /* If we already cloned one, keep linking them */
+                child_copy->next = expr_clone_recur(cur_child);
+
+                /* Move to the next argument in our copy list */
+                child_copy = child_copy->next;
+            }
+        }
+    }
+
+    return cloned;
 }
 
 Expr* eval(Expr* e) {
@@ -75,6 +112,15 @@ Expr* eval(Expr* e) {
         return NULL;
     }
 
+    /* Handle special functions/macros like `quote' */
+    if (!strcmp(children->val.s, "quote")) {
+        /* We have to use `expr_clone_recur' since `expr_clone' does not clone
+         * children. */
+        Expr* quoted = expr_clone_recur(children->next);
+        quoted->type = EXPR_QUOTE;
+        return quoted;
+    }
+
     /* Get the function pointer corresponding to the function */
     FuncPtr sym_func = NULL;
     for (int i = 0; i < LENGTH(primitives); i++) {
@@ -95,7 +141,7 @@ Expr* eval(Expr* e) {
     Expr* arg_copy  = NULL;
     for (Expr* arg_orig = children->next; arg_orig != NULL;
          arg_orig       = arg_orig->next) {
-        if (arg_copy == NULL) {
+        if (first_arg == NULL) {
             /* Evaluate original argument, save it in our copy */
             arg_copy = eval(arg_orig);
 

@@ -77,6 +77,7 @@ void expr_free(Expr* root) {
         expr_free(root->next);
 
     switch (root->type) {
+        case EXPR_QUOTE:
         case EXPR_PARENT:
             /* If the expression has children, free them */
             if (root->val.children != NULL)
@@ -100,7 +101,8 @@ void expr_print(Expr* e) {
 
     /* This function shouldn't be called with NULL */
     if (e == NULL) {
-        printf("[ERR]\n");
+        printf("[ERR] ");
+        ERR("Got NULL as argument. Aborting...");
         return;
     }
 
@@ -114,14 +116,17 @@ void expr_print(Expr* e) {
         case EXPR_SYMBOL:
             printf("[SYM] \"%s\"\n", e->val.s);
             break;
+        case EXPR_QUOTE:
         case EXPR_PARENT:
+            printf(e->type == EXPR_QUOTE ? "[QTE]" : "[LST]");
+
             /* List with no children: NIL */
             if (e->val.children == NULL) {
-                printf("[NIL]\n");
+                printf(" (NIL)\n");
                 break;
             }
 
-            printf("[LST]\n");
+            putchar('\n');
 
             /* If the token is a parent, indent and print all children */
             indent += INDENT_STEP;
@@ -130,8 +135,9 @@ void expr_print(Expr* e) {
             break;
         case EXPR_ERR:
         default:
-            printf("[ERR]\n");
-            ERR("Aborting...");
+            printf("[ERR] ");
+            ERR("Encountered invalid expression (type %d). Aborting...",
+                e->type);
             return;
     }
 
