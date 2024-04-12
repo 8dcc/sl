@@ -130,6 +130,19 @@ Token* tokens_scan(char* input) {
     return tokens;
 }
 
+void tokens_free(Token* arr) {
+    for (int i = 0; arr[i].type != TOKEN_EOF; i++) {
+        if (arr[i].type == TOKEN_SYMBOL) {
+            /* Free the string we allocated in token_store() */
+            free(arr[i].val.s);
+        }
+    }
+
+    /* Once we are done freeing all the allocations we made inside the array,
+     * free the array itself */
+    free(arr);
+}
+
 void tokens_print(Token* arr) {
     printf("[ ");
 

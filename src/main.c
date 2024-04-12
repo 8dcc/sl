@@ -91,7 +91,7 @@ int main(void) {
         Expr* expr = parse(tokens);
 
         /* We are done with the token array, free it */
-        free(tokens);
+        tokens_free(tokens);
 
         if (expr == NULL)
             continue;

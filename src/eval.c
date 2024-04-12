@@ -91,6 +91,8 @@ static Expr* expr_clone_recur(const Expr* e) {
 /* NOTE: Make sure we only allocate when we are sure the expression will be
  * valid, or we would need to free our allocations before returning NULL in case
  * of errors. */
+/* TODO: Rename to expr_eval? e->is_quoted should eval to itself unless explicit
+ * eval (clone and return) */
 Expr* eval(Expr* e) {
     if (e == NULL)
         return NULL;

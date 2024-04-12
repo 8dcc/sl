@@ -34,6 +34,9 @@ bool is_token_separator(char c);
  * caller. */
 Token* tokens_scan(char* input);
 
+/* Free an array of tokens, along with all the memory used by each element. */
+void tokens_free(Token* arr);
+
 /* Print all tokens in a TOKEN_EOF terminated array */
 void tokens_print(Token* arr);
 

@@ -42,10 +42,8 @@ Expr* parse(Token* tokens) {
         }
 
         /* If the last token was TOKEN_QUOTE, mark it as quoted */
-        if (had_quote) {
-            cur->is_quoted = true;
-            had_quote      = false;
-        }
+        cur->is_quoted = had_quote;
+        had_quote      = false;
 
         switch (tokens[i].type) {
             case TOKEN_NUM:
@@ -53,10 +51,13 @@ Expr* parse(Token* tokens) {
                 cur->val.n = tokens[i].val.n;
                 break;
             case TOKEN_SYMBOL:
-                /* TODO: Don't reuse the string from tokens_scan(), allocate our
-                 * own. Add tokens_free() */
-                cur->type  = EXPR_SYMBOL;
-                cur->val.s = tokens[i].val.s;
+                cur->type = EXPR_SYMBOL;
+
+                /* Allocate a new copy of the string from tokens_scan(), since
+                 * the lexer is responsible of freeing the original pointer. The
+                 * ones we are allocating will be freed in expr_free() */
+                cur->val.s = malloc(strlen(tokens[i].val.s));
+                strcpy(cur->val.s, tokens[i].val.s);
                 break;
             case TOKEN_LIST_OPEN:
                 /* Parse starting from next token. See NIL note at the top. */
