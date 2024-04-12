@@ -12,7 +12,9 @@ enum ETokenTypes {
     TOKEN_LIST_OPEN,
     TOKEN_LIST_CLOSE,
 
-    /* TODO: Quote, etc. */
+    /* Indicates that the following expression should only be evaluated
+     * explicitly. */
+    TOKEN_QUOTE,
 };
 
 typedef struct Token {
@@ -25,7 +27,7 @@ typedef struct Token {
 
 /*----------------------------------------------------------------------------*/
 
-/* Is `c` a token separator? */
+/* Is `c' a token separator? Used by token_store() and input_read() */
 bool is_token_separator(char c);
 
 /* Allocate and fill an array of Tokens from the input. Must be freed by the

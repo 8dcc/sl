@@ -48,7 +48,7 @@ static bool parse_number(const char* str, double* out) {
     return true;
 }
 
-/* Scan and store the next token from `in` to `out`. Returns the netx character
+/* Scan and store the next token from `in' to `out'. Returns the next character
  * after the token, or NULL if the next char is the end of the string. */
 static char* token_store(Token* out, char* in) {
     /* Skip spaces, if any */
@@ -62,6 +62,9 @@ static char* token_store(Token* out, char* in) {
             return in + 1;
         case ')':
             out->type = TOKEN_LIST_CLOSE;
+            return in + 1;
+        case '\'':
+            out->type = TOKEN_QUOTE;
             return in + 1;
         case '\0':
             out->type = TOKEN_EOF;
@@ -107,7 +110,6 @@ static char* token_store(Token* out, char* in) {
     return &in[i];
 }
 
-/* Used by token_store() and input_read() */
 bool is_token_separator(char c) {
     return isspace(c) || c == '\0' || c == '(' || c == ')';
 }
@@ -144,6 +146,9 @@ void tokens_print(Token* arr) {
                 break;
             case TOKEN_LIST_CLOSE:
                 printf("LIST_CLOSE, ");
+                break;
+            case TOKEN_QUOTE:
+                printf("QUOTE, ");
                 break;
             default:
                 fprintf(stderr, "UNKNOWN, ");
