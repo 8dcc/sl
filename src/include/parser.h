@@ -7,10 +7,9 @@
 
 enum EExprType {
     EXPR_ERR, /* Unused for now */
-    EXPR_PARENT,
-    EXPR_QUOTE, /* Identical to PARENT, but should not be evaluated */
-    EXPR_SYMBOL,
     EXPR_CONST,
+    EXPR_SYMBOL,
+    EXPR_PARENT,
 };
 
 typedef struct Expr {
@@ -20,6 +19,11 @@ typedef struct Expr {
         char* s;
         struct Expr* children;
     } val;
+
+    /* True if this expression was quoted */
+    bool is_quoted;
+
+    /* Next expression in the linked list */
     struct Expr* next;
 } Expr;
 

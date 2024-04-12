@@ -29,8 +29,9 @@ static Expr* expr_clone(const Expr* e) {
     if (e == NULL)
         return NULL;
 
-    Expr* ret = malloc(sizeof(Expr));
-    ret->type = e->type;
+    Expr* ret      = malloc(sizeof(Expr));
+    ret->type      = e->type;
+    ret->is_quoted = e->is_quoted;
 
     switch (e->type) {
         case EXPR_SYMBOL:
@@ -61,7 +62,7 @@ static Expr* expr_clone_recur(const Expr* e) {
     Expr* cloned = expr_clone(e);
 
     /* If the expression we just cloned is a parent */
-    if (e->type == EXPR_PARENT || e->type == EXPR_QUOTE) {
+    if (e->type == EXPR_PARENT) {
         Expr* child_copy = NULL;
 
         /* Clone all children, while linking them together in the new list. This
@@ -87,6 +88,9 @@ static Expr* expr_clone_recur(const Expr* e) {
     return cloned;
 }
 
+/* NOTE: Make sure we only allocate when we are sure the expression will be
+ * valid, or we would need to free our allocations before returning NULL in case
+ * of errors. */
 Expr* eval(Expr* e) {
     if (e == NULL)
         return NULL;
@@ -116,9 +120,9 @@ Expr* eval(Expr* e) {
     if (!strcmp(children->val.s, "quote")) {
         /* We have to use `expr_clone_recur' since `expr_clone' does not clone
          * children. */
-        Expr* quoted = expr_clone_recur(children->next);
-        quoted->type = EXPR_QUOTE;
-        return quoted;
+        Expr* cloned      = expr_clone_recur(children->next);
+        cloned->is_quoted = true;
+        return cloned;
     }
 
     /* Get the function pointer corresponding to the function */
