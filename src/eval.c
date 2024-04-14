@@ -34,6 +34,10 @@ Expr* eval(Expr* e) {
     if (e == NULL)
         return NULL;
 
+    /* Quoted expression, evaluates to itself */
+    if (e->is_quoted)
+        return expr_clone(e);
+
     /* Not a parent, evaluates to itself */
     if (e->type != EXPR_PARENT)
         return expr_clone(e);
