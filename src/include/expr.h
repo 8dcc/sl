@@ -2,7 +2,7 @@
 #ifndef EXPR_H_
 #define EXPR_H_ 1
 
-#include <stdint.h>
+#include <stdbool.h>
 
 enum EExprType {
     EXPR_ERR, /* Unused for now */
