@@ -5,6 +5,7 @@
 
 #include "include/util.h"
 #include "include/lexer.h"
+#include "include/expr.h"
 #include "include/parser.h"
 #include "include/eval.h"
 

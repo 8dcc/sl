@@ -6,6 +6,7 @@
 
 #include "include/util.h"
 #include "include/lexer.h"
+#include "include/expr.h"
 #include "include/parser.h"
 
 Expr* parse(Token* tokens) {
