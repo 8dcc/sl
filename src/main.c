@@ -98,7 +98,7 @@ int main(void) {
             continue;
 
         /* Evaluate expression recursivelly */
-        Expr* evaluated = eval(expr);
+        Expr* evaluated = eval_expr(expr);
 
         /* We are done with the original expression */
         expr_free(expr);
