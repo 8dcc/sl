@@ -8,6 +8,7 @@
 #include "include/expr.h"
 #include "include/parser.h"
 #include "include/eval.h"
+#include "include/env.h"
 
 #define INPUT_BUFSZ 100
 
@@ -70,8 +71,12 @@ static bool input_read(char** input) {
 }
 
 int main(void) {
-    bool got_eof = false;
+    /* Initialize global environment with symbols like "nil". Note that C
+     * primitives are handled separately. */
+    Env* global_env = NULL;
+    env_init(&global_env);
 
+    bool got_eof = false;
     while (true) {
         if (got_eof)
             break;
@@ -98,7 +103,7 @@ int main(void) {
             continue;
 
         /* Evaluate expression recursivelly */
-        Expr* evaluated = eval_expr(expr);
+        Expr* evaluated = eval_expr(global_env, expr);
 
         /* We are done with the original expression */
         expr_free(expr);
@@ -113,6 +118,8 @@ int main(void) {
 
         putchar('\n');
     }
+
+    env_free(global_env);
 
     putchar('\n');
     return 0;

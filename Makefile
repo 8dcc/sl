@@ -3,7 +3,7 @@ CC=gcc
 CFLAGS=-Wall -Wextra -g3
 LDFLAGS=-lm
 
-OBJ_FILES=main.c.o util.c.o lexer.c.o parser.c.o expr.c.o eval.c.o primitives.c.o
+OBJ_FILES=main.c.o util.c.o lexer.c.o parser.c.o expr.c.o eval.c.o primitives.c.o env.c.o
 OBJS=$(addprefix obj/, $(OBJ_FILES))
 
 BIN=sl

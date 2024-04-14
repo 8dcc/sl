@@ -9,6 +9,7 @@
 #include "include/expr.h"
 #include "include/eval.h"
 #include "include/primitives.h"
+#include "include/env.h"
 
 typedef Expr* (*FuncPtr)(Expr*);
 
@@ -17,6 +18,8 @@ typedef struct {
     FuncPtr f;
 } SymbolFuncPair;
 
+/* Symbols associated to C functions (primitives) are handled here instead of
+ * being associated in the environment. */
 static SymbolFuncPair primitives[] = {
     { "+", prim_add },
     { "-", prim_sub },
@@ -29,26 +32,30 @@ static SymbolFuncPair primitives[] = {
  * valid, or we would need to free our allocations before returning NULL in case
  * of errors (e.g. when asserts fail) */
 
-Expr* eval_expr(Expr* e) {
+Expr* eval_expr(Env* env, Expr* e) {
     if (e == NULL)
         return NULL;
 
     /* Quoted expression, evaluates to itself */
     /* TODO: The user doesn't currently have a way of evaluating a quoted
-     * expression explicitly. */
+     * expression explicitly. Add `eval' primitive. */
     if (e->is_quoted)
         return expr_clone(e);
 
-    if (e->type == EXPR_PARENT) {
-        /* Evaluate S-Expression as a function call */
-        return eval_sexpr(e);
-    } else {
-        /* Not a parent, evaluates to itself */
-        return expr_clone(e);
+    switch (e->type) {
+        case EXPR_PARENT:
+            /* Evaluate S-Expression as a function call */
+            return eval_sexpr(env, e);
+        case EXPR_SYMBOL:
+            Expr* val = env_get(env, e->val.s);
+            return (val != NULL) ? val : expr_clone(e);
+        default:
+            /* Not a parent nor a symbol, evaluates to itself */
+            return expr_clone(e);
     }
 }
 
-Expr* eval_sexpr(Expr* e) {
+Expr* eval_sexpr(Env* env, Expr* e) {
     if (e == NULL)
         return NULL;
 
@@ -64,7 +71,12 @@ Expr* eval_sexpr(Expr* e) {
     SL_ASSERT(children->val.s != NULL,
               "Function name is a symbol, but has no value.");
 
-    /* Handle special functions/macros like `quote' */
+    /* Now we need to get the function pointer corresponding to the specified
+     * symbol.
+     *
+     * First, we will check for special primitives like `quote', whose arguments
+     * should not be evaluated automatically. */
+    /* TODO: Move to different array of SymbolFuncPair */
     if (!strcmp(children->val.s, "quote")) {
         /* We have to use `expr_clone_recur' since `expr_clone' does not clone
          * children. */
@@ -73,7 +85,7 @@ Expr* eval_sexpr(Expr* e) {
         return cloned;
     }
 
-    /* Get the function pointer corresponding to the function */
+    /* Then, we should check for normal C primitives. */
     FuncPtr sym_func = NULL;
     for (int i = 0; i < LENGTH(primitives); i++) {
         if (!strcmp(children->val.s, primitives[i].s)) {
@@ -92,13 +104,13 @@ Expr* eval_sexpr(Expr* e) {
          arg_orig       = arg_orig->next) {
         if (first_arg == NULL) {
             /* Evaluate original argument, save it in our copy */
-            arg_copy = eval_expr(arg_orig);
+            arg_copy = eval_expr(env, arg_orig);
 
             /* If we haven't saved the first item of the linked list, save it */
             first_arg = arg_copy;
         } else {
             /* If it's not the first copy, keep filling the linked list */
-            arg_copy->next = eval_expr(arg_orig);
+            arg_copy->next = eval_expr(env, arg_orig);
 
             /* Move to the next argument in our copy list */
             arg_copy = arg_copy->next;
