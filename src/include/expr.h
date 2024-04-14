@@ -28,6 +28,12 @@ typedef struct Expr {
 
 /*----------------------------------------------------------------------------*/
 
+/* Print expression in tree format */
+void expr_print(Expr* root);
+
+/* Free expression and adjacent expressions, along with their children */
+void expr_free(Expr* root);
+
 /* Allocate a new expr and copy `e'. Needed to avoid double frees and leaks. */
 Expr* expr_clone(const Expr* e);
 
