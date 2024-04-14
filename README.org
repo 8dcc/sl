@@ -21,6 +21,39 @@ For more information, see:
 - [[https://www.buildyourownlisp.com/][Build Your Own Lisp website]] (Although this project doesn't follow the book)
 - [[https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html][SICP website]]
 
+* Components
+
+#+begin_quote
+*Note:* This project is still WIP, so this section might be a bit outdated.
+#+end_quote
+
+This LISP has a few components that are responsible for their own data. This is
+the basic process of parsing and evaluating the user input.
+
+1. The user input is read using =input_read()=, defined in [[file:src/main.c][main.c]]. This function
+   will read across lines making sure that all opened expressions are closed
+   before sending the data back to =main()=.
+2. The raw user input is converted into an array of =Token= structures using the
+   =tokens_scan()= function. This step might be redundant for such a simple
+   language as LISP, but I decided to do it anyway. After calling this function,
+   it frees the input. You could print the =Token= array using =token_print()=, if
+   needed. All these functions are defined in [[file:src/lexer.c][lexer.c]].
+3. The =Token= array is converted into a linked list of =Expr= structures using the
+   =parse()= function from [[file:src/parser.c][parser.c]]. At this point, nothing has been evaluated, it
+   should just be a different representation of the user input. Then, the =Token=
+   array is freed. Note how all the values allocated by =tokens_scan()= have been
+   copied instead of reused, so they can be freed safely.
+4. We evaluate the expression using =eval_expr()=, defined in [[file:src/eval.c][eval.c]]. This
+   function will return another linked list of =Expr= structures, but just like
+   =parse()=, it will not reuse any data in the heap, so the old =Expr*= can be
+   freed safely.
+5. After that, we print the evaluated expression using =expr_print()=, defined in
+   [[file:src/expr.c][expr.c]].
+
+#+begin_comment
+TODO: Explain step 4 in more detail.
+#+end_comment
+
 * Building
 
 #+begin_src console
