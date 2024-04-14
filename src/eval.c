@@ -40,7 +40,7 @@ Expr* eval_expr(Env* env, Expr* e) {
     /* TODO: The user doesn't currently have a way of evaluating a quoted
      * expression explicitly. Add `eval' primitive. */
     if (e->is_quoted)
-        return expr_clone(e);
+        return expr_clone_recur(e);
 
     switch (e->type) {
         case EXPR_PARENT:
