@@ -7,7 +7,7 @@
 #include "include/expr.h"
 #include "include/env.h"
 
-void env_add(Env** env, const char* sym, const Expr* val) {
+void env_bind(Env** env, const char* sym, const Expr* val) {
     if (env == NULL) {
         ERR("Invalid environment pointer.");
         return;
@@ -91,7 +91,7 @@ void env_init(Env** env) {
         .is_quoted    = false,
         .next         = NULL,
     };
-    env_add(env, "nil", &nil_expr);
+    env_bind(env, "nil", &nil_expr);
 }
 
 void env_free(Env* env) {

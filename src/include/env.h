@@ -13,8 +13,8 @@ typedef struct Env {
 
 /*----------------------------------------------------------------------------*/
 
-/* Associate the expression `val' to the symbol `sym' in environment `env' */
-void env_add(Env** env, const char* sym, const Expr* val);
+/* Bind the expression `val' to the symbol `sym' in environment `env' */
+void env_bind(Env** env, const char* sym, const Expr* val);
 
 /* Get a copy of the expression associated to the symbol `sym' in environment
  * `env'. */
