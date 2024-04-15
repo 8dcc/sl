@@ -32,7 +32,8 @@ Expr* eval_expr(Env* env, Expr* e) {
             return eval_sexpr(env, e);
         case EXPR_SYMBOL:
             Expr* val = env_get(env, e->val.s);
-            return (val != NULL) ? val : expr_clone(e);
+            SL_ASSERT(val != NULL, "Unknown LISP symbol: %s", e->val.s);
+            return val;
         default:
             /* Not a parent nor a symbol, evaluates to itself */
             return expr_clone(e);
@@ -50,8 +51,8 @@ Expr* eval_sexpr(Env* env, Expr* e) {
         return expr_clone(e); /* NIL */
 
     /* First item of the list must be the function name */
-    SL_ASSERT(children->type == EXPR_SYMBOL,
-              "Trying to call function without a name.");
+    SL_ASSERT(children->type == EXPR_SYMBOL, "Function name is of type: %s",
+              exprtype2str(children->type));
     SL_ASSERT(children->val.s != NULL,
               "Function name is a symbol, but has no value.");
 

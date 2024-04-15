@@ -28,6 +28,18 @@ typedef struct Expr {
 
 /*----------------------------------------------------------------------------*/
 
+static inline const char* exprtype2str(enum EExprType type) {
+    /* clang-format off */
+    switch (type) {
+        default:
+        case EXPR_ERR:    return "Error";
+        case EXPR_CONST:  return "Number";
+        case EXPR_SYMBOL: return "Symbol";
+        case EXPR_PARENT: return "List";
+    }
+    /* clang-format on */
+}
+
 /* Print expression in tree format */
 void expr_print(Expr* root);
 

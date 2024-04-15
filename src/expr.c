@@ -87,8 +87,8 @@ void expr_print(Expr* e) {
         case EXPR_ERR:
         default:
             printf("[ERR] ");
-            ERR("Encountered invalid expression (type %d). Aborting...",
-                e->type);
+            ERR("Encountered invalid expression of type:",
+                exprtype2str(e->type));
             return;
     }
 
