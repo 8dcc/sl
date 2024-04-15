@@ -73,7 +73,7 @@ static bool input_read(char** input) {
 int main(void) {
     /* Initialize global environment with symbols like "nil". Note that C
      * primitives are handled separately. */
-    Env* global_env = NULL;
+    global_env = NULL;
     env_init(&global_env);
 
     bool got_eof = false;

@@ -13,8 +13,11 @@ typedef struct Env {
 
 /*----------------------------------------------------------------------------*/
 
+/* TODO: This is not a long term-solution. Defined in main. */
+extern Env* global_env;
+
 /* Bind the expression `val' to the symbol `sym' in environment `env' */
-void env_bind(Env** env, const char* sym, const Expr* val);
+Env* env_bind(Env* env, const char* sym, const Expr* val);
 
 /* Get a copy of the expression associated to the symbol `sym' in environment
  * `env'. */

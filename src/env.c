@@ -7,33 +7,30 @@
 #include "include/expr.h"
 #include "include/env.h"
 
-void env_bind(Env** env, const char* sym, const Expr* val) {
-    if (env == NULL) {
-        ERR("Invalid environment pointer.");
-        return;
-    }
+/* TODO: See note in env.h */
+Env* global_env = NULL;
 
-    if (sym == NULL) {
-        ERR("Symbol is NULL.");
-        return;
-    }
+/*----------------------------------------------------------------------------*/
+
+Env* env_bind(Env* env, const char* sym, const Expr* val) {
+    SL_ASSERT(sym != NULL, "Symbol is empty.");
 
     Env* new_node;
-    if (*env == NULL) {
+    if (env == NULL) {
         /* Create the first node of the linked list */
         new_node = malloc(sizeof(Env));
-        *env     = new_node;
+        env      = new_node;
     } else {
         /* Iterate until the last node of the linked list */
         Env* cur;
-        for (cur = *env;; cur = cur->next) {
+        for (cur = env;; cur = cur->next) {
             if (!strcmp(cur->sym, sym)) {
                 /* We found a value associated to this symbol, overwrite with
                  * new value. First we free the Expr we allocated on the first
                  * asignment, and then we allocate a copy of the new value. */
                 expr_free(cur->val);
                 cur->val = expr_clone_recur(val);
-                return;
+                return cur;
             }
 
             /* We need to check this after the strcmp() because we still want to
@@ -60,7 +57,8 @@ void env_bind(Env** env, const char* sym, const Expr* val) {
      * list. */
     new_node->next = NULL;
 
-    /* NOTE: We could return `new_node' here, if needed */
+    /* Return `new_node' in case the caller needs it */
+    return new_node;
 }
 
 Expr* env_get(Env* env, const char* sym) {
@@ -84,6 +82,11 @@ Expr* env_get(Env* env, const char* sym) {
 void env_init(Env** env) {
     /* NOTE: C primitives are handled separately. See eval.c */
 
+    if (env == NULL) {
+        ERR("Invalid environment pointer.");
+        return;
+    }
+
     /* NIL */
     Expr nil_expr = {
         .type         = EXPR_PARENT,
@@ -91,7 +94,19 @@ void env_init(Env** env) {
         .is_quoted    = false,
         .next         = NULL,
     };
-    env_bind(env, "nil", &nil_expr);
+
+    if (*env == NULL) {
+        /* Create the first node of the linked list. It will hold the `nil'
+         * value. */
+        *env = env_bind(NULL, "nil", &nil_expr);
+    } else {
+        /* We already have an enviroment, add it to the linked list. */
+        env_bind(*env, "nil", &nil_expr);
+        ERR("Re-initializing a non-null enviroment.");
+    }
+
+    /* NOTE: From now on, we should pass `*env' and ignore the return value of
+     * `env_bind'. */
 }
 
 void env_free(Env* env) {
