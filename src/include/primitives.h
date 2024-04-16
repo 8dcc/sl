@@ -21,6 +21,7 @@ extern PrimitiveFuncPair* non_eval_primitives;
 #define DECLARE_PRIM(NAME) Expr* prim_##NAME(Expr*)
 
 DECLARE_PRIM(quote);
+DECLARE_PRIM(define);
 DECLARE_PRIM(add);
 DECLARE_PRIM(sub);
 DECLARE_PRIM(mul);
