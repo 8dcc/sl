@@ -96,6 +96,10 @@ Expr* eval_sexpr(Env* env, Expr* e) {
             /* Move to the next argument in our copy list */
             arg_copy = arg_copy->next;
         }
+
+        /* Failed to evaluate, stop */
+        if (arg_copy == NULL)
+            return NULL;
     }
 
     /* Finally, call function with the evaluated arguments */
