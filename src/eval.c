@@ -16,7 +16,7 @@
  * valid, or we would need to free our allocations before returning NULL in case
  * of errors (e.g. when asserts fail) */
 
-Expr* eval_expr(Env* env, Expr* e) {
+Expr* eval(Env* env, Expr* e) {
     if (e == NULL)
         return NULL;
 
@@ -27,86 +27,83 @@ Expr* eval_expr(Env* env, Expr* e) {
         return expr_clone_recur(e);
 
     switch (e->type) {
-        case EXPR_PARENT:
-            /* Evaluate S-Expression as a function call */
-            return eval_sexpr(env, e);
-        case EXPR_SYMBOL:
+        case EXPR_PARENT: {
+            /* The evaluated car of the expression will be the function */
+            Expr* func = e->val.children;
+
+            /* We got a list with no children: NIL */
+            if (func == NULL)
+                return expr_clone(e);
+
+            /* The cdr of the expression are the arguments, if any. They will be
+             * evaluated by `apply', closing the eval-apply cycle. */
+            Expr* args = func->next;
+
+            /* Evaluate the function expression */
+            func = eval(env, func);
+
+            /* Apply expression as function call */
+            Expr* applied = apply(env, func, args);
+
+            /* The last evaluation of `func' returned a clone, we have to free
+             * it here. */
+            expr_free(func);
+
+            return applied;
+        }
+        case EXPR_SYMBOL: {
             Expr* val = env_get(env, e->val.s);
             SL_ASSERT(val != NULL, "Unknown LISP symbol: %s", e->val.s);
             return val;
+        }
         default:
             /* Not a parent nor a symbol, evaluates to itself */
             return expr_clone(e);
     }
 }
 
-Expr* eval_sexpr(Env* env, Expr* e) {
-    if (e == NULL)
-        return NULL;
+Expr* apply(Env* env, Expr* func, Expr* args) {
+    SL_ASSERT(env != NULL, "Invalid environment.");
+    SL_ASSERT(func != NULL, "Invalid function.");
 
-    /* It's a parent, get first children of the list */
-    Expr* children = e->val.children;
+    /* TODO: Add closures, etc. */
+    SL_ASSERT(func->type == EXPR_PRIM,
+              "Non-primitive functions are not supported for now.");
 
-    if (children == NULL)
-        return expr_clone(e); /* NIL */
-
-    /* First item of the list must be the function name */
-    SL_ASSERT(children->type == EXPR_SYMBOL, "Function name is of type: %s",
-              exprtype2str(children->type));
-    SL_ASSERT(children->val.s != NULL,
-              "Function name is a symbol, but has no value.");
-
-    /* Now we need to get the function pointer corresponding to the specified
-     * symbol.
-     *
-     * First, we will check for special primitives like `quote', whose arguments
-     * should not be evaluated automatically. */
-    for (int i = 0; non_eval_primitives[i].s != NULL; i++)
-        if (!strcmp(children->val.s, non_eval_primitives[i].s))
-            return primitives[i].f(children->next);
-
-    /* Then, we should check for normal C primitives. */
-    PrimitiveFuncPtr primitive = NULL;
-    for (int i = 0; primitives[i].s != NULL; i++) {
-        if (!strcmp(children->val.s, primitives[i].s)) {
-            primitive = primitives[i].f;
-            break;
-        }
-    }
-
-    /* TODO: Look for symbol in `env' */
-    SL_ASSERT(primitive != NULL, "Function \"%s\" not found.", children->val.s);
+    PrimitiveFuncPtr primitive = func->val.f;
+    SL_ASSERT(primitive != NULL, "Invalid function pointer.");
 
     /* Evaluate each of the arguments before calling primitive. We will save the
      * evaluated expressions in another linked list to avoid double frees. */
-    Expr* first_arg = NULL;
-    Expr* arg_copy  = NULL;
-    for (Expr* arg_orig = children->next; arg_orig != NULL;
-         arg_orig       = arg_orig->next) {
-        if (first_arg == NULL) {
+    Expr* args_copy = NULL;
+    Expr* cur_copy  = NULL;
+    for (Expr* cur_arg = args; cur_arg != NULL; cur_arg = cur_arg->next) {
+        if (args_copy == NULL) {
             /* Evaluate original argument, save it in our copy */
-            arg_copy = eval_expr(env, arg_orig);
+            cur_copy = eval(env, cur_arg);
 
             /* If we haven't saved the first item of the linked list, save it */
-            first_arg = arg_copy;
+            args_copy = cur_copy;
         } else {
             /* If it's not the first copy, keep filling the linked list */
-            arg_copy->next = eval_expr(env, arg_orig);
+            cur_copy->next = eval(env, cur_arg);
 
             /* Move to the next argument in our copy list */
-            arg_copy = arg_copy->next;
+            cur_copy = cur_copy->next;
         }
 
-        /* Failed to evaluate, stop */
-        if (arg_copy == NULL)
+        /* Failed to evaluate an argument. Only `args' can be NULL. Stop. */
+        if (cur_copy == NULL) {
+            expr_free(args_copy);
             return NULL;
+        }
     }
 
-    /* Finally, call function with the evaluated arguments */
-    Expr* result = primitive(first_arg);
+    /* Finally, call primitive C function with the evaluated arguments */
+    Expr* result = primitive(args_copy);
 
     /* Free the arguments we passed to primitive(), return only final Expr */
-    expr_free(first_arg);
+    expr_free(args_copy);
 
     return result;
 }

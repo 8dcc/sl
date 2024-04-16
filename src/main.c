@@ -103,7 +103,7 @@ int main(void) {
             continue;
 
         /* Evaluate expression recursivelly */
-        Expr* evaluated = eval_expr(global_env, expr);
+        Expr* evaluated = eval(global_env, expr);
 
         /* We are done with the original expression */
         expr_free(expr);
