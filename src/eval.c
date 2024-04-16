@@ -42,6 +42,10 @@ Expr* eval(Env* env, Expr* e) {
             /* Evaluate the function expression */
             func = eval(env, func);
 
+            /* Could not eval function symbol/closure, stop */
+            if (func == NULL)
+                return NULL;
+
             /* Apply expression as function call */
             Expr* applied = apply(env, func, args);
 
