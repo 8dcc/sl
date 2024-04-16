@@ -4,11 +4,14 @@
 
 #include <stdbool.h>
 
+typedef struct Expr* (*PrimitiveFuncPtr)(struct Expr*);
+
 enum EExprType {
     EXPR_ERR, /* Unused for now */
     EXPR_CONST,
     EXPR_SYMBOL,
     EXPR_PARENT,
+    EXPR_PRIM,
 };
 
 typedef struct Expr {
@@ -17,6 +20,7 @@ typedef struct Expr {
         double n;
         char* s;
         struct Expr* children;
+        PrimitiveFuncPtr f;
     } val;
 
     /* True if this expression was quoted */
@@ -36,6 +40,7 @@ static inline const char* exprtype2str(enum EExprType type) {
         case EXPR_CONST:  return "Number";
         case EXPR_SYMBOL: return "Symbol";
         case EXPR_PARENT: return "List";
+        case EXPR_PRIM:   return "Primitive";
     }
     /* clang-format on */
 }

@@ -13,28 +13,11 @@
               "Expected expression of type '%s', got '%s'.", \
               exprtype2str(TYPE), exprtype2str((EXPR)->type));
 
-static PrimitiveFuncPair non_eval_primitives_list[] = {
-    { "quote", prim_quote },    //
-
-    { NULL, NULL }, /* Marks the end */
-};
-
-static PrimitiveFuncPair primitives_list[] = {
-    { "define", prim_define },    //
-    { "+", prim_add },            //
-    { "-", prim_sub },            //
-    { "*", prim_mul },            //
-    { "/", prim_div },            //
-
-    { NULL, NULL }, /* Marks the end */
-};
-
-PrimitiveFuncPair* non_eval_primitives = non_eval_primitives_list;
-PrimitiveFuncPair* primitives          = primitives_list;
-
 /*----------------------------------------------------------------------------*/
 /* Primitives that should not have their parameters evaluated by the caller */
 
+/* TODO: Find a good way of calling a primitive without evaluating its
+ * arguments. */
 Expr* prim_quote(Expr* e) {
     /* We have to use `expr_clone_recur' since `expr_clone' does not clone
      * children. */

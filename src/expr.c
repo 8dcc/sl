@@ -36,6 +36,7 @@ void expr_free(Expr* root) {
 
 /*----------------------------------------------------------------------------*/
 
+/* TODO: Rename to expr_print_debug(), add cleaner expr_print() */
 #define INDENT_STEP 4
 void expr_print(Expr* e) {
     static int indent = 0;
@@ -84,6 +85,12 @@ void expr_print(Expr* e) {
             expr_print(e->val.children);
             indent -= INDENT_STEP;
             break;
+        case EXPR_PRIM:
+            printf("[PRI] <primitive @ %p>", e->val.f);
+            if (e->is_quoted)
+                printf(" (QUOTE)");
+            putchar('\n');
+            break;
         case EXPR_ERR:
         default:
             printf("[ERR] ");
@@ -116,9 +123,15 @@ Expr* expr_clone(const Expr* e) {
         case EXPR_CONST:
             ret->val.n = e->val.n;
             break;
-        default:
         case EXPR_PARENT:
             ret->val.children = NULL;
+            break;
+        case EXPR_PRIM:
+            ret->val.f = e->val.f;
+            break;
+        default:
+            ret->val.children = NULL;
+            ERR("Unhandled expression of type:", exprtype2str(e->type));
             break;
     }
 

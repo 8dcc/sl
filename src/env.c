@@ -5,7 +5,19 @@
 
 #include "include/util.h"
 #include "include/expr.h"
+#include "include/primitives.h"
 #include "include/env.h"
+
+#define BIND_PRIM(TMP_ENV, SYM, FUNC) \
+    Expr FUNC##_expr = {              \
+        .type      = EXPR_PRIM,       \
+        .val.f     = prim_##FUNC,     \
+        .is_quoted = false,           \
+        .next      = NULL,            \
+    };                                \
+    TMP_ENV = env_bind(TMP_ENV, SYM, &FUNC##_expr);
+
+/*----------------------------------------------------------------------------*/
 
 /* TODO: See note in env.h */
 Env* global_env = NULL;
@@ -105,8 +117,12 @@ void env_init(Env** env) {
         ERR("Re-initializing a non-null enviroment.");
     }
 
-    /* NOTE: From now on, we should pass `*env' and ignore the return value of
-     * `env_bind'. */
+    Env* tmp_env = *env;
+    BIND_PRIM(tmp_env, "define", define);
+    BIND_PRIM(tmp_env, "+", add);
+    BIND_PRIM(tmp_env, "-", sub);
+    BIND_PRIM(tmp_env, "*", mul);
+    BIND_PRIM(tmp_env, "/", div);
 }
 
 void env_free(Env* env) {
