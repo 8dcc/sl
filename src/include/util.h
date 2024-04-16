@@ -13,6 +13,9 @@
         return NULL;         \
     }
 
+/* Avoid -Wunused-parameter */
+#define UNUSED(VAR) (void)VAR
+
 /*----------------------------------------------------------------------------*/
 
 /* Print error message to stderr, along with the function name */

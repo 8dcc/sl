@@ -4,17 +4,17 @@
 
 #include "expr.h"
 
+typedef struct Env Env;
+typedef struct Expr Expr;
+
 /* Linked list of `Env' structures will associate a symbol to its value */
-typedef struct Env {
+struct Env {
     char* sym;
     Expr* val;
-    struct Env* next;
-} Env;
+    Env* next;
+};
 
 /*----------------------------------------------------------------------------*/
-
-/* TODO: This is not a long term-solution. Defined in main. */
-extern Env* global_env;
 
 /* Bind the expression `val' to the symbol `sym' in environment `env' */
 Env* env_bind(Env* env, const char* sym, const Expr* val);

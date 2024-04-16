@@ -4,7 +4,10 @@
 
 #include <stdbool.h>
 
-typedef struct Expr* (*PrimitiveFuncPtr)(struct Expr*);
+typedef struct Env Env;
+typedef struct Expr Expr;
+
+typedef Expr* (*PrimitiveFuncPtr)(Env*, Expr*);
 
 enum EExprType {
     EXPR_ERR, /* Unused for now */
@@ -14,12 +17,12 @@ enum EExprType {
     EXPR_PRIM,
 };
 
-typedef struct Expr {
+struct Expr {
     enum EExprType type;
     union {
         double n;
         char* s;
-        struct Expr* children;
+        Expr* children;
         PrimitiveFuncPtr f;
     } val;
 
@@ -27,8 +30,8 @@ typedef struct Expr {
     bool is_quoted;
 
     /* Next expression in the linked list */
-    struct Expr* next;
-} Expr;
+    Expr* next;
+};
 
 /*----------------------------------------------------------------------------*/
 

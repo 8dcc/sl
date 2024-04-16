@@ -104,7 +104,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
     }
 
     /* Finally, call primitive C function with the evaluated arguments */
-    Expr* result = primitive(args_copy);
+    Expr* result = primitive(env, args_copy);
 
     /* Free the arguments we passed to primitive(), return only final Expr */
     expr_free(args_copy);

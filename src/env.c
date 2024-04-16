@@ -19,11 +19,6 @@
 
 /*----------------------------------------------------------------------------*/
 
-/* TODO: See note in env.h */
-Env* global_env = NULL;
-
-/*----------------------------------------------------------------------------*/
-
 Env* env_bind(Env* env, const char* sym, const Expr* val) {
     SL_ASSERT(sym != NULL, "Symbol is empty.");
 

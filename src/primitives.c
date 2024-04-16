@@ -18,7 +18,9 @@
 
 /* TODO: Find a good way of calling a primitive without evaluating its
  * arguments. */
-Expr* prim_quote(Expr* e) {
+Expr* prim_quote(Env* env, Expr* e) {
+    UNUSED(env);
+
     /* We have to use `expr_clone_recur' since `expr_clone' does not clone
      * children. */
     Expr* cloned      = expr_clone_recur(e);
@@ -29,7 +31,7 @@ Expr* prim_quote(Expr* e) {
 /*----------------------------------------------------------------------------*/
 /* Primitives that should have their parameters evaluated by the caller */
 
-Expr* prim_define(Expr* e) {
+Expr* prim_define(Env* env, Expr* e) {
     /* The `define' function will bind the even arguments to the odd arguments.
      * It expects an even number of arguments.
      *
@@ -47,14 +49,15 @@ Expr* prim_define(Expr* e) {
         arg             = arg->next;
         const Expr* val = arg;
 
-        env_bind(global_env, sym, val);
+        env_bind(env, sym, val);
         last_bound = val;
     }
 
     return (last_bound == NULL) ? NULL : expr_clone_recur(last_bound);
 }
 
-Expr* prim_add(Expr* e) {
+Expr* prim_add(Env* env, Expr* e) {
+    UNUSED(env);
     SL_ASSERT(e != NULL, "Missing arguments.");
 
     double total = 0;
@@ -72,7 +75,8 @@ Expr* prim_add(Expr* e) {
     return ret;
 }
 
-Expr* prim_sub(Expr* e) {
+Expr* prim_sub(Env* env, Expr* e) {
+    UNUSED(env);
     SL_ASSERT(e != NULL, "Missing arguments.");
 
     double total = e->val.n;
@@ -90,7 +94,8 @@ Expr* prim_sub(Expr* e) {
     return ret;
 }
 
-Expr* prim_mul(Expr* e) {
+Expr* prim_mul(Env* env, Expr* e) {
+    UNUSED(env);
     SL_ASSERT(e != NULL, "Missing arguments.");
 
     double total = 1;
@@ -108,7 +113,8 @@ Expr* prim_mul(Expr* e) {
     return ret;
 }
 
-Expr* prim_div(Expr* e) {
+Expr* prim_div(Env* env, Expr* e) {
+    UNUSED(env);
     SL_ASSERT(e != NULL, "Missing arguments.");
 
     double total = e->val.n;

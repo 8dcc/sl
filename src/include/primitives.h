@@ -4,7 +4,7 @@
 
 #include "expr.h"
 
-#define DECLARE_PRIM(NAME) Expr* prim_##NAME(Expr*)
+#define DECLARE_PRIM(NAME) Expr* prim_##NAME(Env*, Expr*)
 
 DECLARE_PRIM(quote);
 DECLARE_PRIM(define);
