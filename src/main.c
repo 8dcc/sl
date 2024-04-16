@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h> /* isatty() */
 
 #include "include/util.h"
 #include "include/lexer.h"
@@ -71,6 +72,8 @@ static bool input_read(char** input) {
 }
 
 int main(void) {
+    const bool print_prompt = isatty(0);
+
     /* Initialize global environment with symbols like "nil". Note that C
      * primitives are handled separately. */
     Env* global_env = NULL;
@@ -81,7 +84,8 @@ int main(void) {
         if (got_eof)
             break;
 
-        printf("sl> ");
+        if (print_prompt)
+            printf("sl> ");
 
         /* Allocate buffer and read an expression */
         char* input = NULL;
@@ -116,11 +120,11 @@ int main(void) {
         /* Free the evaluated expression */
         expr_free(evaluated);
 
-        putchar('\n');
+        if (print_prompt)
+            putchar('\n');
     }
 
     env_free(global_env);
 
-    putchar('\n');
     return 0;
 }
