@@ -48,8 +48,14 @@ static inline const char* exprtype2str(enum EExprType type) {
     /* clang-format on */
 }
 
-/* Print expression in tree format */
+/* Print formatted expression */
 void expr_print(Expr* root);
+
+/* Print formatted expression and a newline  */
+void expr_println(Expr* e);
+
+/* Print expression in detailed tree format */
+void expr_print_debug(Expr* e);
 
 /* Free expression and adjacent expressions, along with their children */
 void expr_free(Expr* root);

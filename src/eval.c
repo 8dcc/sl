@@ -57,7 +57,7 @@ Expr* eval(Env* env, Expr* e) {
         }
         case EXPR_SYMBOL: {
             Expr* val = env_get(env, e->val.s);
-            SL_ASSERT(val != NULL, "Unknown LISP symbol: %s", e->val.s);
+            SL_ASSERT(val != NULL, "Unbound symbol: %s", e->val.s);
             return val;
         }
         default:

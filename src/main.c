@@ -115,7 +115,7 @@ int main(void) {
         if (evaluated == NULL)
             continue;
 
-        expr_print(evaluated);
+        expr_println(evaluated);
 
         /* Free the evaluated expression */
         expr_free(evaluated);

@@ -36,9 +36,8 @@ void expr_free(Expr* root) {
 
 /*----------------------------------------------------------------------------*/
 
-/* TODO: Rename to expr_print_debug(), add cleaner expr_print() */
 #define INDENT_STEP 4
-void expr_print(Expr* e) {
+void expr_print_debug(Expr* e) {
     static int indent = 0;
 
     /* This function shouldn't be called with NULL */
@@ -82,11 +81,11 @@ void expr_print(Expr* e) {
 
             /* If the token is a parent, indent and print all children */
             indent += INDENT_STEP;
-            expr_print(e->val.children);
+            expr_print_debug(e->val.children);
             indent -= INDENT_STEP;
             break;
         case EXPR_PRIM:
-            printf("[PRI] <primitive @ %p>", e->val.f);
+            printf("[PRI] <primitive %p>", e->val.f);
             if (e->is_quoted)
                 printf(" (QUOTE)");
             putchar('\n');
@@ -100,7 +99,58 @@ void expr_print(Expr* e) {
     }
 
     if (e->next != NULL)
-        expr_print(e->next);
+        expr_print_debug(e->next);
+}
+
+static void print_sexpr(Expr* e) {
+    putchar('(');
+    for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
+        expr_print(cur);
+
+        if (cur->next != NULL)
+            putchar(' ');
+    }
+    putchar(')');
+}
+
+void expr_print(Expr* e) {
+    /* This function shouldn't be called with NULL */
+    if (e == NULL) {
+        ERR("Got null expression.");
+        return;
+    }
+
+    switch (e->type) {
+        case EXPR_CONST:
+            printf("%f", e->val.n);
+            break;
+        case EXPR_SYMBOL:
+            if (e->is_quoted)
+                putchar('\'');
+            printf("%s", e->val.s);
+            break;
+        case EXPR_PARENT:
+            /* List with no children: NIL */
+            if (e->val.children == NULL)
+                printf("nil");
+            else
+                print_sexpr(e);
+
+            break;
+        case EXPR_PRIM:
+            printf("<primitive %p>", e->val.f);
+            break;
+        case EXPR_ERR:
+        default:
+            ERR("Encountered invalid expression of type:",
+                exprtype2str(e->type));
+            return;
+    }
+}
+
+void expr_println(Expr* e) {
+    expr_print(e);
+    putchar('\n');
 }
 
 /*----------------------------------------------------------------------------*/

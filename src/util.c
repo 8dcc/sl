@@ -9,7 +9,7 @@ void err_msg(const char* func, const char* fmt, ...) {
 
     fprintf(stderr, "%s: ", func);
     vfprintf(stderr, fmt, va);
-    fprintf(stderr, "\n");
+    fputc('\n', stderr);
 
     va_end(va);
 }
