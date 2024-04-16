@@ -43,10 +43,10 @@ the basic process of parsing and evaluating the user input.
    should just be a different representation of the user input. Then, the =Token=
    array is freed. Note how all the values allocated by =tokens_scan()= have been
    copied instead of reused, so they can be freed safely.
-4. We evaluate the expression using =eval_expr()=, defined in [[file:src/eval.c][eval.c]]. This
-   function will return another linked list of =Expr= structures, but just like
-   =parse()=, it will not reuse any data in the heap, so the old =Expr*= can be
-   freed safely.
+4. We evaluate the expression using =eval()=, which will call =apply()= if
+   needed. Both of these are defined in [[file:src/eval.c][eval.c]]. This function will return
+   another linked list of =Expr= structures, but just like =parse()=, it will not
+   reuse any data in the heap, so the old =Expr*= can be freed safely.
 5. After that, we print the evaluated expression using =expr_print()=, defined in
    [[file:src/expr.c][expr.c]].
 
@@ -68,10 +68,17 @@ $ make
 #+begin_src console
 $ ./sl
 sl> (+ 1 2 (- 5 4) (* 3 4))
-[NUM] 16.000000
+16.000000
 
-sl> Hello!
-[SYM] "Hello!"
+sl> define
+<primitive 0x55d31f51b900>
 
-sl>
+sl> (define 'my-var 'Testing)
+'Testing
+
+sl> (define 'my-add +)
+<primitive 0x55d31f51ba21>
+
+sl> (+ 1 2 3)
+6.000000
 #+end_src
