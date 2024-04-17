@@ -16,6 +16,34 @@
  * valid, or we would need to free our allocations before returning NULL in case
  * of errors (e.g. when asserts fail) */
 
+static Expr* eval_list(Env* env, Expr* list) {
+    Expr* copy_start = NULL;
+    Expr* cur_copy   = NULL;
+    for (Expr* cur_item = list; cur_item != NULL; cur_item = cur_item->next) {
+        if (copy_start == NULL) {
+            /* Evaluate original argument, save it in our copy */
+            cur_copy = eval(env, cur_item);
+
+            /* If we haven't saved the first item of the linked list, save it */
+            copy_start = cur_copy;
+        } else {
+            /* If it's not the first copy, keep filling the linked list */
+            cur_copy->next = eval(env, cur_item);
+
+            /* Move to the next argument in our copy list */
+            cur_copy = cur_copy->next;
+        }
+
+        /* Failed to evaluate an item. Only `list' can be NULL. Stop. */
+        if (cur_copy == NULL) {
+            expr_free(copy_start);
+            return NULL;
+        }
+    }
+
+    return copy_start;
+}
+
 Expr* eval(Env* env, Expr* e) {
     if (e == NULL)
         return NULL;
@@ -46,12 +74,18 @@ Expr* eval(Env* env, Expr* e) {
             if (func == NULL)
                 return NULL;
 
-            /* Apply expression as function call */
+            /* Evaluate each of the arguments before calling primitive. Note
+             * that the returned list is allocated, so we will have to free it
+             * after calling `apply'. */
+            args = eval_list(env, args);
+
+            /* Apply expression as a function call */
             Expr* applied = apply(env, func, args);
 
-            /* The last evaluation of `func' returned a clone, we have to free
-             * it here. */
+            /* The last evaluations of `func' and `args' returned a clone, we
+             * have to free it here. */
             expr_free(func);
+            expr_free(args);
 
             return applied;
         }
@@ -74,40 +108,11 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
     SL_ASSERT(func->type == EXPR_PRIM,
               "Non-primitive functions are not supported for now.");
 
+    /* Get primitive C function from the expression */
     PrimitiveFuncPtr primitive = func->val.f;
     SL_ASSERT(primitive != NULL, "Invalid function pointer.");
 
-    /* Evaluate each of the arguments before calling primitive. We will save the
-     * evaluated expressions in another linked list to avoid double frees. */
-    Expr* args_copy = NULL;
-    Expr* cur_copy  = NULL;
-    for (Expr* cur_arg = args; cur_arg != NULL; cur_arg = cur_arg->next) {
-        if (args_copy == NULL) {
-            /* Evaluate original argument, save it in our copy */
-            cur_copy = eval(env, cur_arg);
-
-            /* If we haven't saved the first item of the linked list, save it */
-            args_copy = cur_copy;
-        } else {
-            /* If it's not the first copy, keep filling the linked list */
-            cur_copy->next = eval(env, cur_arg);
-
-            /* Move to the next argument in our copy list */
-            cur_copy = cur_copy->next;
-        }
-
-        /* Failed to evaluate an argument. Only `args' can be NULL. Stop. */
-        if (cur_copy == NULL) {
-            expr_free(args_copy);
-            return NULL;
-        }
-    }
-
-    /* Finally, call primitive C function with the evaluated arguments */
-    Expr* result = primitive(env, args_copy);
-
-    /* Free the arguments we passed to primitive(), return only final Expr */
-    expr_free(args_copy);
-
-    return result;
+    /* Call primitive C function with the evaluated arguments we got from
+     * `eval'. */
+    return primitive(env, args);
 }
