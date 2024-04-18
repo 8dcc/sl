@@ -30,4 +30,7 @@ void env_init(Env** env);
 /* Free a linked list of Env structures, along with all its allocated memory */
 void env_free(Env* env);
 
+/* Print environment in S-expression format */
+void env_print(Env* env);
+
 #endif /* ENV_H_ */

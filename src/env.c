@@ -1,5 +1,6 @@
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -133,4 +134,22 @@ void env_free(Env* env) {
         free(cur);
         cur = aux;
     }
+}
+
+void env_print(Env* env) {
+    putchar('(');
+    for (Env* cur = env; cur != NULL; cur = cur->next) {
+        /* If this isn't the first node, add indentation */
+        if (cur != env)
+            putchar(' ');
+
+        printf("(\"%s\" ", cur->sym);
+        expr_print(cur->val);
+        putchar(')');
+
+        /* If this isn't the last item, change line */
+        if (cur->next != NULL)
+            putchar('\n');
+    }
+    printf(")\n");
 }
