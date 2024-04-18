@@ -14,18 +14,15 @@
               exprtype2str(TYPE), exprtype2str((EXPR)->type));
 
 /*----------------------------------------------------------------------------*/
-/* Primitives that should not have their parameters evaluated by the caller */
+/* Special Form primitives. See SICP Chapter 4.1.1 */
 
-/* TODO: Find a good way of calling a primitive without evaluating its
- * arguments. */
 Expr* prim_quote(Env* env, Expr* e) {
     UNUSED(env);
 
     /* We have to use `expr_clone_recur' since `expr_clone' does not clone
-     * children. */
-    Expr* cloned      = expr_clone_recur(e);
-    cloned->is_quoted = true;
-    return cloned;
+     * children. This function is useful for binding it to `quote' in the
+     * environment. */
+    return expr_clone_recur(e);
 }
 
 /*----------------------------------------------------------------------------*/

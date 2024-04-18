@@ -45,16 +45,27 @@ static Expr* eval_args(Env* env, Expr* list) {
     return copy_start;
 }
 
+/* Is this expression a quote in the form (quote symbol)? */
+static bool is_quote(const Expr* e) {
+    /*
+     * (define is-quote (e)
+     *   (equal (car e) 'quote))
+     */
+    return e != NULL && e->type == EXPR_PARENT && e->val.children != NULL &&
+           e->val.children->type == EXPR_SYMBOL &&
+           e->val.children->val.s != NULL &&
+           !strcmp(e->val.children->val.s, "quote");
+}
+
+/* TODO: Add `eval' primitive. */
 Expr* eval(Env* env, Expr* e) {
     if (e == NULL)
         return NULL;
 
-    /* Quoted expression, evaluates to itself */
-    /* TODO: The user doesn't currently have a way of evaluating a quoted
-     * expression explicitly.
-     * TODO: Add `eval' primitive. */
-    if (e->is_quoted)
-        return expr_clone_recur(e);
+    /* Quoted expression in the form (quote symbol), pass `cadr' to primitive
+     * without evaluating it. The primitive will just return a copy. */
+    if (is_quote(e))
+        return prim_quote(env, e->val.children->next);
 
     switch (e->type) {
         case EXPR_PARENT: {
@@ -107,7 +118,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
     SL_ASSERT(env != NULL, "Invalid environment.");
     SL_ASSERT(func != NULL, "Invalid function.");
 
-    /* TODO: Add closures, etc. */
+    /* TODO: Add procedures, closures, etc. */
     SL_ASSERT(func->type == EXPR_PRIM,
               "Non-primitive functions are not supported for now.");
 
