@@ -112,6 +112,7 @@ void env_init(Env** env) {
     }
 
     Env* tmp_env = *env;
+    BIND_PRIM(tmp_env, "quote", quote);
     BIND_PRIM(tmp_env, "define", define);
     BIND_PRIM(tmp_env, "+", add);
     BIND_PRIM(tmp_env, "-", sub);
