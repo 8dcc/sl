@@ -60,6 +60,8 @@ Expr* prim_eval(Env* env, Expr* e) {
 }
 
 Expr* prim_apply(Env* env, Expr* e) {
+    SL_ASSERT(e != NULL, "Got empty expression.");
+
     /*
      * (define prim-apply (env e)
      *   (apply (car e) (cdr e)))
