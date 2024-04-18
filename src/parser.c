@@ -10,9 +10,10 @@
 #include "include/parser.h"
 
 Expr* parse(Token* tokens) {
-    Expr* root     = NULL;
-    Expr* cur      = NULL;
-    bool had_quote = false;
+    static bool parse_single_expr = false;
+
+    Expr* root = NULL;
+    Expr* cur  = NULL;
 
     for (int i = 0;; i++) {
         if (tokens[i].type == TOKEN_EOF || tokens[i].type == TOKEN_LIST_CLOSE) {
@@ -26,12 +27,6 @@ Expr* parse(Token* tokens) {
             break;
         }
 
-        if (tokens[i].type == TOKEN_QUOTE) {
-            /* For quote tokens, just store it for the next token */
-            had_quote = true;
-            continue;
-        }
-
         /* If we reached here, we should allocate an expression for this token
          * type. We will either start or add to the linked list. */
         if (root == NULL) {
@@ -41,10 +36,6 @@ Expr* parse(Token* tokens) {
             cur->next = malloc(sizeof(Expr));
             cur       = cur->next;
         }
-
-        /* If the last token was TOKEN_QUOTE, mark it as quoted */
-        cur->is_quoted = had_quote;
-        had_quote      = false;
 
         switch (tokens[i].type) {
             case TOKEN_NUM:
@@ -75,12 +66,50 @@ Expr* parse(Token* tokens) {
                         depth--;
                 }
                 break;
+            case TOKEN_QUOTE:
+                /* If the last token was TOKEN_QUOTE, convert to (quote ...) */
+                cur->type = EXPR_PARENT;
+
+                /* Car of the list, "quote" */
+                cur->val.children        = malloc(sizeof(Expr));
+                cur->val.children->type  = EXPR_SYMBOL;
+                cur->val.children->val.s = malloc(sizeof("quote"));
+                strcpy(cur->val.children->val.s, "quote");
+
+                /* Cdr of the list, the actual expression */
+                parse_single_expr       = true;
+                cur->val.children->next = parse(&tokens[i + 1]);
+                parse_single_expr       = false;
+
+                if (tokens[i + 1].type == TOKEN_LIST_OPEN) {
+                    /* If the quoted expression we just parsed was a list, skip
+                     * over it. */
+                    int depth = 1;
+                    while (depth > 0) {
+                        i++;
+                        if (tokens[i].type == TOKEN_LIST_OPEN)
+                            depth++;
+                        else if (tokens[i].type == TOKEN_LIST_CLOSE)
+                            depth--;
+                    }
+                } else {
+                    /* It was an atom, just increase position by one */
+                    i++;
+                }
+                break;
             case TOKEN_EOF:
             case TOKEN_LIST_CLOSE:
-            case TOKEN_QUOTE:
             default:
                 ERR("Reached invalid case (Token type %d).", tokens[i].type);
                 return NULL;
+        }
+
+        /* In this call, we only wanted to parse a single expression, for
+         * example when quoting. See also first conditional of this loop. */
+        if (parse_single_expr) {
+            if (cur != NULL)
+                cur->next = NULL;
+            break;
         }
     }
 
