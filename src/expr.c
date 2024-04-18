@@ -52,31 +52,20 @@ void expr_print_debug(Expr* e) {
 
     switch (e->type) {
         case EXPR_CONST:
-            printf("[NUM] %f", e->val.n);
-            if (e->is_quoted)
-                printf(" (QUOTE)");
-            putchar('\n');
+            printf("[NUM] %f\n", e->val.n);
             break;
         case EXPR_SYMBOL:
-            printf("[SYM] \"%s\"", e->val.s);
-            if (e->is_quoted)
-                printf(" (QUOTE)");
-            putchar('\n');
+            printf("[SYM] \"%s\"\n", e->val.s);
             break;
         case EXPR_PARENT:
             printf("[LST]");
 
             /* List with no children: NIL */
             if (e->val.children == NULL) {
-                printf(" (NIL)");
-                if (e->is_quoted)
-                    printf(" (QUOTE)");
-                putchar('\n');
+                printf(" (NIL)\n");
                 break;
             }
 
-            if (e->is_quoted)
-                printf(" (QUOTE)");
             putchar('\n');
 
             /* If the token is a parent, indent and print all children */
@@ -85,10 +74,7 @@ void expr_print_debug(Expr* e) {
             indent -= INDENT_STEP;
             break;
         case EXPR_PRIM:
-            printf("[PRI] <primitive %p>", e->val.f);
-            if (e->is_quoted)
-                printf(" (QUOTE)");
-            putchar('\n');
+            printf("[PRI] <primitive %p>\n", e->val.f);
             break;
         case EXPR_ERR:
         default:
@@ -125,8 +111,6 @@ void expr_print(Expr* e) {
             printf("%f", e->val.n);
             break;
         case EXPR_SYMBOL:
-            if (e->is_quoted)
-                putchar('\'');
             printf("%s", e->val.s);
             break;
         case EXPR_PARENT:
@@ -161,7 +145,6 @@ Expr* expr_clone(const Expr* e) {
 
     Expr* ret      = malloc(sizeof(Expr));
     ret->type      = e->type;
-    ret->is_quoted = e->is_quoted;
 
     switch (e->type) {
         case EXPR_SYMBOL:

@@ -11,10 +11,9 @@
 
 #define BIND_PRIM(TMP_ENV, SYM, FUNC) \
     Expr FUNC##_expr = {              \
-        .type      = EXPR_PRIM,       \
-        .val.f     = prim_##FUNC,     \
-        .is_quoted = false,           \
-        .next      = NULL,            \
+        .type  = EXPR_PRIM,           \
+        .val.f = prim_##FUNC,         \
+        .next  = NULL,                \
     };                                \
     TMP_ENV = env_bind(TMP_ENV, SYM, &FUNC##_expr);
 
@@ -99,7 +98,6 @@ void env_init(Env** env) {
     Expr nil_expr = {
         .type         = EXPR_PARENT,
         .val.children = NULL,
-        .is_quoted    = false,
         .next         = NULL,
     };
 

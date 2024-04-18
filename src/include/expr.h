@@ -18,6 +18,7 @@ enum EExprType {
 };
 
 struct Expr {
+    /* Type and value of the expression */
     enum EExprType type;
     union {
         double n;
@@ -25,9 +26,6 @@ struct Expr {
         Expr* children;
         PrimitiveFuncPtr f;
     } val;
-
-    /* True if this expression was quoted */
-    bool is_quoted;
 
     /* Next expression in the linked list */
     Expr* next;
