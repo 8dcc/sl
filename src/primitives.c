@@ -5,6 +5,7 @@
 
 #include "include/util.h"
 #include "include/parser.h"
+#include "include/eval.h"
 #include "include/env.h"
 #include "include/primitives.h"
 
@@ -51,6 +52,19 @@ Expr* prim_define(Env* env, Expr* e) {
     }
 
     return (last_bound == NULL) ? NULL : expr_clone_recur(last_bound);
+}
+
+
+Expr* prim_eval(Env* env, Expr* e) {
+    return eval(env, e);
+}
+
+Expr* prim_apply(Env* env, Expr* e) {
+    /*
+     * (define prim-apply (env e)
+     *   (apply (car e) (cdr e)))
+     */
+    return apply(env, e, e->next);
 }
 
 Expr* prim_add(Env* env, Expr* e) {

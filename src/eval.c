@@ -57,7 +57,6 @@ static bool is_quote(const Expr* e) {
            !strcmp(e->val.children->val.s, "quote");
 }
 
-/* TODO: Add `eval' primitive. */
 Expr* eval(Env* env, Expr* e) {
     if (e == NULL)
         return NULL;
@@ -113,7 +112,6 @@ Expr* eval(Env* env, Expr* e) {
     }
 }
 
-/* TODO: Add `apply' primitive */
 Expr* apply(Env* env, Expr* func, Expr* args) {
     SL_ASSERT(env != NULL, "Invalid environment.");
     SL_ASSERT(func != NULL, "Invalid function.");
