@@ -77,13 +77,18 @@ Expr* parse(Token* tokens) {
                 strcpy(cur->val.children->val.s, "quote");
 
                 /* Cdr of the list, the actual expression */
-                parse_single_expr       = true;
+                parse_single_expr = true;
+                /* FIXME: If the next parse() call parses a list, all the
+                 * recursive calls will also be made with parse_single_expr as
+                 * true. Just re-implement this whole Token* -> Expr* parser. */
                 cur->val.children->next = parse(&tokens[i + 1]);
                 parse_single_expr       = false;
 
-                if (tokens[i + 1].type == TOKEN_LIST_OPEN) {
+                i++;
+                if (tokens[i].type == TOKEN_LIST_OPEN) {
                     /* If the quoted expression we just parsed was a list, skip
-                     * over it. */
+                     * over it. It was an atom, just jumped over it before the
+                     * conditional. */
                     int depth = 1;
                     while (depth > 0) {
                         i++;
@@ -92,9 +97,6 @@ Expr* parse(Token* tokens) {
                         else if (tokens[i].type == TOKEN_LIST_CLOSE)
                             depth--;
                     }
-                } else {
-                    /* It was an atom, just increase position by one */
-                    i++;
                 }
                 break;
             case TOKEN_EOF:
