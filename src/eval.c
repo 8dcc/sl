@@ -16,7 +16,8 @@
  * valid, or we would need to free our allocations before returning NULL in case
  * of errors (e.g. when asserts fail) */
 
-static Expr* eval_list(Env* env, Expr* list) {
+/* Evaluate each sub-expression as an argument for a procedure */
+static Expr* eval_args(Env* env, Expr* list) {
     Expr* copy_start = NULL;
     Expr* cur_copy   = NULL;
     for (Expr* cur_item = list; cur_item != NULL; cur_item = cur_item->next) {
@@ -50,7 +51,8 @@ Expr* eval(Env* env, Expr* e) {
 
     /* Quoted expression, evaluates to itself */
     /* TODO: The user doesn't currently have a way of evaluating a quoted
-     * expression explicitly. Add `eval' primitive. */
+     * expression explicitly.
+     * TODO: Add `eval' primitive. */
     if (e->is_quoted)
         return expr_clone_recur(e);
 
@@ -77,7 +79,7 @@ Expr* eval(Env* env, Expr* e) {
             /* Evaluate each of the arguments before calling primitive. Note
              * that the returned list is allocated, so we will have to free it
              * after calling `apply'. */
-            args = eval_list(env, args);
+            args = eval_args(env, args);
 
             /* Apply expression as a function call */
             Expr* applied = apply(env, func, args);
@@ -100,6 +102,7 @@ Expr* eval(Env* env, Expr* e) {
     }
 }
 
+/* TODO: Add `apply' primitive */
 Expr* apply(Env* env, Expr* func, Expr* args) {
     SL_ASSERT(env != NULL, "Invalid environment.");
     SL_ASSERT(func != NULL, "Invalid function.");
