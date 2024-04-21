@@ -116,6 +116,9 @@ void env_init(Env** env) {
     BIND_PRIM(tmp_env, "define", define);
     BIND_PRIM(tmp_env, "eval", eval);
     BIND_PRIM(tmp_env, "apply", apply);
+    BIND_PRIM(tmp_env, "cons", cons);
+    BIND_PRIM(tmp_env, "car", car);
+    BIND_PRIM(tmp_env, "cdr", cdr);
     BIND_PRIM(tmp_env, "+", add);
     BIND_PRIM(tmp_env, "-", sub);
     BIND_PRIM(tmp_env, "*", mul);

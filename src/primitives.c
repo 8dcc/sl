@@ -54,7 +54,6 @@ Expr* prim_define(Env* env, Expr* e) {
     return (last_bound == NULL) ? NULL : expr_clone_recur(last_bound);
 }
 
-
 Expr* prim_eval(Env* env, Expr* e) {
     return eval(env, e);
 }
@@ -67,6 +66,89 @@ Expr* prim_apply(Env* env, Expr* e) {
      *   (apply (car e) (cdr e)))
      */
     return apply(env, e, e->next);
+}
+
+Expr* prim_cons(Env* env, Expr* e) {
+    UNUSED(env);
+    SL_ASSERT(e != NULL && e->next != NULL && e->next->next == NULL,
+              "Expected exactly 2 arguments.");
+
+    /*
+     * The `cons' implementation is a bit different for now.
+     *
+     *   (cons x y) =!=> (x . y)
+     *   (cons x y) ===> (x y)
+     *
+     * Maybe we could add a EXPR_CONS type.
+     */
+    Expr* ret         = malloc(sizeof(Expr));
+    ret->type         = EXPR_PARENT;
+    ret->val.children = expr_clone_recur(e);
+    ret->next         = NULL;
+
+    /* Append the cdr to the car */
+    ret->val.children->next = expr_clone_recur(e->next);
+
+    return ret;
+}
+
+Expr* prim_car(Env* env, Expr* e) {
+    UNUSED(env);
+    SL_ASSERT(e != NULL && e->next == NULL, "Expected one argument.");
+    SL_ASSERT(e->type == EXPR_PARENT, "Expected a list as first argument");
+
+    /* (car '()) ===> nil */
+    if (e->val.children == NULL)
+        return expr_clone(e);
+
+    /*
+     * (car '(a b c))     ===> a
+     * (car '((a b) y z)) ===> (a b)
+     */
+    return expr_clone_recur(e->val.children);
+}
+
+Expr* prim_cdr(Env* env, Expr* e) {
+    UNUSED(env);
+    SL_ASSERT(e != NULL && e->next == NULL, "Expected one argument.");
+    SL_ASSERT(e->type == EXPR_PARENT, "Expected a list as first argument");
+
+    /*
+     * (cdr '())  ===> nil
+     * (cdr '(a)) ===> nil
+     */
+    if (e->val.children == NULL || e->val.children->next == NULL) {
+        Expr* ret         = malloc(sizeof(Expr));
+        ret->type         = EXPR_PARENT;
+        ret->val.children = NULL;
+        ret->next         = NULL;
+        return ret;
+    }
+
+    /* For more information, see similar iteration in eval.c */
+    Expr* cdr_start = NULL;
+    Expr* cur_copy  = NULL;
+    for (Expr* cur_item = e->val.children->next; cur_item != NULL;
+         cur_item       = cur_item->next) {
+        if (cur_copy == NULL) {
+            cur_copy  = expr_clone_recur(cur_item);
+            cdr_start = cur_copy;
+        } else {
+            cur_copy->next = expr_clone_recur(cur_item);
+            cur_copy       = cur_copy->next;
+        }
+    }
+
+    /*
+     * (cdr '(a b c))     ===> (b c)
+     * (cdr '((a b) y z)) ===> (y z)
+     */
+    Expr* ret         = malloc(sizeof(Expr));
+    ret->type         = EXPR_PARENT;
+    ret->val.children = cdr_start;
+    ret->next         = NULL;
+
+    return ret;
 }
 
 Expr* prim_add(Env* env, Expr* e) {
