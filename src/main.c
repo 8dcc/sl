@@ -80,10 +80,7 @@ int main(void) {
     env_init(&global_env);
 
     bool got_eof = false;
-    while (true) {
-        if (got_eof)
-            break;
-
+    while (!got_eof) {
         if (print_prompt)
             printf("sl> ");
 
