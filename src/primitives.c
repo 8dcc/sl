@@ -81,7 +81,8 @@ Expr* prim_cons(Env* env, Expr* e) {
      *
      * Maybe we could add a EXPR_CONS type.
      */
-    Expr* ret         = malloc(sizeof(Expr));
+    Expr* ret = malloc(sizeof(Expr));
+    SL_ASSERT_ALLOC(ret);
     ret->type         = EXPR_PARENT;
     ret->val.children = expr_clone_recur(e);
     ret->next         = NULL;
@@ -118,7 +119,8 @@ Expr* prim_cdr(Env* env, Expr* e) {
      * (cdr '(a)) ===> nil
      */
     if (e->val.children == NULL || e->val.children->next == NULL) {
-        Expr* ret         = malloc(sizeof(Expr));
+        Expr* ret = malloc(sizeof(Expr));
+        SL_ASSERT_ALLOC(ret);
         ret->type         = EXPR_PARENT;
         ret->val.children = NULL;
         ret->next         = NULL;
@@ -143,7 +145,8 @@ Expr* prim_cdr(Env* env, Expr* e) {
      * (cdr '(a b c))     ===> (b c)
      * (cdr '((a b) y z)) ===> (y z)
      */
-    Expr* ret         = malloc(sizeof(Expr));
+    Expr* ret = malloc(sizeof(Expr));
+    SL_ASSERT_ALLOC(ret);
     ret->type         = EXPR_PARENT;
     ret->val.children = cdr_start;
     ret->next         = NULL;
@@ -163,7 +166,8 @@ Expr* prim_add(Env* env, Expr* e) {
         total += arg->val.n;
     }
 
-    Expr* ret  = malloc(sizeof(Expr));
+    Expr* ret = malloc(sizeof(Expr));
+    SL_ASSERT_ALLOC(ret);
     ret->type  = EXPR_CONST;
     ret->val.n = total;
     ret->next  = NULL;
@@ -182,7 +186,8 @@ Expr* prim_sub(Env* env, Expr* e) {
         total -= arg->val.n;
     }
 
-    Expr* ret  = malloc(sizeof(Expr));
+    Expr* ret = malloc(sizeof(Expr));
+    SL_ASSERT_ALLOC(ret);
     ret->type  = EXPR_CONST;
     ret->val.n = total;
     ret->next  = NULL;
@@ -201,7 +206,8 @@ Expr* prim_mul(Env* env, Expr* e) {
         total *= arg->val.n;
     }
 
-    Expr* ret  = malloc(sizeof(Expr));
+    Expr* ret = malloc(sizeof(Expr));
+    SL_ASSERT_ALLOC(ret);
     ret->type  = EXPR_CONST;
     ret->val.n = total;
     ret->next  = NULL;
@@ -221,7 +227,8 @@ Expr* prim_div(Env* env, Expr* e) {
         total /= arg->val.n;
     }
 
-    Expr* ret  = malloc(sizeof(Expr));
+    Expr* ret = malloc(sizeof(Expr));
+    SL_ASSERT_ALLOC(ret);
     ret->type  = EXPR_CONST;
     ret->val.n = total;
     ret->next  = NULL;

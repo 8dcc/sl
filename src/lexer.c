@@ -78,7 +78,7 @@ static char* token_store(Token* out, char* in) {
     for (i = 0; !is_token_separator(in[i]); i++)
         ;
 
-    /* Temporarily terminate string at token separator */
+    /* Temporarily terminate string at token separator, for parsing as number */
     char tmp = in[i];
     in[i]    = '\0';
 
@@ -91,14 +91,8 @@ static char* token_store(Token* out, char* in) {
         /* Symbol (string) */
         out->type = TOKEN_SYMBOL;
 
-        /* NOTE: Expressions will use this same pointer, so this will be freed
-         * in expr_free() */
         out->val.s = malloc(i + 1);
-
-        if (out->val.s == NULL) {
-            ERR("Error allocating token string. Aborting...");
-            exit(1);
-        }
+        SL_ASSERT_ALLOC(out->val.s);
 
         strcpy(out->val.s, in);
     }

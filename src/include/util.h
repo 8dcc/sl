@@ -13,6 +13,12 @@
         return NULL;         \
     }
 
+#define SL_ASSERT_ALLOC(PTR)                    \
+    if (PTR == NULL) {                       \
+        ERR("Allocation failed. Aborting."); \
+        exit(1);                             \
+    }
+
 /* Avoid -Wunused-parameter */
 #define UNUSED(VAR) (void)VAR
 

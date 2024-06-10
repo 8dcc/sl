@@ -18,6 +18,7 @@ static Expr* parse_expr(Token** token_ptr) {
 
     /* We are parsing a new expression */
     Expr* expr = malloc(sizeof(Expr));
+    SL_ASSERT_ALLOC(expr);
 
     /* Set expr->type and expr->val depending on the Token type */
     switch (token->type) {
@@ -31,8 +32,7 @@ static Expr* parse_expr(Token** token_ptr) {
             /* Allocate a new copy of the string from tokens_scan(), since
              * the lexer is responsible of freeing the original pointer. The
              * ones we are allocating will be freed in expr_free() */
-            expr->val.s = malloc(strlen(token->val.s));
-            strcpy(expr->val.s, token->val.s);
+            expr->val.s = strdup(token->val.s);
             break;
         case TOKEN_LIST_OPEN:
             expr->type = EXPR_PARENT;
@@ -58,10 +58,10 @@ static Expr* parse_expr(Token** token_ptr) {
             expr->type = EXPR_PARENT;
 
             /* Car of the list, "quote" */
-            expr->val.children        = malloc(sizeof(Expr));
+            expr->val.children = malloc(sizeof(Expr));
+            SL_ASSERT_ALLOC(expr->val.children);
             expr->val.children->type  = EXPR_SYMBOL;
-            expr->val.children->val.s = malloc(sizeof("quote"));
-            strcpy(expr->val.children->val.s, "quote");
+            expr->val.children->val.s = strdup("quote");
 
             /* Cdr of the list, the actual expression. About `token_ptr', see
              * the LIST_OPEN case.*/

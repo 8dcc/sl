@@ -143,15 +143,15 @@ Expr* expr_clone(const Expr* e) {
     if (e == NULL)
         return NULL;
 
-    Expr* ret      = malloc(sizeof(Expr));
-    ret->type      = e->type;
+    Expr* ret = malloc(sizeof(Expr));
+    SL_ASSERT_ALLOC(ret);
+
+    ret->type = e->type;
 
     switch (e->type) {
         case EXPR_SYMBOL:
-            /* Allocate a new copy of the string, since the original will be
-             * freed with the expression in expr_free(). */
-            ret->val.s = malloc(strlen(e->val.s));
-            strcpy(ret->val.s, e->val.s);
+            /* Allocate a new copy of the string */
+            ret->val.s = strdup(e->val.s);
             break;
         case EXPR_CONST:
             ret->val.n = e->val.n;

@@ -16,8 +16,9 @@
 /* Allocate buffer and store a LISP expression in string format. Must be freed
  * by the caller. Returns true if it got EOF. */
 static bool input_read(char** input) {
-    *input          = malloc(INPUT_BUFSZ);
     size_t input_sz = INPUT_BUFSZ;
+    *input          = malloc(input_sz);
+    SL_ASSERT_ALLOC(*input);
 
     /* Will increase when we encounter '(' and decrease with ')' */
     int nesting_level = 0;

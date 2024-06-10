@@ -26,7 +26,9 @@ Env* env_bind(Env* env, const char* sym, const Expr* val) {
     if (env == NULL) {
         /* Create the first node of the linked list */
         new_node = malloc(sizeof(Env));
-        env      = new_node;
+        SL_ASSERT_ALLOC(new_node);
+
+        env = new_node;
     } else {
         /* Iterate until the last node of the linked list */
         Env* cur;
@@ -48,14 +50,14 @@ Env* env_bind(Env* env, const char* sym, const Expr* val) {
 
         /* If we reached here, the symbol is not currently associated. Create
          * new node and add it to the linked list. */
-        new_node  = malloc(sizeof(Env));
+        new_node = malloc(sizeof(Env));
+        SL_ASSERT_ALLOC(new_node);
         cur->next = new_node;
     }
 
     /* If we reached here, we are creating a new Env structure.
      * First, we copy the symbol name. */
-    new_node->sym = malloc(strlen(sym));
-    strcpy(new_node->sym, sym);
+    new_node->sym = strdup(sym);
 
     /* Then, clone the expression associated to that symbol */
     new_node->val = expr_clone_recur(val);
