@@ -6,6 +6,7 @@
 #include "include/util.h"
 #include "include/parser.h"
 #include "include/eval.h"
+#include "include/expr.h"
 #include "include/env.h"
 #include "include/primitives.h"
 

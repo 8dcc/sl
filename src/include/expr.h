@@ -4,10 +4,11 @@
 
 #include <stdbool.h>
 
-typedef struct Env Env;
+struct Env; /* env.h */
+
 typedef struct Expr Expr;
 
-typedef Expr* (*PrimitiveFuncPtr)(Env*, Expr*);
+typedef Expr* (*PrimitiveFuncPtr)(struct Env*, Expr*);
 
 enum EExprType {
     EXPR_ERR, /* Unused for now */

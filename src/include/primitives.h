@@ -2,9 +2,10 @@
 #ifndef PRIMITIVES_H_
 #define PRIMITIVES_H_ 1
 
-#include "expr.h"
+struct Env;  /* env.h */
+struct Expr; /* expr.h */
 
-#define DECLARE_PRIM(NAME) Expr* prim_##NAME(Env*, Expr*)
+#define DECLARE_PRIM(NAME) struct Expr* prim_##NAME(struct Env*, struct Expr*)
 
 DECLARE_PRIM(quote);
 DECLARE_PRIM(define);

@@ -1,10 +1,10 @@
 #ifndef PARSER_H_
 #define PARSER_H_ 1
 
-#include "lexer.h" /* Token */
-#include "expr.h"  /* Expr */
+struct Token; /* lexer.h */
+struct Expr;  /* expr.h */
 
 /* Convert array of tokens into a expression tree */
-Expr* parse(Token* tokens);
+struct Expr* parse(struct Token* tokens);
 
 #endif /* PARSER_H_ */
