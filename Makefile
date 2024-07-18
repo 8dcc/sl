@@ -1,6 +1,6 @@
 
 CC=gcc
-CFLAGS=-Wall -Wextra -g3
+CFLAGS=-std=gnu99 -Wall -Wextra -ggdb3
 LDFLAGS=-lm
 
 OBJ_FILES=main.c.o util.c.o lexer.c.o parser.c.o expr.c.o eval.c.o primitives.c.o env.c.o
@@ -21,8 +21,8 @@ clean:
 #-------------------------------------------------------------------------------
 
 $(BIN): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 obj/%.c.o : src/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -o $@ -c $<
