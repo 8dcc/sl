@@ -37,7 +37,6 @@ struct Expr {
 static inline const char* exprtype2str(enum EExprType type) {
     /* clang-format off */
     switch (type) {
-        default:
         case EXPR_ERR:    return "Error";
         case EXPR_CONST:  return "Number";
         case EXPR_SYMBOL: return "Symbol";
@@ -45,6 +44,10 @@ static inline const char* exprtype2str(enum EExprType type) {
         case EXPR_PRIM:   return "Primitive";
     }
     /* clang-format on */
+
+    /* Should be unreachable. Compiler warns about unhandled cases in the
+     * previous switch, since we are not using `default'. */
+    return "???";
 }
 
 /* Print formatted expression */

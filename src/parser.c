@@ -70,7 +70,6 @@ static Expr* parse_expr(Token** token_ptr) {
             break;
         case TOKEN_EOF:
         case TOKEN_LIST_CLOSE:
-        default:
             ERR("Reached invalid case (Token type %d).", token->type);
             return NULL;
     }

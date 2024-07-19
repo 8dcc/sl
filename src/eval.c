@@ -101,15 +101,23 @@ Expr* eval(Env* env, Expr* e) {
 
             return applied;
         }
+
         case EXPR_SYMBOL: {
             Expr* val = env_get(env, e->val.s);
             SL_ASSERT(val != NULL, "Unbound symbol: %s", e->val.s);
             return val;
         }
-        default:
+
+        case EXPR_ERR:
+        case EXPR_CONST:
+        case EXPR_PRIM: {
             /* Not a parent nor a symbol, evaluates to itself */
             return expr_clone(e);
+        }
     }
+
+    ERR("Reached unexpected point, didn't return from switch.");
+    return NULL;
 }
 
 Expr* apply(Env* env, Expr* func, Expr* args) {

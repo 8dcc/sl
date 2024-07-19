@@ -26,7 +26,9 @@ void expr_free(Expr* root) {
             /* Free the symbol string, allocated in tokens_scan() */
             free(root->val.s);
             break;
-        default:
+        case EXPR_ERR:
+        case EXPR_CONST:
+        case EXPR_PRIM:
             break;
     }
 
@@ -77,10 +79,7 @@ void expr_print_debug(Expr* e) {
             printf("[PRI] <primitive %p>\n", e->val.f);
             break;
         case EXPR_ERR:
-        default:
-            printf("[ERR] ");
-            ERR("Encountered invalid expression of type:",
-                exprtype2str(e->type));
+            printf("[ERR] (Stopping)");
             return;
     }
 
@@ -125,10 +124,8 @@ void expr_print(Expr* e) {
             printf("<primitive %p>", e->val.f);
             break;
         case EXPR_ERR:
-        default:
-            ERR("Encountered invalid expression of type:",
-                exprtype2str(e->type));
-            return;
+            printf("<error>");
+            break;
     }
 }
 
@@ -162,9 +159,8 @@ Expr* expr_clone(const Expr* e) {
         case EXPR_PRIM:
             ret->val.f = e->val.f;
             break;
-        default:
-            ret->val.children = NULL;
-            ERR("Unhandled expression of type:", exprtype2str(e->type));
+        case EXPR_ERR:
+            ERR("Trying to clone <error>");
             break;
     }
 

@@ -157,8 +157,8 @@ void tokens_print(Token* arr) {
             case TOKEN_QUOTE:
                 printf("QUOTE, ");
                 break;
-            default:
-                fprintf(stderr, "UNKNOWN, ");
+            case TOKEN_EOF:
+                printf("???");
                 break;
         }
 
