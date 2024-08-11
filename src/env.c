@@ -127,6 +127,30 @@ void env_init(Env** env) {
     BIND_PRIM(tmp_env, "/", div);
 }
 
+Env* env_clone(Env* env) {
+    Env* first_item = NULL;
+    Env* cur_item   = NULL;
+
+    for (Env* old = env; old != NULL; old = old->next) {
+        Env* new_env = malloc(sizeof(Env));
+        SL_ASSERT_ALLOC(new_env);
+        new_env->sym  = strdup(old->sym);
+        new_env->val  = expr_clone_recur(old->val);
+        new_env->next = NULL;
+
+        if (cur_item == NULL) {
+            /* This is the first item in the linked list, will be returned */
+            first_item = cur_item = new_env;
+        } else {
+            /* Store the new item in the linked list, and set as current */
+            cur_item->next = new_env;
+            cur_item       = cur_item->next;
+        }
+    }
+
+    return first_item;
+}
+
 void env_free(Env* env) {
     Env* cur = env;
     while (cur != NULL) {

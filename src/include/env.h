@@ -26,6 +26,9 @@ struct Expr* env_get(Env* env, const char* sym);
  * are handled separately, so they are not added to the environment. */
 void env_init(Env** env);
 
+/* Clone a linked list of Env structures into new allocated memory */
+Env* env_clone(Env* env);
+
 /* Free a linked list of Env structures, along with all its allocated memory */
 void env_free(Env* env);
 
