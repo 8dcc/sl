@@ -17,8 +17,7 @@ static Expr* parse_expr(Token** token_ptr) {
         return NULL;
 
     /* We are parsing a new expression */
-    Expr* expr = malloc(sizeof(Expr));
-    SL_ASSERT_ALLOC(expr);
+    Expr* expr = sl_safe_malloc(sizeof(Expr));
 
     /* Set expr->type and expr->val depending on the Token type */
     switch (token->type) {
@@ -58,8 +57,7 @@ static Expr* parse_expr(Token** token_ptr) {
             expr->type = EXPR_PARENT;
 
             /* Car of the list, "quote" */
-            expr->val.children = malloc(sizeof(Expr));
-            SL_ASSERT_ALLOC(expr->val.children);
+            expr->val.children        = sl_safe_malloc(sizeof(Expr));
             expr->val.children->type  = EXPR_SYMBOL;
             expr->val.children->val.s = strdup("quote");
 

@@ -89,11 +89,8 @@ static char* token_store(Token* out, char* in) {
         out->val.n = parsed;
     } else {
         /* Symbol (string) */
-        out->type = TOKEN_SYMBOL;
-
-        out->val.s = malloc(i + 1);
-        SL_ASSERT_ALLOC(out->val.s);
-
+        out->type  = TOKEN_SYMBOL;
+        out->val.s = sl_safe_malloc(i + 1);
         strcpy(out->val.s, in);
     }
 
@@ -110,12 +107,12 @@ bool is_token_separator(char c) {
 
 Token* tokens_scan(char* input) {
     size_t tokens_num = TOKEN_BUFSZ;
-    Token* tokens     = calloc(TOKEN_BUFSZ, sizeof(Token));
+    Token* tokens     = sl_safe_calloc(TOKEN_BUFSZ, sizeof(Token));
 
     for (size_t i = 0; input != NULL; i++) {
         if (i >= tokens_num) {
             tokens_num += TOKEN_BUFSZ;
-            tokens = realloc(tokens, tokens_num * sizeof(Token));
+            sl_safe_realloc(tokens, tokens_num * sizeof(Token));
         }
 
         input = token_store(&tokens[i], input);

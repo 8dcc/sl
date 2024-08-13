@@ -23,7 +23,7 @@
 /*----------------------------------------------------------------------------*/
 
 Env* env_new(Env* parent) {
-    Env* env     = malloc(sizeof(Env));
+    Env* env     = sl_safe_malloc(sizeof(Env));
     env->parent  = parent;
     env->size    = 0;
     env->symbols = NULL;
@@ -96,10 +96,8 @@ void env_bind(Env* env, const char* sym, const Expr* val) {
     /* If we reached here, the symbol is not currently associated. Allocate one
      * more symbol and one more value in the environment. */
     env->size++;
-    env->symbols = realloc(env->symbols, env->size * sizeof(char*));
-    SL_ASSERT_ALLOC(env->symbols);
-    env->values = realloc(env->values, env->size * sizeof(Expr*));
-    SL_ASSERT_ALLOC(env->values);
+    sl_safe_realloc(env->symbols, env->size * sizeof(char*));
+    sl_safe_realloc(env->values, env->size * sizeof(Expr*));
 
     /* Copy the symbol name and clone the associated expression */
     env->symbols[env->size - 1] = strdup(sym);

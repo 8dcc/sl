@@ -140,9 +140,7 @@ Expr* expr_clone(const Expr* e) {
     if (e == NULL)
         return NULL;
 
-    Expr* ret = malloc(sizeof(Expr));
-    SL_ASSERT_ALLOC(ret);
-
+    Expr* ret = sl_safe_malloc(sizeof(Expr));
     ret->type = e->type;
 
     switch (e->type) {

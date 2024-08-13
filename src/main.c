@@ -17,8 +17,7 @@
  * by the caller. Returns true if it got EOF. */
 static bool input_read(char** input) {
     size_t input_sz = INPUT_BUFSZ;
-    *input          = malloc(input_sz);
-    SL_ASSERT_ALLOC(*input);
+    *input          = sl_safe_malloc(input_sz);
 
     /* Will increase when we encounter '(' and decrease with ')' */
     int nesting_level = 0;
@@ -32,7 +31,7 @@ static bool input_read(char** input) {
         /* If we run out of space, allocate more */
         if (i >= input_sz) {
             input_sz += INPUT_BUFSZ;
-            *input = realloc(*input, input_sz);
+            sl_safe_realloc(*input, input_sz);
         }
 
         /* Store character in string */

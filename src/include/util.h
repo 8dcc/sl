@@ -32,20 +32,26 @@ sl_lbl_on_err:                  \
         }                     \
     } while (0)
 
-#define SL_ASSERT_ALLOC(PTR)           \
-    do {                               \
-        if (PTR == NULL) {             \
-            ERR("Allocation failed."); \
-            abort();                   \
-        }                              \
-    } while (0)
-
 /* Avoid -Wunused-parameter */
 #define SL_UNUSED(VAR) (void)VAR
+
+#define sl_safe_realloc(PTR, SZ)         \
+    do {                                 \
+        PTR = realloc(PTR, SZ);          \
+        if (PTR == NULL) {               \
+            ERR("Reallocation failed."); \
+            abort();                     \
+        }                                \
+    } while (0)
 
 /*----------------------------------------------------------------------------*/
 
 /* Print error message to stderr, along with the function name */
 void err_msg(const char* func, const char* fmt, ...);
+
+/* Allocate `sz' bytes using `malloc' or `calloc', ensuring a valid pointer is
+ * returned. */
+void* sl_safe_malloc(size_t sz);
+void* sl_safe_calloc(size_t nmemb, size_t size);
 
 #endif /* UTIL_H_ */
