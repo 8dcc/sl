@@ -9,177 +9,130 @@
 #include "include/primitives.h"
 #include "include/env.h"
 
-#define BIND_PRIM(TMP_ENV, SYM, FUNC) \
-    Expr FUNC##_expr = {              \
-        .type  = EXPR_PRIM,           \
-        .val.f = prim_##FUNC,         \
-        .next  = NULL,                \
-    };                                \
-    TMP_ENV = env_bind(TMP_ENV, SYM, &FUNC##_expr);
+/* Used in `env_init_defaults' */
+#define BIND_PRIM(ENV, SYM, FUNC)         \
+    do {                                  \
+        Expr FUNC##_expr = {              \
+            .type  = EXPR_PRIM,           \
+            .val.f = prim_##FUNC,         \
+            .next  = NULL,                \
+        };                                \
+        env_bind(ENV, SYM, &FUNC##_expr); \
+    } while (0)
 
 /*----------------------------------------------------------------------------*/
 
-Env* env_bind(Env* env, const char* sym, const Expr* val) {
-    SL_ASSERT(sym != NULL, "Symbol is empty.");
-
-    Env* new_node;
-    if (env == NULL) {
-        /* Create the first node of the linked list */
-        new_node = malloc(sizeof(Env));
-        SL_ASSERT_ALLOC(new_node);
-
-        env = new_node;
-    } else {
-        /* Iterate until the last node of the linked list */
-        Env* cur;
-        for (cur = env;; cur = cur->next) {
-            if (!strcmp(cur->sym, sym)) {
-                /* We found a value associated to this symbol, overwrite with
-                 * new value. First we free the Expr we allocated on the first
-                 * asignment, and then we allocate a copy of the new value. */
-                expr_free(cur->val);
-                cur->val = expr_clone_recur(val);
-                return cur;
-            }
-
-            /* We need to check this after the strcmp() because we still want to
-             * check if the last item contains our symbol. */
-            if (cur->next == NULL)
-                break;
-        }
-
-        /* If we reached here, the symbol is not currently associated. Create
-         * new node and add it to the linked list. */
-        new_node = malloc(sizeof(Env));
-        SL_ASSERT_ALLOC(new_node);
-        cur->next = new_node;
-    }
-
-    /* If we reached here, we are creating a new Env structure.
-     * First, we copy the symbol name. */
-    new_node->sym = strdup(sym);
-
-    /* Then, clone the expression associated to that symbol */
-    new_node->val = expr_clone_recur(val);
-
-    /* And lastly, we indicate that this is the new last item of the linked
-     * list. */
-    new_node->next = NULL;
-
-    /* Return `new_node' in case the caller needs it */
-    return new_node;
+Env* env_new(Env* parent) {
+    Env* env     = malloc(sizeof(Env));
+    env->parent  = parent;
+    env->size    = 0;
+    env->symbols = NULL;
+    env->values  = NULL;
+    return env;
 }
 
-Expr* env_get(Env* env, const char* sym) {
-    SL_ASSERT(sym != NULL, "Symbol is NULL.");
-
-    /* For a more detailed explanation, see env_add() */
-    for (Env* cur = env;; cur = cur->next) {
-        /* We found a value associated to this symbol, return a copy */
-        if (!strcmp(cur->sym, sym))
-            return expr_clone_recur(cur->val);
-
-        /* We reached the end of the list */
-        if (cur->next == NULL)
-            break;
-    }
-
-    /* We didn't find a value associated to that symbol */
-    return NULL;
-}
-
-void env_init(Env** env) {
-    /* NOTE: C primitives are handled separately. See eval.c */
-
-    if (env == NULL) {
-        ERR("Invalid environment pointer.");
-        return;
-    }
-
-    /* NIL */
+void env_init_defaults(Env* env) {
+    /* First constant of the environment, NIL. The Expr will be cloned, so it's
+     * safe to pass the stack address to env_bind. */
     Expr nil_expr = {
         .type         = EXPR_PARENT,
         .val.children = NULL,
         .next         = NULL,
     };
+    env_bind(env, "nil", &nil_expr);
 
-    if (*env == NULL) {
-        /* Create the first node of the linked list. It will hold the `nil'
-         * value. */
-        *env = env_bind(NULL, "nil", &nil_expr);
-    } else {
-        /* We already have an enviroment, add it to the linked list. */
-        env_bind(*env, "nil", &nil_expr);
-        ERR("Re-initializing a non-null enviroment.");
-    }
-
-    Env* tmp_env = *env;
-    BIND_PRIM(tmp_env, "quote", quote);
-    BIND_PRIM(tmp_env, "define", define);
-    BIND_PRIM(tmp_env, "eval", eval);
-    BIND_PRIM(tmp_env, "apply", apply);
-    BIND_PRIM(tmp_env, "cons", cons);
-    BIND_PRIM(tmp_env, "car", car);
-    BIND_PRIM(tmp_env, "cdr", cdr);
-    BIND_PRIM(tmp_env, "+", add);
-    BIND_PRIM(tmp_env, "-", sub);
-    BIND_PRIM(tmp_env, "*", mul);
-    BIND_PRIM(tmp_env, "/", div);
+    /* Bind primitive C functions */
+    BIND_PRIM(env, "quote", quote);
+    BIND_PRIM(env, "define", define);
+    BIND_PRIM(env, "eval", eval);
+    BIND_PRIM(env, "apply", apply);
+    BIND_PRIM(env, "cons", cons);
+    BIND_PRIM(env, "car", car);
+    BIND_PRIM(env, "cdr", cdr);
+    BIND_PRIM(env, "+", add);
+    BIND_PRIM(env, "-", sub);
+    BIND_PRIM(env, "*", mul);
+    BIND_PRIM(env, "/", div);
 }
 
 Env* env_clone(Env* env) {
-    Env* first_item = NULL;
-    Env* cur_item   = NULL;
+    Env* cloned = env_new(env->parent);
 
-    for (Env* old = env; old != NULL; old = old->next) {
-        Env* new_env = malloc(sizeof(Env));
-        SL_ASSERT_ALLOC(new_env);
-        new_env->sym  = strdup(old->sym);
-        new_env->val  = expr_clone_recur(old->val);
-        new_env->next = NULL;
+    for (size_t i = 0; i < env->size; i++)
+        env_bind(cloned, env->symbols[i], env->values[i]);
 
-        if (cur_item == NULL) {
-            /* This is the first item in the linked list, will be returned */
-            first_item = cur_item = new_env;
-        } else {
-            /* Store the new item in the linked list, and set as current */
-            cur_item->next = new_env;
-            cur_item       = cur_item->next;
-        }
-    }
-
-    return first_item;
+    return cloned;
 }
 
 void env_free(Env* env) {
-    Env* cur = env;
-    while (cur != NULL) {
-        if (cur->sym != NULL)
-            free(cur->sym);
-
-        if (cur->val != NULL)
-            expr_free(cur->val);
-
-        Env* aux = cur->next;
-        free(cur);
-        cur = aux;
+    for (size_t i = 0; i < env->size; i++) {
+        free(env->symbols[i]);
+        free(env->values[i]);
     }
+
+    free(env->symbols);
+    free(env->values);
+    free(env);
 }
+
+/*----------------------------------------------------------------------------*/
+
+void env_bind(Env* env, const char* sym, const Expr* val) {
+    SL_ASSERT(env != NULL, "Invalid environment.");
+    SL_ASSERT(sym != NULL, "Symbol is empty.");
+
+    /* Iterate until the last node of the linked list */
+    for (size_t i = 0; i < env->size; i++) {
+        if (!strcmp(env->symbols[i], sym)) {
+            /* We found a value associated to this symbol, overwrite with new
+             * value. First we free the Expr we allocated on the first
+             * asignment, and then we allocate a copy of the new value. */
+            expr_free(env->values[i]);
+            env->values[i] = expr_clone_recur(val);
+            return;
+        }
+    }
+
+    /* If we reached here, the symbol is not currently associated. Allocate one
+     * more symbol and one more value in the environment. */
+    env->size++;
+    env->symbols = realloc(env->symbols, env->size * sizeof(char*));
+    SL_ASSERT_ALLOC(env->symbols);
+    env->values = realloc(env->values, env->size * sizeof(Expr*));
+    SL_ASSERT_ALLOC(env->values);
+
+    /* Copy the symbol name and clone the associated expression */
+    env->symbols[env->size - 1] = strdup(sym);
+    env->values[env->size - 1]  = expr_clone_recur(val);
+}
+
+Expr* env_get(Env* env, const char* sym) {
+    SL_ASSERT(env != NULL, "Invalid environment.");
+    SL_ASSERT(sym != NULL, "Symbol is empty.");
+
+    /* Iterate the symbol list until we find the one we are looking for, then
+     * return a copy of the value. */
+    for (size_t i = 0; i < env->size; i++)
+        if (!strcmp(env->symbols[i], sym))
+            return expr_clone_recur(env->values[i]);
+
+    /* We didn't find a value associated to that symbol. If there is a parent
+     * environment, search in there. */
+    return (env->parent == NULL) ? NULL : env_get(env->parent, sym);
+}
+
+/*----------------------------------------------------------------------------*/
 
 void env_print(Env* env) {
     putchar('(');
-    for (Env* cur = env; cur != NULL; cur = cur->next) {
-        /* If this isn't the first node, add indentation */
-        if (cur != env)
-            putchar(' ');
+    for (size_t i = 0; i < env->size; i++) {
+        /* Add indentation to match parentheses of first line */
+        if (i != 0)
+            printf("\n ");
 
-        printf("(\"%s\" ", cur->sym);
-        expr_print(cur->val);
+        printf("(\"%s\" ", env->symbols[i]);
+        expr_print(env->values[i]);
         putchar(')');
-
-        /* If this isn't the last item, change line */
-        if (cur->next != NULL)
-            putchar('\n');
     }
     printf(")\n");
 }

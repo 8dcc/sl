@@ -75,10 +75,9 @@ static bool input_read(char** input) {
 int main(void) {
     const bool print_prompt = isatty(0);
 
-    /* Initialize global environment with symbols like "nil". Note that C
-     * primitives are handled separately. */
-    Env* global_env = NULL;
-    env_init(&global_env);
+    /* Initialize global environment with symbols like "nil" */
+    Env* global_env = env_new(NULL);
+    env_init_defaults(global_env);
 
     bool got_eof = false;
     while (!got_eof) {
