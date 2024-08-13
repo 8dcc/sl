@@ -67,7 +67,7 @@ Env* env_clone(Env* env) {
 void env_free(Env* env) {
     for (size_t i = 0; i < env->size; i++) {
         free(env->symbols[i]);
-        free(env->values[i]);
+        expr_free(env->values[i]);
     }
 
     free(env->symbols);
