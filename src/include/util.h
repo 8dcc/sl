@@ -6,21 +6,42 @@
 /* Wrapper for err_msg() */
 #define ERR(...) err_msg(__func__, __VA_ARGS__)
 
-/* If COND is not true, show error and return NULL */
-#define SL_ASSERT(COND, ...) \
-    if (!(COND)) {           \
-        ERR(__VA_ARGS__);    \
-        return NULL;         \
+/* Set the instruction(s) to be executed when SL_EXPECT() fails */
+#define SL_ON_ERR(INSTRUCTIONS) \
+    if (0) {                    \
+sl_lbl_on_err:                  \
+        INSTRUCTIONS;           \
     }
 
-#define SL_ASSERT_ALLOC(PTR)                    \
-    if (PTR == NULL) {                       \
-        ERR("Allocation failed. Aborting."); \
-        exit(1);                             \
-    }
+/* If COND is not true, show error and jump to instruction declared by
+ * SL_ON_ERR() */
+#define SL_EXPECT(COND, ...)                                         \
+    do {                                                             \
+        if (!(COND)) {                                               \
+            ERR(__VA_ARGS__);                                        \
+            goto sl_lbl_on_err; /* Make sure you call SL_ON_ERR() */ \
+        }                                                            \
+    } while (0)
+
+/* If COND is not true, show error and abort */
+#define SL_ASSERT(COND, ...)  \
+    do {                      \
+        if (!(COND)) {        \
+            ERR(__VA_ARGS__); \
+            abort();          \
+        }                     \
+    } while (0)
+
+#define SL_ASSERT_ALLOC(PTR)           \
+    do {                               \
+        if (PTR == NULL) {             \
+            ERR("Allocation failed."); \
+            abort();                   \
+        }                              \
+    } while (0)
 
 /* Avoid -Wunused-parameter */
-#define UNUSED(VAR) (void)VAR
+#define SL_UNUSED(VAR) (void)VAR
 
 /*----------------------------------------------------------------------------*/
 

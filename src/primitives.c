@@ -11,7 +11,7 @@
 #include "include/primitives.h"
 
 #define EXPECT_TYPE(EXPR, TYPE)                              \
-    SL_ASSERT((EXPR)->type == TYPE,                          \
+    SL_EXPECT((EXPR)->type == TYPE,                          \
               "Expected expression of type '%s', got '%s'.", \
               exprtype2str(TYPE), exprtype2str((EXPR)->type));
 
@@ -19,7 +19,7 @@
 /* Special Form primitives. See SICP Chapter 4.1.1 */
 
 Expr* prim_quote(Env* env, Expr* e) {
-    UNUSED(env);
+    SL_UNUSED(env);
 
     /* We have to use `expr_clone_recur' since `expr_clone' does not clone
      * children. This function is useful for binding it to `quote' in the
@@ -31,6 +31,8 @@ Expr* prim_quote(Env* env, Expr* e) {
 /* Primitives that should have their parameters evaluated by the caller */
 
 Expr* prim_define(Env* env, Expr* e) {
+    SL_ON_ERR(return NULL);
+
     /* The `define' function will bind the even arguments to the odd arguments.
      * It expects an even number of arguments.
      *
@@ -38,7 +40,7 @@ Expr* prim_define(Env* env, Expr* e) {
     const Expr* last_bound = NULL;
 
     for (Expr* arg = e; arg != NULL; arg = arg->next) {
-        SL_ASSERT(arg->next != NULL, "Got an odd number of arguments.");
+        SL_EXPECT(arg->next != NULL, "Got an odd number of arguments.");
 
         /* Odd argument: Symbol */
         EXPECT_TYPE(arg, EXPR_SYMBOL);
@@ -60,7 +62,8 @@ Expr* prim_eval(Env* env, Expr* e) {
 }
 
 Expr* prim_apply(Env* env, Expr* e) {
-    SL_ASSERT(e != NULL, "Got empty expression.");
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Got empty expression.");
 
     /*
      * (define prim-apply (env e)
@@ -70,8 +73,9 @@ Expr* prim_apply(Env* env, Expr* e) {
 }
 
 Expr* prim_cons(Env* env, Expr* e) {
-    UNUSED(env);
-    SL_ASSERT(e != NULL && e->next != NULL && e->next->next == NULL,
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL && e->next != NULL && e->next->next == NULL,
               "Expected exactly 2 arguments.");
 
     /*
@@ -95,9 +99,10 @@ Expr* prim_cons(Env* env, Expr* e) {
 }
 
 Expr* prim_car(Env* env, Expr* e) {
-    UNUSED(env);
-    SL_ASSERT(e != NULL && e->next == NULL, "Expected one argument.");
-    SL_ASSERT(e->type == EXPR_PARENT, "Expected a list as first argument");
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL && e->next == NULL, "Expected one argument.");
+    SL_EXPECT(e->type == EXPR_PARENT, "Expected a list as first argument");
 
     /* (car '()) ===> nil */
     if (e->val.children == NULL)
@@ -111,9 +116,10 @@ Expr* prim_car(Env* env, Expr* e) {
 }
 
 Expr* prim_cdr(Env* env, Expr* e) {
-    UNUSED(env);
-    SL_ASSERT(e != NULL && e->next == NULL, "Expected one argument.");
-    SL_ASSERT(e->type == EXPR_PARENT, "Expected a list as first argument");
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL && e->next == NULL, "Expected one argument.");
+    SL_EXPECT(e->type == EXPR_PARENT, "Expected a list as first argument");
 
     /*
      * (cdr '())  ===> nil
@@ -156,8 +162,9 @@ Expr* prim_cdr(Env* env, Expr* e) {
 }
 
 Expr* prim_add(Env* env, Expr* e) {
-    UNUSED(env);
-    SL_ASSERT(e != NULL, "Missing arguments.");
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Missing arguments.");
 
     double total = 0;
 
@@ -176,8 +183,9 @@ Expr* prim_add(Env* env, Expr* e) {
 }
 
 Expr* prim_sub(Env* env, Expr* e) {
-    UNUSED(env);
-    SL_ASSERT(e != NULL, "Missing arguments.");
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Missing arguments.");
 
     double total = e->val.n;
 
@@ -196,8 +204,9 @@ Expr* prim_sub(Env* env, Expr* e) {
 }
 
 Expr* prim_mul(Env* env, Expr* e) {
-    UNUSED(env);
-    SL_ASSERT(e != NULL, "Missing arguments.");
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Missing arguments.");
 
     double total = 1;
 
@@ -216,14 +225,15 @@ Expr* prim_mul(Env* env, Expr* e) {
 }
 
 Expr* prim_div(Env* env, Expr* e) {
-    UNUSED(env);
-    SL_ASSERT(e != NULL, "Missing arguments.");
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Missing arguments.");
 
     double total = e->val.n;
 
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
-        SL_ASSERT(arg->val.n != 0, "Trying to divide by zero.");
+        SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
 
         total /= arg->val.n;
     }

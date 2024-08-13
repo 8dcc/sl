@@ -58,6 +58,8 @@ static bool is_quote(const Expr* e) {
 }
 
 Expr* eval(Env* env, Expr* e) {
+    SL_ON_ERR(return NULL);
+
     if (e == NULL)
         return NULL;
 
@@ -104,7 +106,7 @@ Expr* eval(Env* env, Expr* e) {
 
         case EXPR_SYMBOL: {
             Expr* val = env_get(env, e->val.s);
-            SL_ASSERT(val != NULL, "Unbound symbol: %s", e->val.s);
+            SL_EXPECT(val != NULL, "Unbound symbol: %s", e->val.s);
             return val;
         }
 
@@ -121,11 +123,12 @@ Expr* eval(Env* env, Expr* e) {
 }
 
 Expr* apply(Env* env, Expr* func, Expr* args) {
-    SL_ASSERT(env != NULL, "Invalid environment.");
-    SL_ASSERT(func != NULL, "Invalid function.");
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(env != NULL, "Invalid environment.");
+    SL_EXPECT(func != NULL, "Invalid function.");
 
     /* TODO: Add procedures, closures, etc. */
-    SL_ASSERT(func->type == EXPR_PRIM,
+    SL_EXPECT(func->type == EXPR_PRIM,
               "Non-primitive functions are not supported for now.");
 
     /* Get primitive C function from the expression */
