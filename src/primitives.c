@@ -20,9 +20,11 @@
 
 Expr* prim_quote(Env* env, Expr* e) {
     SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL && e->next == NULL,
+              "The special form `quote' expects exactly 1 argument.");
 
-    /* We have to use `expr_clone_recur' since `expr_clone' does not clone
-     * children. This function is useful for binding it to `quote' in the
+    /* This `prim' function is useful for binding it to `quote' in the
      * environment. */
     return expr_clone_recur(e);
 }

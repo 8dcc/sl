@@ -45,16 +45,17 @@ static Expr* eval_args(Env* env, Expr* list) {
     return copy_start;
 }
 
-/* Is this expression a quote in the form (quote symbol)? */
-static bool is_quote(const Expr* e) {
+/* Does this expression match the form (NAME ...)? */
+static bool is_special_form(const Expr* e, const char* name) {
     /*
      * (define is-quote (e)
-     *   (equal (car e) 'quote))
+     *   (and (not (null e))
+     *        (equal (car e) 'quote)))
      */
     return e != NULL && e->type == EXPR_PARENT && e->val.children != NULL &&
            e->val.children->type == EXPR_SYMBOL &&
            e->val.children->val.s != NULL &&
-           !strcmp(e->val.children->val.s, "quote");
+           !strcmp(e->val.children->val.s, name);
 }
 
 Expr* eval(Env* env, Expr* e) {
@@ -63,9 +64,13 @@ Expr* eval(Env* env, Expr* e) {
     if (e == NULL)
         return NULL;
 
-    /* Quoted expression in the form (quote symbol), pass `cadr' to primitive
-     * without evaluating it. The primitive will just return a copy. */
-    if (is_quote(e))
+    /*
+     * Check for Special Form primitives (See SICP Chapter 4.1.1):
+     *   - Quoted expression in the form (quote symbol), pass `cadr' to
+     *     primitive without evaluating it. The primitive will just return a
+     *     copy.
+     */
+    if (is_special_form(e, "quote"))
         return prim_quote(env, e->val.children->next);
 
     switch (e->type) {
