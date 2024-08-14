@@ -56,6 +56,8 @@ void env_init_defaults(Env* env) {
 }
 
 Env* env_clone(Env* env) {
+    /* TODO: Since we know the original size, we can allocate once instead of
+     * reallocating in each call to `env_bind' */
     Env* cloned = env_new(env->parent);
 
     for (size_t i = 0; i < env->size; i++)
@@ -76,6 +78,12 @@ void env_free(Env* env) {
 }
 
 /*----------------------------------------------------------------------------*/
+
+/*
+ * TODO: Add `env_*' function and primitive for binding a symbol to a value in
+ * the global environment. Check how "define" works in Scheme and add a
+ * def-global/def-local primitive as an alternative.
+ */
 
 void env_bind(Env* env, const char* sym, const Expr* val) {
     SL_ASSERT(env != NULL, "Invalid environment.");

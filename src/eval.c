@@ -77,8 +77,9 @@ Expr* eval(Env* env, Expr* e) {
             if (func == NULL)
                 return expr_clone(e);
 
-            /* The cdr of the expression are the arguments, if any. They will be
-             * evaluated by `apply', closing the eval-apply cycle. */
+            /* Store the original function arguments in a variable before
+             * evaluating the function itself. Note that the cdr of the function
+             * call is the argument list, if any. */
             Expr* args = func->next;
 
             /* Evaluate the function expression */
@@ -88,12 +89,12 @@ Expr* eval(Env* env, Expr* e) {
             if (func == NULL)
                 return NULL;
 
-            /* Evaluate each of the arguments before calling primitive. Note
-             * that the returned list is allocated, so we will have to free it
-             * after calling `apply'. */
+            /* Evaluate each of the arguments before applying them to the
+             * function. Also note that the returned list is allocated, so we
+             * will have to free it after calling `apply'. */
             args = eval_args(env, args);
 
-            /* Apply expression as a function call */
+            /* Apply the evaluated function to the evaluated argument list */
             Expr* applied = apply(env, func, args);
 
             /* The last evaluations of `func' and `args' returned a clone, we
