@@ -28,11 +28,17 @@ void expr_free(Expr* root) {
             free(root->val.s);
             break;
         case EXPR_LAMBDA:
-            /* Free each component, including the LambdaCtx structure itself.
-             * Allocated in prim_lambda() */
+            /* Free each component, allocated in prim_lambda().
+             * First, the environment and the body of the lambda */
             env_free(root->val.lambda->env);
-            expr_free(root->val.lambda->formals);
             expr_free(root->val.lambda->body);
+
+            /* Free each formal argument string, and the array itself */
+            for (size_t i = 0; i < root->val.lambda->formals_num; i++)
+                free(root->val.lambda->formals[i]);
+            free(root->val.lambda->formals);
+
+            /* And finally, the LambdaCtx structure itself */
             free(root->val.lambda);
             break;
         case EXPR_ERR:
@@ -90,9 +96,20 @@ void expr_print_debug(Expr* e) {
         case EXPR_LAMBDA:
             printf("[FUN] <lambda>\n");
 
-            /* Print list of formal arguments and body of the function */
+            /* Print list of formal arguments */
             indent += INDENT_STEP;
-            expr_print_debug(e->val.lambda->formals);
+            for (int i = 0; i < indent; i++)
+                putchar(' ');
+
+            printf("Formals: (");
+            for (size_t i = 0; i < e->val.lambda->formals_num; i++) {
+                if (i > 0)
+                    putchar(' ');
+                printf("%s", e->val.lambda->formals[i]);
+            }
+            printf(")\n");
+
+            /* And the body of the function as an Expr */
             expr_print_debug(e->val.lambda->body);
             indent -= INDENT_STEP;
             break;
@@ -179,10 +196,17 @@ Expr* expr_clone(const Expr* e) {
             ret->val.prim = e->val.prim;
             break;
         case EXPR_LAMBDA:
-            ret->val.lambda          = sl_safe_malloc(sizeof(LambdaCtx));
-            ret->val.lambda->env     = env_clone(e->val.lambda->env);
-            ret->val.lambda->formals = expr_clone_recur(e->val.lambda->formals);
-            ret->val.lambda->body    = expr_clone_recur(e->val.lambda->body);
+            ret->val.lambda       = sl_safe_malloc(sizeof(LambdaCtx));
+            ret->val.lambda->env  = env_clone(e->val.lambda->env);
+            ret->val.lambda->body = expr_clone_recur(e->val.lambda->body);
+
+            /* Allocate a new string array for the formals, and copy them */
+            ret->val.lambda->formals_num = e->val.lambda->formals_num;
+            ret->val.lambda->formals =
+              sl_safe_malloc(ret->val.lambda->formals_num * sizeof(char*));
+            for (size_t i = 0; i < ret->val.lambda->formals_num; i++)
+                ret->val.lambda->formals[i] = strdup(e->val.lambda->formals[i]);
+
             break;
         case EXPR_ERR:
             ERR("Trying to clone <error>");

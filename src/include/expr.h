@@ -22,7 +22,8 @@ enum EExprType {
 
 struct LambdaCtx {
     struct Env* env;
-    Expr* formals;
+    char** formals;
+    size_t formals_num;
     Expr* body;
 };
 
