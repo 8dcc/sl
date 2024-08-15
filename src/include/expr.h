@@ -7,15 +7,23 @@
 struct Env; /* env.h */
 
 typedef struct Expr Expr;
+typedef struct LambdaCtx LambdaCtx;
 
 typedef Expr* (*PrimitiveFuncPtr)(struct Env*, Expr*);
 
 enum EExprType {
-    EXPR_ERR, /* Unused for now */
+    EXPR_ERR,
     EXPR_CONST,
     EXPR_SYMBOL,
     EXPR_PARENT,
     EXPR_PRIM,
+    EXPR_LAMBDA,
+};
+
+struct LambdaCtx {
+    struct Env* env;
+    Expr* formals;
+    Expr* body;
 };
 
 struct Expr {
@@ -25,7 +33,8 @@ struct Expr {
         double n;
         char* s;
         Expr* children;
-        PrimitiveFuncPtr f;
+        PrimitiveFuncPtr prim;
+        LambdaCtx* lambda;
     } val;
 
     /* Next expression in the linked list */
@@ -42,6 +51,7 @@ static inline const char* exprtype2str(enum EExprType type) {
         case EXPR_SYMBOL: return "Symbol";
         case EXPR_PARENT: return "List";
         case EXPR_PRIM:   return "Primitive";
+        case EXPR_LAMBDA: return "Lambda";
     }
     /* clang-format on */
 

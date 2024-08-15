@@ -69,9 +69,13 @@ Expr* eval(Env* env, Expr* e) {
      *   - Quoted expression in the form (quote symbol), pass `cadr' to
      *     primitive without evaluating it. The primitive will just return a
      *     copy.
+     *   - The arguments of a call to `lambda' (formal arguments and body) are
+     *     not supposed to be evaluated.
      */
     if (is_special_form(e, "quote"))
         return prim_quote(env, e->val.children->next);
+    if (is_special_form(e, "lambda"))
+        return prim_lambda(env, e->val.children->next);
 
     switch (e->type) {
         case EXPR_PARENT: {
@@ -118,7 +122,8 @@ Expr* eval(Env* env, Expr* e) {
 
         case EXPR_ERR:
         case EXPR_CONST:
-        case EXPR_PRIM: {
+        case EXPR_PRIM:
+        case EXPR_LAMBDA: {
             /* Not a parent nor a symbol, evaluates to itself */
             return expr_clone(e);
         }
@@ -138,7 +143,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
               "Non-primitive functions are not supported for now.");
 
     /* Get primitive C function from the expression */
-    PrimitiveFuncPtr primitive = func->val.f;
+    PrimitiveFuncPtr primitive = func->val.prim;
     SL_ASSERT(primitive != NULL, "Invalid function pointer.");
 
     /* Call primitive C function with the evaluated arguments we got from

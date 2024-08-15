@@ -29,6 +29,34 @@ Expr* prim_quote(Env* env, Expr* e) {
     return expr_clone_recur(e);
 }
 
+Expr* prim_lambda(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL && e->next != NULL && e->next->next == NULL,
+              "The special form `lambda' expects exactly 2 arguments: Formals "
+              "and body.");
+
+    Expr* ret = sl_safe_malloc(sizeof(Expr));
+    ret->type = EXPR_LAMBDA;
+    ret->next = NULL;
+
+    /*
+     * Create a new LambdaCtx structure that will contain:
+     *   - A new environment whose parent will be set when making the actual
+     *     function call.
+     *   - The formal arguments of the function, the first argument of `lambda'.
+     *   - The body of the function, the second argument of `lambda'.
+     * Note that since `lambda' is a special form, it's handled differently in
+     * `eval' and its arguments won't be evaluated.
+     */
+    ret->val.lambda          = sl_safe_malloc(sizeof(LambdaCtx));
+    ret->val.lambda->env     = env_new();
+    ret->val.lambda->formals = expr_clone_recur(e);
+    ret->val.lambda->body    = expr_clone_recur(e->next);
+
+    return ret;
+}
+
 /*----------------------------------------------------------------------------*/
 /* Primitives that should have their parameters evaluated by the caller */
 

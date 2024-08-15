@@ -13,9 +13,9 @@
 #define BIND_PRIM(ENV, SYM, FUNC)         \
     do {                                  \
         Expr FUNC##_expr = {              \
-            .type  = EXPR_PRIM,           \
-            .val.f = prim_##FUNC,         \
-            .next  = NULL,                \
+            .type     = EXPR_PRIM,        \
+            .val.prim = prim_##FUNC,      \
+            .next     = NULL,             \
         };                                \
         env_bind(ENV, SYM, &FUNC##_expr); \
     } while (0)
@@ -43,6 +43,7 @@ void env_init_defaults(Env* env) {
 
     /* Bind primitive C functions */
     BIND_PRIM(env, "quote", quote);
+    BIND_PRIM(env, "lambda", lambda);
     BIND_PRIM(env, "define", define);
     BIND_PRIM(env, "eval", eval);
     BIND_PRIM(env, "apply", apply);

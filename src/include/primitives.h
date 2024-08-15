@@ -8,6 +8,7 @@ struct Expr; /* expr.h */
 #define DECLARE_PRIM(NAME) struct Expr* prim_##NAME(struct Env*, struct Expr*)
 
 DECLARE_PRIM(quote);
+DECLARE_PRIM(lambda);
 DECLARE_PRIM(define);
 DECLARE_PRIM(eval);
 DECLARE_PRIM(apply);

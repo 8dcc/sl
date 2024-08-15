@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "include/expr.h"
+#include "include/env.h"
 #include "include/util.h"
 
 void expr_free(Expr* root) {
@@ -25,6 +26,14 @@ void expr_free(Expr* root) {
         case EXPR_SYMBOL:
             /* Free the symbol string, allocated in tokens_scan() */
             free(root->val.s);
+            break;
+        case EXPR_LAMBDA:
+            /* Free each component, including the LambdaCtx structure itself.
+             * Allocated in prim_lambda() */
+            env_free(root->val.lambda->env);
+            expr_free(root->val.lambda->formals);
+            expr_free(root->val.lambda->body);
+            free(root->val.lambda);
             break;
         case EXPR_ERR:
         case EXPR_CONST:
@@ -76,7 +85,16 @@ void expr_print_debug(Expr* e) {
             indent -= INDENT_STEP;
             break;
         case EXPR_PRIM:
-            printf("[PRI] <primitive %p>\n", e->val.f);
+            printf("[PRI] <primitive %p>\n", e->val.prim);
+            break;
+        case EXPR_LAMBDA:
+            printf("[FUN] <lambda>\n");
+
+            /* Print list of formal arguments and body of the function */
+            indent += INDENT_STEP;
+            expr_print_debug(e->val.lambda->formals);
+            expr_print_debug(e->val.lambda->body);
+            indent -= INDENT_STEP;
             break;
         case EXPR_ERR:
             printf("[ERR] (Stopping)");
@@ -121,7 +139,10 @@ void expr_print(Expr* e) {
 
             break;
         case EXPR_PRIM:
-            printf("<primitive %p>", e->val.f);
+            printf("<primitive %p>", e->val.prim);
+            break;
+        case EXPR_LAMBDA:
+            printf("<lambda>");
             break;
         case EXPR_ERR:
             printf("<error>");
@@ -155,7 +176,13 @@ Expr* expr_clone(const Expr* e) {
             ret->val.children = NULL;
             break;
         case EXPR_PRIM:
-            ret->val.f = e->val.f;
+            ret->val.prim = e->val.prim;
+            break;
+        case EXPR_LAMBDA:
+            ret->val.lambda          = sl_safe_malloc(sizeof(LambdaCtx));
+            ret->val.lambda->env     = env_clone(e->val.lambda->env);
+            ret->val.lambda->formals = expr_clone_recur(e->val.lambda->formals);
+            ret->val.lambda->body    = expr_clone_recur(e->val.lambda->body);
             break;
         case EXPR_ERR:
             ERR("Trying to clone <error>");
