@@ -22,9 +22,9 @@
 
 /*----------------------------------------------------------------------------*/
 
-Env* env_new(Env* parent) {
+Env* env_new(void) {
     Env* env     = sl_safe_malloc(sizeof(Env));
-    env->parent  = parent;
+    env->parent  = NULL;
     env->size    = 0;
     env->symbols = NULL;
     env->values  = NULL;
@@ -58,7 +58,10 @@ void env_init_defaults(Env* env) {
 Env* env_clone(Env* env) {
     /* TODO: Since we know the original size, we can allocate once instead of
      * reallocating in each call to `env_bind' */
-    Env* cloned = env_new(env->parent);
+    Env* cloned = env_new();
+
+    /* They share the same Env* for the parent, not a copy */
+    cloned->parent = env->parent;
 
     for (size_t i = 0; i < env->size; i++)
         env_bind(cloned, env->symbols[i], env->values[i]);

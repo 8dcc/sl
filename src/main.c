@@ -75,7 +75,7 @@ int main(void) {
     const bool print_prompt = isatty(0);
 
     /* Initialize global environment with symbols like "nil" */
-    Env* global_env = env_new(NULL);
+    Env* global_env = env_new();
     env_init_defaults(global_env);
 
     bool got_eof = false;

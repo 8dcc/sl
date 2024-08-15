@@ -16,8 +16,8 @@ struct Env {
 
 /*----------------------------------------------------------------------------*/
 
-/* Allocate and return an empty `Env' structure, initializing the parent */
-Env* env_new(Env* parent);
+/* Allocate and return an empty `Env' structure without specifying the parent */
+Env* env_new(void);
 
 /* Initialize environment with the default symbols like "nil" */
 void env_init_defaults(Env* env);
