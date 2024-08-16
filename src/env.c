@@ -57,15 +57,21 @@ void env_init_defaults(Env* env) {
 }
 
 Env* env_clone(Env* env) {
-    /* TODO: Since we know the original size, we can allocate once instead of
-     * reallocating in each call to `env_bind' */
     Env* cloned = env_new();
 
     /* They share the same Env* for the parent, not a copy */
     cloned->parent = env->parent;
 
-    for (size_t i = 0; i < env->size; i++)
-        env_bind(cloned, env->symbols[i], env->values[i]);
+    /* Allocate the same number of symbols and values */
+    cloned->size    = env->size;
+    cloned->symbols = sl_safe_malloc(cloned->size * sizeof(char*));
+    cloned->values  = sl_safe_malloc(cloned->size * sizeof(Expr*));
+
+    /* Store a copy of each symbol and value pair */
+    for (size_t i = 0; i < cloned->size; i++) {
+        cloned->symbols[i] = strdup(env->symbols[i]);
+        cloned->values[i]  = expr_clone_recur(env->values[i]);
+    }
 
     return cloned;
 }
