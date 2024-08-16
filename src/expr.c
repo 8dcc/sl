@@ -53,6 +53,85 @@ void expr_free(Expr* root) {
 
 /*----------------------------------------------------------------------------*/
 
+Expr* expr_clone(const Expr* e) {
+    if (e == NULL)
+        return NULL;
+
+    Expr* ret = sl_safe_malloc(sizeof(Expr));
+    ret->type = e->type;
+
+    switch (e->type) {
+        case EXPR_SYMBOL:
+            /* Allocate a new copy of the string */
+            ret->val.s = strdup(e->val.s);
+            break;
+        case EXPR_CONST:
+            ret->val.n = e->val.n;
+            break;
+        case EXPR_PARENT:
+            ret->val.children = NULL;
+            break;
+        case EXPR_PRIM:
+            ret->val.prim = e->val.prim;
+            break;
+        case EXPR_LAMBDA:
+            ret->val.lambda       = sl_safe_malloc(sizeof(LambdaCtx));
+            ret->val.lambda->env  = env_clone(e->val.lambda->env);
+            ret->val.lambda->body = expr_clone_recur(e->val.lambda->body);
+
+            /* Allocate a new string array for the formals, and copy them */
+            ret->val.lambda->formals_num = e->val.lambda->formals_num;
+            ret->val.lambda->formals =
+              sl_safe_malloc(ret->val.lambda->formals_num * sizeof(char*));
+            for (size_t i = 0; i < ret->val.lambda->formals_num; i++)
+                ret->val.lambda->formals[i] = strdup(e->val.lambda->formals[i]);
+
+            break;
+        case EXPR_ERR:
+            ERR("Trying to clone <error>");
+            break;
+    }
+
+    /* NOTE: We don't copy pointers like e->next or e->val.children  */
+    ret->next = NULL;
+    return ret;
+}
+
+Expr* expr_clone_recur(const Expr* e) {
+    if (e == NULL)
+        return NULL;
+
+    Expr* cloned = expr_clone(e);
+
+    /* If the expression we just cloned is a parent */
+    if (e->type == EXPR_PARENT) {
+        Expr* child_copy = NULL;
+
+        /* Clone all children, while linking them together in the new list. This
+         * is similar to how we evaluate function arguments in `eval' */
+        for (Expr* cur_child = e->val.children; cur_child != NULL;
+             cur_child       = cur_child->next) {
+            if (cloned->val.children == NULL) {
+                /* Clone the first children of the original */
+                child_copy = expr_clone_recur(cur_child);
+
+                /* Store that this was the first one for later */
+                cloned->val.children = child_copy;
+            } else {
+                /* If we already cloned one, keep linking them */
+                child_copy->next = expr_clone_recur(cur_child);
+
+                /* Move to the next argument in our copy list */
+                child_copy = child_copy->next;
+            }
+        }
+    }
+
+    return cloned;
+}
+
+/*----------------------------------------------------------------------------*/
+
 #define INDENT_STEP 4
 void expr_print_debug(Expr* e) {
     static int indent = 0;
@@ -174,79 +253,11 @@ void expr_println(Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
-Expr* expr_clone(const Expr* e) {
-    if (e == NULL)
-        return NULL;
+size_t expr_list_len(Expr* e) {
+    size_t result = 0;
 
-    Expr* ret = sl_safe_malloc(sizeof(Expr));
-    ret->type = e->type;
+    for (; e != NULL; e = e->next)
+        result++;
 
-    switch (e->type) {
-        case EXPR_SYMBOL:
-            /* Allocate a new copy of the string */
-            ret->val.s = strdup(e->val.s);
-            break;
-        case EXPR_CONST:
-            ret->val.n = e->val.n;
-            break;
-        case EXPR_PARENT:
-            ret->val.children = NULL;
-            break;
-        case EXPR_PRIM:
-            ret->val.prim = e->val.prim;
-            break;
-        case EXPR_LAMBDA:
-            ret->val.lambda       = sl_safe_malloc(sizeof(LambdaCtx));
-            ret->val.lambda->env  = env_clone(e->val.lambda->env);
-            ret->val.lambda->body = expr_clone_recur(e->val.lambda->body);
-
-            /* Allocate a new string array for the formals, and copy them */
-            ret->val.lambda->formals_num = e->val.lambda->formals_num;
-            ret->val.lambda->formals =
-              sl_safe_malloc(ret->val.lambda->formals_num * sizeof(char*));
-            for (size_t i = 0; i < ret->val.lambda->formals_num; i++)
-                ret->val.lambda->formals[i] = strdup(e->val.lambda->formals[i]);
-
-            break;
-        case EXPR_ERR:
-            ERR("Trying to clone <error>");
-            break;
-    }
-
-    /* NOTE: We don't copy pointers like e->next or e->val.children  */
-    ret->next = NULL;
-    return ret;
-}
-
-Expr* expr_clone_recur(const Expr* e) {
-    if (e == NULL)
-        return NULL;
-
-    Expr* cloned = expr_clone(e);
-
-    /* If the expression we just cloned is a parent */
-    if (e->type == EXPR_PARENT) {
-        Expr* child_copy = NULL;
-
-        /* Clone all children, while linking them together in the new list. This
-         * is similar to how we evaluate function arguments in `eval' */
-        for (Expr* cur_child = e->val.children; cur_child != NULL;
-             cur_child       = cur_child->next) {
-            if (cloned->val.children == NULL) {
-                /* Clone the first children of the original */
-                child_copy = expr_clone_recur(cur_child);
-
-                /* Store that this was the first one for later */
-                cloned->val.children = child_copy;
-            } else {
-                /* If we already cloned one, keep linking them */
-                child_copy->next = expr_clone_recur(cur_child);
-
-                /* Move to the next argument in our copy list */
-                child_copy = child_copy->next;
-            }
-        }
-    }
-
-    return cloned;
+    return result;
 }

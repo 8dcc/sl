@@ -61,6 +61,15 @@ static inline const char* exprtype2str(enum EExprType type) {
     return "???";
 }
 
+/* Free expression and adjacent expressions, along with their children */
+void expr_free(Expr* root);
+
+/* Allocate a new expr and copy `e'. Needed to avoid double frees and leaks. */
+Expr* expr_clone(const Expr* e);
+
+/* Same as `expr_clone', but also clones children recursivelly. */
+Expr* expr_clone_recur(const Expr* e);
+
 /* Print formatted expression */
 void expr_print(Expr* root);
 
@@ -70,13 +79,7 @@ void expr_println(Expr* e);
 /* Print expression in detailed tree format */
 void expr_print_debug(Expr* e);
 
-/* Free expression and adjacent expressions, along with their children */
-void expr_free(Expr* root);
-
-/* Allocate a new expr and copy `e'. Needed to avoid double frees and leaks. */
-Expr* expr_clone(const Expr* e);
-
-/* Same as `expr_clone', but also clones children recursivelly. */
-Expr* expr_clone_recur(const Expr* e);
+/* Calculate number of elements in a linked list of Expr structures */
+size_t expr_list_len(Expr* e);
 
 #endif /* EXPR_H_ */
