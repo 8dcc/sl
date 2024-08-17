@@ -133,20 +133,64 @@ Expr* eval(Env* env, Expr* e) {
     return NULL;
 }
 
+/*----------------------------------------------------------------------------*/
+
+static Expr* lambda_call(Env* env, Expr* func, Expr* args) {
+    SL_ON_ERR(return NULL);
+
+    /* Count the number of arguments that we received */
+    const size_t arg_num = expr_list_len(args);
+
+    /* Make sure the number of arguments that we got is what we expected */
+    /* TODO: Add optional arguments */
+    SL_EXPECT(func->val.lambda->formals_num == arg_num,
+              "Invalid number of arguments. Expected %d, got %d.",
+              func->val.lambda->formals_num, arg_num);
+
+    Expr* cur_arg = args;
+    for (size_t i = 0; i < arg_num && cur_arg != NULL; i++) {
+        /* In the lambda's environment, bind the i-th formal argument to its
+         * corresponding argument value */
+        env_bind(func->val.lambda->env, func->val.lambda->formals[i], cur_arg);
+
+        /* Move to the next argument value */
+        cur_arg = cur_arg->next;
+    }
+
+    /* Set the environment used when calling the lambda as the parent
+     * environment of the lambda itself. It's important that we set this now,
+     * and not when defining the lambda. */
+    func->val.lambda->env->parent = env;
+
+    /* Return the evaluated body of the lambda, using its environment with the
+     * bound the formal arguments. */
+    return eval(func->val.lambda->env, func->val.lambda->body);
+}
+
 Expr* apply(Env* env, Expr* func, Expr* args) {
     SL_ON_ERR(return NULL);
     SL_EXPECT(env != NULL, "Invalid environment.");
     SL_EXPECT(func != NULL, "Invalid function.");
 
-    /* TODO: Add procedures, closures, etc. */
-    SL_EXPECT(func->type == EXPR_PRIM,
-              "Non-primitive functions are not supported for now.");
+    switch (func->type) {
+        case EXPR_PRIM: {
+            /* Get primitive C function from the expression */
+            PrimitiveFuncPtr primitive = func->val.prim;
+            SL_ASSERT(primitive != NULL, "Invalid function pointer.");
 
-    /* Get primitive C function from the expression */
-    PrimitiveFuncPtr primitive = func->val.prim;
-    SL_ASSERT(primitive != NULL, "Invalid function pointer.");
+            /* Call primitive C function with the evaluated arguments we got
+             * from `eval'. */
+            return primitive(env, args);
+        }
 
-    /* Call primitive C function with the evaluated arguments we got from
-     * `eval'. */
-    return primitive(env, args);
+        case EXPR_LAMBDA: {
+            return lambda_call(env, func, args);
+        }
+
+        default: {
+            ERR("Expected primitive or lambda, got '%s'.",
+                exprtype2str(func->type));
+            return NULL;
+        }
+    }
 }
