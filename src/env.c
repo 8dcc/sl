@@ -43,10 +43,11 @@ void env_init_defaults(Env* env) {
 
     /* Bind primitive C functions */
     BIND_PRIM(env, "quote", quote);
-    BIND_PRIM(env, "lambda", lambda);
     BIND_PRIM(env, "define", define);
+    BIND_PRIM(env, "lambda", lambda);
     BIND_PRIM(env, "eval", eval);
     BIND_PRIM(env, "apply", apply);
+    BIND_PRIM(env, "begin", begin);
     BIND_PRIM(env, "cons", cons);
     BIND_PRIM(env, "car", car);
     BIND_PRIM(env, "cdr", cdr);

@@ -12,6 +12,7 @@ DECLARE_PRIM(define);
 DECLARE_PRIM(lambda);
 DECLARE_PRIM(eval);
 DECLARE_PRIM(apply);
+DECLARE_PRIM(begin);
 DECLARE_PRIM(cons);
 DECLARE_PRIM(car);
 DECLARE_PRIM(cdr);

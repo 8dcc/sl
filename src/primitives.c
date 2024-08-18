@@ -149,6 +149,23 @@ Expr* prim_apply(Env* env, Expr* e) {
     return apply(env, e, e->next);
 }
 
+Expr* prim_begin(Env* env, Expr* e) {
+    SL_ON_ERR(return NULL);
+
+    /* In Scheme, begin is technically a special form because when making a
+     * call, the arguments are not required to be evaluated in order. In this
+     * Lisp, however, they are. */
+    SL_EXPECT(e != NULL, "Expected at least 1 expression.");
+
+    Expr* last_evaluated = NULL;
+    for (Expr* cur = e; cur != NULL; cur = cur->next) {
+        expr_free(last_evaluated);
+        last_evaluated = eval(env, cur);
+    }
+
+    return last_evaluated;
+}
+
 Expr* prim_cons(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
