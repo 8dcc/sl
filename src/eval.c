@@ -69,11 +69,16 @@ Expr* eval(Env* env, Expr* e) {
      *   - Quoted expression in the form (quote symbol), pass `cadr' to
      *     primitive without evaluating it. The primitive will just return a
      *     copy.
+     *   - When defining a variable, the symbol should not be evaluated. The
+     *     value, however, will be evaluated from the primitive (our Lisp don't
+     *     use lazy evaluation).
      *   - The arguments of a call to `lambda' (formal arguments and body) are
      *     not supposed to be evaluated.
      */
     if (is_special_form(e, "quote"))
         return prim_quote(env, e->val.children->next);
+    if (is_special_form(e, "define"))
+        return prim_define(env, e->val.children->next);
     if (is_special_form(e, "lambda"))
         return prim_lambda(env, e->val.children->next);
 

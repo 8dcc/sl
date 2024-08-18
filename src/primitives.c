@@ -30,6 +30,50 @@ Expr* prim_quote(Env* env, Expr* e) {
     return expr_clone_recur(e);
 }
 
+Expr* prim_define(Env* env, Expr* e) {
+    /*
+     * The `define' function binds the even arguments to the odd arguments.
+     * Therefore, it expects an even number of arguments.
+     *
+     * Returns an evaluated copy of the last bound expression.
+     */
+    Expr* last_bound = NULL;
+
+    /* See note at the bottom */
+    SL_ON_ERR(return last_bound);
+
+    for (Expr* arg = e; arg != NULL; arg = arg->next) {
+        SL_EXPECT(arg->next != NULL,
+                  "Got an odd number of arguments, ignoring last.");
+
+        /* Odd argument: Symbol */
+        EXPECT_TYPE(arg, EXPR_SYMBOL);
+        const char* sym = arg->val.s;
+
+        /* Even argument: Expression */
+        arg = arg->next;
+
+        /* We evaluate the expression before binding. Invalid expressions are
+         * not defined. */
+        Expr* evaluated = eval(env, arg);
+        if (evaluated == NULL)
+            continue;
+
+        /* Bind a copy of the evaluated expression to the current environment */
+        env_bind(env, sym, evaluated);
+
+        /* The `last_bound' variable holds either NULL or the last returned
+         * expression by `eval'. Before overwriting the copy returned by `eval',
+         * free it. */
+        expr_free(last_bound);
+        last_bound = evaluated;
+    }
+
+    /* Last bound holds either NULL or the last valid expression returned by
+     * `eval'. Since eval returns a new expression, we can return it safely. */
+    return last_bound;
+}
+
 Expr* prim_lambda(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
@@ -43,7 +87,8 @@ Expr* prim_lambda(Env* env, Expr* e) {
     size_t formals_num = 0;
     for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
         if (cur->type != EXPR_SYMBOL) {
-            ERR("Formal arguments of `lambda' must be of type 'Symbol', got '%s'.",
+            ERR("Formal arguments of `lambda' must be of type 'Symbol', got "
+                "'%s'.",
                 exprtype2str(cur->type));
             return NULL;
         }
@@ -88,35 +133,6 @@ Expr* prim_lambda(Env* env, Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 /* Primitives that should have their parameters evaluated by the caller */
-
-Expr* prim_define(Env* env, Expr* e) {
-    SL_ON_ERR(return NULL);
-
-    /*
-     * The `define' function will bind the even arguments to the odd arguments.
-     * It expects an even number of arguments.
-     *
-     * Returns the last bound expression.
-     */
-    const Expr* last_bound = NULL;
-
-    for (Expr* arg = e; arg != NULL; arg = arg->next) {
-        SL_EXPECT(arg->next != NULL, "Got an odd number of arguments.");
-
-        /* Odd argument: Symbol */
-        EXPECT_TYPE(arg, EXPR_SYMBOL);
-        const char* sym = arg->val.s;
-
-        /* Even argument: Expression */
-        arg             = arg->next;
-        const Expr* val = arg;
-
-        env_bind(env, sym, val);
-        last_bound = val;
-    }
-
-    return (last_bound == NULL) ? NULL : expr_clone_recur(last_bound);
-}
 
 Expr* prim_eval(Env* env, Expr* e) {
     return eval(env, e);
