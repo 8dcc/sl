@@ -28,7 +28,7 @@ For more information, see:
 #+end_quote
 
 This LISP has a few components that are responsible for their own data. This is
-the basic process of parsing and evaluating the user input.
+the basic [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][REPL]] process:
 
 1. The user input is read using =input_read()=, defined in [[file:src/main.c][main.c]]. This function
    will read across lines making sure that all opened expressions are closed
@@ -67,18 +67,26 @@ $ make
 
 #+begin_src console
 $ ./sl
-sl> (+ 1 2 (- 5 4) (* 3 4))
-16.000000
+sl> (+ 1 2 (- 5 4) (* 3 4) 10)
+26.000000
 
 sl> define
 <primitive 0x55d31f51b900>
 
-sl> (define 'my-var 'Testing)
-'Testing
+sl> (define my-symbol 'Testing)
+Testing
 
-sl> (define 'my-add +)
+sl> (define my-addition +)
 <primitive 0x55d31f51ba21>
 
-sl> (+ 1 2 3)
-6.000000
+sl> (define my-global 10)
+10.000000
+
+sl> (define my-lambda
+      (lambda (x y)
+        (* my-global (my-addition x y))))
+<lambda>
+
+sl> (my-lambda 3 4)
+70.000000
 #+end_src
