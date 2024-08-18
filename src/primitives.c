@@ -262,10 +262,19 @@ Expr* prim_sub(Env* env, Expr* e) {
 
     double total = e->val.n;
 
-    for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
-        EXPECT_TYPE(arg, EXPR_CONST);
+    /*
+     * If there is only one argument, negate. Otherwise subtract in order.
+     *   (- 5)     ===> -5
+     *   (- 9 5 1) ===> 3
+     */
+    if (e->next == NULL) {
+        total = -total;
+    } else {
+        for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
+            EXPECT_TYPE(arg, EXPR_CONST);
 
-        total -= arg->val.n;
+            total -= arg->val.n;
+        }
     }
 
     Expr* ret  = sl_safe_malloc(sizeof(Expr));
