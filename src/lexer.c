@@ -4,11 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h> /* pow */
+#include <math.h> /* pow() */
+
 #include "include/lexer.h"
 #include "include/util.h"
 
-#define TOKEN_BUFSZ 50
+#define TOKEN_BUFSZ 100
 
 static bool parse_number(const char* str, double* out) {
     /* 0 means we are in the integer part of the number */
@@ -16,6 +17,12 @@ static bool parse_number(const char* str, double* out) {
 
     /* First, clear the output */
     *out = 0.0;
+
+    bool negate_result = false;
+    if (str[0] == '-' && !is_token_separator(str[1])) {
+        str++;
+        negate_result = true;
+    }
 
     while (!is_token_separator(*str)) {
         if (isdigit(*str)) {
@@ -44,6 +51,9 @@ static bool parse_number(const char* str, double* out) {
 
         str++;
     }
+
+    if (negate_result)
+        *out *= -1;
 
     return true;
 }
