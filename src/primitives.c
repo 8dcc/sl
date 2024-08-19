@@ -11,10 +11,15 @@
 #include "include/env.h"
 #include "include/primitives.h"
 
+#define EXPECT_ARG_NUM(EXPR, NUM)                            \
+    SL_EXPECT(expr_list_len(EXPR) == NUM,                    \
+              "Expected exactly %d arguments, got %d.", NUM, \
+              expr_list_len(EXPR))
+
 #define EXPECT_TYPE(EXPR, TYPE)                              \
     SL_EXPECT((EXPR)->type == TYPE,                          \
               "Expected expression of type '%s', got '%s'.", \
-              exprtype2str(TYPE), exprtype2str((EXPR)->type));
+              exprtype2str(TYPE), exprtype2str((EXPR)->type))
 
 /*----------------------------------------------------------------------------*/
 /* Special Form primitives. See SICP Chapter 4.1.1 */
@@ -169,8 +174,7 @@ Expr* prim_begin(Env* env, Expr* e) {
 Expr* prim_cons(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL && e->next != NULL && e->next->next == NULL,
-              "Expected exactly 2 arguments.");
+    EXPECT_ARG_NUM(e, 2);
 
     /*
      * The `cons' implementation is a bit different for now.
@@ -194,8 +198,8 @@ Expr* prim_cons(Env* env, Expr* e) {
 Expr* prim_car(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL && e->next == NULL, "Expected one argument.");
-    SL_EXPECT(e->type == EXPR_PARENT, "Expected a list as first argument");
+    EXPECT_ARG_NUM(e, 1);
+    EXPECT_TYPE(e, EXPR_PARENT);
 
     /* (car '()) ===> nil */
     if (e->val.children == NULL)
@@ -211,8 +215,8 @@ Expr* prim_car(Env* env, Expr* e) {
 Expr* prim_cdr(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL && e->next == NULL, "Expected one argument.");
-    SL_EXPECT(e->type == EXPR_PARENT, "Expected a list as first argument");
+    EXPECT_ARG_NUM(e, 1);
+    EXPECT_TYPE(e, EXPR_PARENT);
 
     /*
      * (cdr '())  ===> nil
