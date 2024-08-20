@@ -18,31 +18,26 @@
 
 /* Evaluate each sub-expression as an argument for a procedure */
 static Expr* eval_args(Env* env, Expr* list) {
-    Expr* copy_start = NULL;
-    Expr* cur_copy   = NULL;
+    /* The first item will be stored in dummy_copy.next */
+    Expr dummy_copy;
+    dummy_copy.next = NULL;
+    Expr* cur_copy  = &dummy_copy;
+
     for (Expr* cur_item = list; cur_item != NULL; cur_item = cur_item->next) {
-        if (copy_start == NULL) {
-            /* Evaluate original argument, save it in our copy */
-            cur_copy = eval(env, cur_item);
+        /* Evaluate original argument, save it in our copy */
+        cur_copy->next = eval(env, cur_item);
 
-            /* If we haven't saved the first item of the linked list, save it */
-            copy_start = cur_copy;
-        } else {
-            /* If it's not the first copy, keep filling the linked list */
-            cur_copy->next = eval(env, cur_item);
+        /* Move to the next argument in our copy list */
+        cur_copy = cur_copy->next;
 
-            /* Move to the next argument in our copy list */
-            cur_copy = cur_copy->next;
-        }
-
-        /* Failed to evaluate an item. Only `list' can be NULL. Stop. */
+        /* Failed to evaluate an item. Free what we had evaluated and stop. */
         if (cur_copy == NULL) {
-            expr_free(copy_start);
+            expr_free(dummy_copy.next);
             return NULL;
         }
     }
 
-    return copy_start;
+    return dummy_copy.next;
 }
 
 /* Does this expression match the form (NAME ...)? */

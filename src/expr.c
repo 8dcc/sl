@@ -105,32 +105,30 @@ Expr* expr_clone_recur(const Expr* e) {
 
     /* If the expression we just cloned is a parent */
     if (e->type == EXPR_PARENT) {
-        Expr* child_copy = NULL;
+        /* The copy of the first child will be stored in dummy_copy.next */
+        Expr dummy_copy;
+        dummy_copy.next = NULL;
+        Expr* cur_copy  = &dummy_copy;
 
         /* Clone all children, while linking them together in the new list. This
          * is similar to how we evaluate function arguments in `eval' */
-        for (Expr* cur_child = e->val.children; cur_child != NULL;
-             cur_child       = cur_child->next) {
-            if (cloned->val.children == NULL) {
-                /* Clone the first children of the original */
-                child_copy = expr_clone_recur(cur_child);
+        for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
+            /* Clone each children recursively */
+            cur_copy->next = expr_clone_recur(cur);
 
-                /* Store that this was the first one for later */
-                cloned->val.children = child_copy;
-            } else {
-                /* If we already cloned one, keep linking them */
-                child_copy->next = expr_clone_recur(cur_child);
-
-                /* Move to the next argument in our copy list */
-                child_copy = child_copy->next;
-            }
+            /* Move to the next argument in our copy list */
+            cur_copy = cur_copy->next;
         }
+
+        /* See comment above */
+        cloned->val.children = dummy_copy.next;
     }
 
     return cloned;
 }
 
 Expr* expr_clone_list(const Expr* e) {
+    /* TODO: This is missing sanity checks. Use dummy approach */
     Expr* result = expr_clone_recur(e);
 
     for (Expr* cur = result; e->next != NULL; cur = cur->next, e = e->next)
