@@ -128,13 +128,16 @@ Expr* expr_clone_recur(const Expr* e) {
 }
 
 Expr* expr_clone_list(const Expr* e) {
-    /* TODO: This is missing sanity checks. Use dummy approach */
-    Expr* result = expr_clone_recur(e);
+    Expr dummy_copy;
+    dummy_copy.next = NULL;
+    Expr* cur_copy  = &dummy_copy;
 
-    for (Expr* cur = result; e->next != NULL; cur = cur->next, e = e->next)
-        cur->next = expr_clone_recur(e->next);
+    for (const Expr* cur = e; cur != NULL; cur = cur->next) {
+        cur_copy->next = expr_clone_recur(cur);
+        cur_copy       = cur_copy->next;
+    }
 
-    return result;
+    return dummy_copy.next;
 }
 
 /*----------------------------------------------------------------------------*/
