@@ -218,40 +218,23 @@ Expr* prim_cdr(Env* env, Expr* e) {
     EXPECT_ARG_NUM(e, 1);
     EXPECT_TYPE(e, EXPR_PARENT);
 
-    /*
-     * (cdr '())  ===> nil
-     * (cdr '(a)) ===> nil
-     */
+    Expr* ret = sl_safe_malloc(sizeof(Expr));
+    ret->type = EXPR_PARENT;
+    ret->next = NULL;
+
     if (e->val.children == NULL || e->val.children->next == NULL) {
-        Expr* ret         = sl_safe_malloc(sizeof(Expr));
-        ret->type         = EXPR_PARENT;
+        /*
+         * (cdr '())  ===> nil
+         * (cdr '(a)) ===> nil
+         */
         ret->val.children = NULL;
-        ret->next         = NULL;
-        return ret;
+    } else {
+        /*
+         * (cdr '(a b c))     ===> (b c)
+         * (cdr '((a b) y z)) ===> (y z)
+         */
+        ret->val.children = expr_clone_list(e->val.children->next);
     }
-
-    /* For more information, see similar iteration in eval.c */
-    Expr* cdr_start = NULL;
-    Expr* cur_copy  = NULL;
-    for (Expr* cur_item = e->val.children->next; cur_item != NULL;
-         cur_item       = cur_item->next) {
-        if (cur_copy == NULL) {
-            cur_copy  = expr_clone_recur(cur_item);
-            cdr_start = cur_copy;
-        } else {
-            cur_copy->next = expr_clone_recur(cur_item);
-            cur_copy       = cur_copy->next;
-        }
-    }
-
-    /*
-     * (cdr '(a b c))     ===> (b c)
-     * (cdr '((a b) y z)) ===> (y z)
-     */
-    Expr* ret         = sl_safe_malloc(sizeof(Expr));
-    ret->type         = EXPR_PARENT;
-    ret->val.children = cdr_start;
-    ret->next         = NULL;
 
     return ret;
 }
@@ -293,7 +276,6 @@ Expr* prim_sub(Env* env, Expr* e) {
     } else {
         for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
             EXPECT_TYPE(arg, EXPR_CONST);
-
             total -= arg->val.n;
         }
     }
