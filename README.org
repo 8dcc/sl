@@ -3,11 +3,7 @@
 #+startup: showeverything
 #+author: 8dcc
 
-*Simple LISP interpreter.*
-
 #+TOC: headlines 2
-
-* Description
 
 Simple LISP interpreter made in C. This project is still WIP, but I plan on
 writing some detailed documentation once the project becomes stable. It will
