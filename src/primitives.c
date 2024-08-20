@@ -82,8 +82,8 @@ Expr* prim_define(Env* env, Expr* e) {
 Expr* prim_lambda(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL && e->next != NULL && e->next->next == NULL,
-              "The special form `lambda' expects exactly 2 arguments: Formals "
+    SL_EXPECT(e != NULL && e->next != NULL,
+              "The special form `lambda' expects at least 2 arguments: Formals "
               "and body.");
     EXPECT_TYPE(e, EXPR_PARENT);
 
@@ -111,7 +111,7 @@ Expr* prim_lambda(Env* env, Expr* e) {
      *     function call.
      *   - A string array for the formal arguments of the function, the first
      *     argument of `lambda'. It will be filled below.
-     *   - The body of the function, the second argument of `lambda'.
+     *   - The body of the function, the rest of the arguments of `lambda'.
      *
      * Note that since `lambda' is a special form, it's handled differently in
      * `eval' and its arguments won't be evaluated.
@@ -120,7 +120,7 @@ Expr* prim_lambda(Env* env, Expr* e) {
     ret->val.lambda->env         = env_new();
     ret->val.lambda->formals     = sl_safe_malloc(formals_num * sizeof(char*));
     ret->val.lambda->formals_num = formals_num;
-    ret->val.lambda->body        = expr_clone_recur(e->next);
+    ret->val.lambda->body        = expr_clone_list(e->next);
 
     Expr* cur_formal = e->val.children;
     for (size_t i = 0; i < formals_num; i++) {

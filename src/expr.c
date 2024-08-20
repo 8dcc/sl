@@ -77,7 +77,7 @@ Expr* expr_clone(const Expr* e) {
         case EXPR_LAMBDA:
             ret->val.lambda       = sl_safe_malloc(sizeof(LambdaCtx));
             ret->val.lambda->env  = env_clone(e->val.lambda->env);
-            ret->val.lambda->body = expr_clone_recur(e->val.lambda->body);
+            ret->val.lambda->body = expr_clone_list(e->val.lambda->body);
 
             /* Allocate a new string array for the formals, and copy them */
             ret->val.lambda->formals_num = e->val.lambda->formals_num;
@@ -197,7 +197,7 @@ void expr_print_debug(Expr* e) {
             }
             printf(")\n");
 
-            /* And the body of the function as an Expr */
+            /* Print each expression in the body of the function */
             expr_print_debug(e->val.lambda->body);
             indent -= INDENT_STEP;
             break;

@@ -167,9 +167,16 @@ static Expr* lambda_call(Env* env, Expr* func, Expr* args) {
      * and not when defining the lambda. */
     func->val.lambda->env->parent = env;
 
-    /* Return the evaluated body of the lambda, using its environment with the
-     * bound the formal arguments. */
-    return eval(func->val.lambda->env, func->val.lambda->body);
+    /* Evaluate each expression in the body of the lambda, using its environment
+     * with the bound the formal arguments. Return the last evaluated
+     * expression. */
+    Expr* last_evaluated = NULL;
+    for (Expr* cur = func->val.lambda->body; cur != NULL; cur = cur->next) {
+        expr_free(last_evaluated);
+        last_evaluated = eval(func->val.lambda->env, cur);
+    }
+
+    return last_evaluated;
 }
 
 Expr* apply(Env* env, Expr* func, Expr* args) {
