@@ -23,9 +23,9 @@ static Expr* eval_args(Env* env, Expr* list) {
     dummy_copy.next = NULL;
     Expr* cur_copy  = &dummy_copy;
 
-    for (Expr* cur_item = list; cur_item != NULL; cur_item = cur_item->next) {
+    for (Expr* cur = list; cur != NULL; cur = cur->next) {
         /* Evaluate original argument, save it in our copy */
-        cur_copy->next = eval(env, cur_item);
+        cur_copy->next = eval(env, cur);
 
         /* Move to the next argument in our copy list */
         cur_copy = cur_copy->next;

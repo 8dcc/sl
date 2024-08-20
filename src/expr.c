@@ -143,7 +143,7 @@ Expr* expr_clone_list(const Expr* e) {
 /*----------------------------------------------------------------------------*/
 
 #define INDENT_STEP 4
-void expr_print_debug(Expr* e) {
+void expr_print_debug(const Expr* e) {
     static int indent = 0;
 
     /* This function shouldn't be called with NULL */
@@ -211,7 +211,7 @@ void expr_print_debug(Expr* e) {
         expr_print_debug(e->next);
 }
 
-static void print_sexpr(Expr* e) {
+static void print_sexpr(const Expr* e) {
     putchar('(');
     for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
         expr_print(cur);
@@ -222,7 +222,7 @@ static void print_sexpr(Expr* e) {
     putchar(')');
 }
 
-void expr_print(Expr* e) {
+void expr_print(const Expr* e) {
     /* This function shouldn't be called with NULL */
     if (e == NULL) {
         ERR("Got null expression.");
@@ -256,14 +256,14 @@ void expr_print(Expr* e) {
     }
 }
 
-void expr_println(Expr* e) {
+void expr_println(const Expr* e) {
     expr_print(e);
     putchar('\n');
 }
 
 /*----------------------------------------------------------------------------*/
 
-size_t expr_list_len(Expr* e) {
+size_t expr_list_len(const Expr* e) {
     size_t result = 0;
 
     for (; e != NULL; e = e->next)

@@ -74,15 +74,15 @@ Expr* expr_clone_recur(const Expr* e);
 Expr* expr_clone_list(const Expr* e);
 
 /* Print formatted expression */
-void expr_print(Expr* root);
+void expr_print(const Expr* root);
 
 /* Print formatted expression and a newline  */
-void expr_println(Expr* e);
+void expr_println(const Expr* e);
 
 /* Print expression in detailed tree format */
-void expr_print_debug(Expr* e);
+void expr_print_debug(const Expr* e);
 
 /* Calculate number of elements in a linked list of Expr structures */
-size_t expr_list_len(Expr* e);
+size_t expr_list_len(const Expr* e);
 
 #endif /* EXPR_H_ */
