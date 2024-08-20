@@ -64,11 +64,14 @@ static inline const char* exprtype2str(enum EExprType type) {
 /* Free expression and adjacent expressions, along with their children */
 void expr_free(Expr* root);
 
-/* Allocate a new expr and copy `e'. Needed to avoid double frees and leaks. */
+/* Allocate a new expr and copy `e'. Needed to avoid double frees and leaks */
 Expr* expr_clone(const Expr* e);
 
-/* Same as `expr_clone', but also clones children recursivelly. */
+/* Same as `expr_clone', but also clones children recursivelly */
 Expr* expr_clone_recur(const Expr* e);
+
+/* Call `expr_clone_recur' on a linked list of expressions, starting at `e' */
+Expr* expr_clone_list(const Expr* e);
 
 /* Print formatted expression */
 void expr_print(Expr* root);

@@ -130,6 +130,15 @@ Expr* expr_clone_recur(const Expr* e) {
     return cloned;
 }
 
+Expr* expr_clone_list(const Expr* e) {
+    Expr* result = expr_clone_recur(e);
+
+    for (Expr* cur = result; e->next != NULL; cur = cur->next, e = e->next)
+        cur->next = expr_clone_recur(e->next);
+
+    return result;
+}
+
 /*----------------------------------------------------------------------------*/
 
 #define INDENT_STEP 4
