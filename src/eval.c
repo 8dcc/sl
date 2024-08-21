@@ -142,10 +142,11 @@ static Expr* lambda_call(Env* env, Expr* func, Expr* args) {
     const size_t arg_num = expr_list_len(args);
 
     /* Make sure the number of arguments that we got is what we expected */
-    /* TODO: Add optional arguments */
-    SL_EXPECT(func->val.lambda->formals_num == arg_num,
+    /* TODO: Valid checks for optional/rest arguments. Set ommited optionals to
+     * 'nil'. */
+    SL_EXPECT(func->val.lambda->formals_mandatory == arg_num,
               "Invalid number of arguments. Expected %d, got %d.",
-              func->val.lambda->formals_num, arg_num);
+              func->val.lambda->formals_mandatory, arg_num);
 
     Expr* cur_arg = args;
     for (size_t i = 0; i < arg_num && cur_arg != NULL; i++) {

@@ -21,9 +21,18 @@ enum EExprType {
 };
 
 struct LambdaCtx {
+    /* Environment for binding the formal arguments to the actual values when
+     * calling the lambda. */
     struct Env* env;
+
+    /* Formal arguments. Mandatory go first, then optional, and finally a single
+     * one used for the rest. */
     char** formals;
-    size_t formals_num;
+    size_t formals_mandatory;
+    size_t formals_optional;
+    bool formals_rest;
+
+    /* List of expressions to be evaluated in order when calling the lambda */
     Expr* body;
 };
 

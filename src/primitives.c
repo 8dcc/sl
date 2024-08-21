@@ -22,6 +22,64 @@
               exprtype2str(TYPE), exprtype2str((EXPR)->type))
 
 /*----------------------------------------------------------------------------*/
+/* Static util functions used by the primitives */
+
+/* Count the number of mandatory and optional formal arguments in a list. */
+static bool count_formals(const Expr* list, size_t* mandatory, size_t* optional,
+                          bool* has_rest) {
+    SL_ON_ERR(return false);
+
+    /* Initialize output variables */
+    *mandatory = 0;
+    *optional  = 0;
+    *has_rest  = false;
+
+    /* Current stage when parsing the formal argument list */
+    enum {
+        READING_MANDATORY,
+        READING_OPTIONAL,
+        READING_REST,
+    } state = READING_MANDATORY;
+
+    for (const Expr* cur = list; cur != NULL; cur = cur->next) {
+        SL_EXPECT(cur->type == EXPR_SYMBOL,
+                  "Invalid formal argument expected type 'Symbol', got '%s'.",
+                  exprtype2str(cur->type));
+
+        if (strcmp(cur->val.s, "&optional") == 0) {
+            /* Check if we should change state from mandatory to optional, and
+             * continue reading. */
+            SL_EXPECT(cur->next != NULL && state == READING_MANDATORY,
+                      "Wrong usage of `&optional' keyword.");
+            state = READING_OPTIONAL;
+            continue;
+        } else if (strcmp(cur->val.s, "&rest") == 0) {
+            SL_EXPECT(cur->next != NULL && state != READING_REST,
+                      "Wrong usage of `&rest' keyword.");
+            state = READING_REST;
+            continue;
+        }
+
+        switch (state) {
+            case READING_MANDATORY:
+                *mandatory += 1;
+                break;
+            case READING_OPTIONAL:
+                *optional += 1;
+                break;
+            case READING_REST:
+                /* Verify that the next argument to "&rest" is the last one. */
+                SL_EXPECT(cur->next == NULL,
+                          "Expected exactly 1 formal after `&rest' keyword.");
+                *has_rest = true;
+                break;
+        }
+    }
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
 /* Special Form primitives. See SICP Chapter 4.1.1 */
 
 Expr* prim_quote(Env* env, Expr* e) {
@@ -87,21 +145,13 @@ Expr* prim_lambda(Env* env, Expr* e) {
               "and body.");
     EXPECT_TYPE(e, EXPR_PARENT);
 
-    /* Count the number of formal arguments, and verify that they are all
-     * symbols. */
-    size_t formals_num = 0;
-    for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
-        if (cur->type != EXPR_SYMBOL) {
-            ERR("Formal arguments of `lambda' must be of type 'Symbol', got "
-                "'%s'.",
-                exprtype2str(cur->type));
-            return NULL;
-        }
-
-        formals_num++;
-    }
-
-    Expr* ret = expr_new(EXPR_LAMBDA);
+    /* Count and validate the formal arguments */
+    size_t mandatory;
+    size_t optional;
+    bool has_rest;
+    if (!count_formals(e->val.children, &mandatory, &optional, &has_rest))
+        return NULL;
+    const size_t total_formals = mandatory + optional + (has_rest ? 1 : 0);
 
     /*
      * Create a new LambdaCtx structure that will contain:
@@ -114,21 +164,42 @@ Expr* prim_lambda(Env* env, Expr* e) {
      * Note that since `lambda' is a special form, it's handled differently in
      * `eval' and its arguments won't be evaluated.
      */
-    ret->val.lambda              = sl_safe_malloc(sizeof(LambdaCtx));
-    ret->val.lambda->env         = env_new();
-    ret->val.lambda->formals     = sl_safe_malloc(formals_num * sizeof(char*));
-    ret->val.lambda->formals_num = formals_num;
-    ret->val.lambda->body        = expr_clone_list(e->next);
+    Expr* ret                = expr_new(EXPR_LAMBDA);
+    ret->val.lambda          = sl_safe_malloc(sizeof(LambdaCtx));
+    ret->val.lambda->env     = env_new();
+    ret->val.lambda->formals = sl_safe_malloc(total_formals * sizeof(char*));
+    ret->val.lambda->formals_mandatory = mandatory;
+    ret->val.lambda->formals_optional  = optional;
+    ret->val.lambda->formals_rest      = has_rest;
+    ret->val.lambda->body              = expr_clone_list(e->next);
 
+    /*
+     * For each formal argument we counted above, store the symbol as a C string
+     * in the array we just allocated. Note that we already verified that all of
+     * the formals are symbols when counting them in `count_formals'.
+     */
     Expr* cur_formal = e->val.children;
-    for (size_t i = 0; i < formals_num; i++) {
-        /* Store the symbol as a C string in the array we just allocated. Note
-         * that we already verified that all of the formals are symbols when
-         * counting the arguments. */
-        ret->val.lambda->formals[i] = strdup(cur_formal->val.s);
+    size_t i         = 0;
+    while (i < mandatory) {
+        ret->val.lambda->formals[i++] = strdup(cur_formal->val.s);
+        cur_formal                    = cur_formal->next;
+    }
 
-        /* Go to the next formal argument */
+    /* Skip "&optional" */
+    if (optional > 0)
         cur_formal = cur_formal->next;
+
+    while (i < optional) {
+        ret->val.lambda->formals[i++] = strdup(cur_formal->val.s);
+        cur_formal                    = cur_formal->next;
+    }
+
+    if (has_rest) {
+        /* Skip "&rest" */
+        cur_formal = cur_formal->next;
+
+        /* There should only be one formal left after "&rest" */
+        ret->val.lambda->formals[i] = strdup(cur_formal->val.s);
     }
 
     return ret;

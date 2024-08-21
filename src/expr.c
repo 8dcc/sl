@@ -42,7 +42,11 @@ void expr_free(Expr* root) {
             expr_free(root->val.lambda->body);
 
             /* Free each formal argument string, and the array itself */
-            for (size_t i = 0; i < root->val.lambda->formals_num; i++)
+            const size_t total_formals =
+              root->val.lambda->formals_mandatory +
+              root->val.lambda->formals_optional +
+              (root->val.lambda->formals_rest ? 1 : 0);
+            for (size_t i = 0; i < total_formals; i++)
                 free(root->val.lambda->formals[i]);
             free(root->val.lambda->formals);
 
@@ -86,11 +90,18 @@ Expr* expr_clone(const Expr* e) {
             ret->val.lambda->env  = env_clone(e->val.lambda->env);
             ret->val.lambda->body = expr_clone_list(e->val.lambda->body);
 
+            ret->val.lambda->formals_mandatory =
+              e->val.lambda->formals_mandatory;
+            ret->val.lambda->formals_optional = e->val.lambda->formals_optional;
+            ret->val.lambda->formals_rest     = e->val.lambda->formals_rest;
+
             /* Allocate a new string array for the formals, and copy them */
-            ret->val.lambda->formals_num = e->val.lambda->formals_num;
+            const size_t total_formals = e->val.lambda->formals_mandatory +
+                                         e->val.lambda->formals_optional +
+                                         (e->val.lambda->formals_rest ? 1 : 0);
             ret->val.lambda->formals =
-              sl_safe_malloc(ret->val.lambda->formals_num * sizeof(char*));
-            for (size_t i = 0; i < ret->val.lambda->formals_num; i++)
+              sl_safe_malloc(total_formals * sizeof(char*));
+            for (size_t i = 0; i < total_formals; i++)
                 ret->val.lambda->formals[i] = strdup(e->val.lambda->formals[i]);
 
             break;
@@ -198,11 +209,21 @@ void expr_print_debug(const Expr* e) {
                 putchar(' ');
 
             printf("Formals: (");
-            for (size_t i = 0; i < e->val.lambda->formals_num; i++) {
+            size_t formals_pos = 0;
+            for (size_t i = 0; i < e->val.lambda->formals_mandatory; i++) {
                 if (i > 0)
                     putchar(' ');
-                printf("%s", e->val.lambda->formals[i]);
+                printf("%s", e->val.lambda->formals[formals_pos++]);
             }
+            if (e->val.lambda->formals_optional > 0)
+                printf(" &optional ");
+            for (size_t i = 0; i < e->val.lambda->formals_optional; i++) {
+                if (i > 0)
+                    putchar(' ');
+                printf("%s", e->val.lambda->formals[formals_pos++]);
+            }
+            if (e->val.lambda->formals_rest)
+                printf(" &rest %s", e->val.lambda->formals[formals_pos]);
             printf(")\n");
 
             /* Print each expression in the body of the function */
