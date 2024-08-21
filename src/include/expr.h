@@ -61,6 +61,9 @@ static inline const char* exprtype2str(enum EExprType type) {
     return "???";
 }
 
+/* Allocate a new empty expression of the specified type */
+Expr* expr_new(enum EExprType type);
+
 /* Free expression and adjacent expressions, along with their children */
 void expr_free(Expr* root);
 

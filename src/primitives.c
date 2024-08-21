@@ -101,9 +101,7 @@ Expr* prim_lambda(Env* env, Expr* e) {
         formals_num++;
     }
 
-    Expr* ret = sl_safe_malloc(sizeof(Expr));
-    ret->type = EXPR_LAMBDA;
-    ret->next = NULL;
+    Expr* ret = expr_new(EXPR_LAMBDA);
 
     /*
      * Create a new LambdaCtx structure that will contain:
@@ -184,10 +182,8 @@ Expr* prim_cons(Env* env, Expr* e) {
      *
      * Maybe we could add a EXPR_CONS type.
      */
-    Expr* ret         = sl_safe_malloc(sizeof(Expr));
-    ret->type         = EXPR_PARENT;
+    Expr* ret         = expr_new(EXPR_PARENT);
     ret->val.children = expr_clone_recur(e);
-    ret->next         = NULL;
 
     /* Append the cdr to the car */
     ret->val.children->next = expr_clone_recur(e->next);
@@ -218,9 +214,7 @@ Expr* prim_cdr(Env* env, Expr* e) {
     EXPECT_ARG_NUM(e, 1);
     EXPECT_TYPE(e, EXPR_PARENT);
 
-    Expr* ret = sl_safe_malloc(sizeof(Expr));
-    ret->type = EXPR_PARENT;
-    ret->next = NULL;
+    Expr* ret = expr_new(EXPR_PARENT);
 
     if (e->val.children == NULL || e->val.children->next == NULL) {
         /*
@@ -252,10 +246,8 @@ Expr* prim_add(Env* env, Expr* e) {
         total += arg->val.n;
     }
 
-    Expr* ret  = sl_safe_malloc(sizeof(Expr));
-    ret->type  = EXPR_CONST;
+    Expr* ret  = expr_new(EXPR_CONST);
     ret->val.n = total;
-    ret->next  = NULL;
     return ret;
 }
 
@@ -280,10 +272,8 @@ Expr* prim_sub(Env* env, Expr* e) {
         }
     }
 
-    Expr* ret  = sl_safe_malloc(sizeof(Expr));
-    ret->type  = EXPR_CONST;
+    Expr* ret  = expr_new(EXPR_CONST);
     ret->val.n = total;
-    ret->next  = NULL;
     return ret;
 }
 
@@ -300,10 +290,8 @@ Expr* prim_mul(Env* env, Expr* e) {
         total *= arg->val.n;
     }
 
-    Expr* ret  = sl_safe_malloc(sizeof(Expr));
-    ret->type  = EXPR_CONST;
+    Expr* ret  = expr_new(EXPR_CONST);
     ret->val.n = total;
-    ret->next  = NULL;
     return ret;
 }
 
@@ -321,9 +309,7 @@ Expr* prim_div(Env* env, Expr* e) {
         total /= arg->val.n;
     }
 
-    Expr* ret  = sl_safe_malloc(sizeof(Expr));
-    ret->type  = EXPR_CONST;
+    Expr* ret  = expr_new(EXPR_CONST);
     ret->val.n = total;
-    ret->next  = NULL;
     return ret;
 }

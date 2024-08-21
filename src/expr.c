@@ -8,6 +8,14 @@
 #include "include/env.h"
 #include "include/util.h"
 
+Expr* expr_new(enum EExprType type) {
+    Expr* ret         = sl_safe_malloc(sizeof(Expr));
+    ret->type         = type;
+    ret->val.children = NULL;
+    ret->next         = NULL;
+    return ret;
+}
+
 void expr_free(Expr* root) {
     /* This function shouldn't be called with NULL */
     if (root == NULL)
@@ -57,8 +65,7 @@ Expr* expr_clone(const Expr* e) {
     if (e == NULL)
         return NULL;
 
-    Expr* ret = sl_safe_malloc(sizeof(Expr));
-    ret->type = e->type;
+    Expr* ret = expr_new(e->type);
 
     switch (e->type) {
         case EXPR_SYMBOL:

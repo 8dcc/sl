@@ -57,8 +57,7 @@ static Expr* parse_expr(Token** token_ptr) {
             expr->type = EXPR_PARENT;
 
             /* Car of the list, "quote" */
-            expr->val.children        = sl_safe_malloc(sizeof(Expr));
-            expr->val.children->type  = EXPR_SYMBOL;
+            expr->val.children        = expr_new(EXPR_SYMBOL);
             expr->val.children->val.s = strdup("quote");
 
             /* Cdr of the list, the actual expression. About `token_ptr', see
