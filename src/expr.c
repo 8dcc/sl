@@ -173,8 +173,7 @@ void expr_print_debug(const Expr* e) {
         case EXPR_PARENT:
             printf("[LST]");
 
-            /* List with no children: NIL */
-            if (e->val.children == NULL) {
+            if (expr_is_nil(e)) {
                 printf(" (NIL)\n");
                 break;
             }
@@ -244,8 +243,7 @@ void expr_print(const Expr* e) {
             printf("%s", e->val.s);
             break;
         case EXPR_PARENT:
-            /* List with no children: NIL */
-            if (e->val.children == NULL)
+            if (expr_is_nil(e))
                 printf("nil");
             else
                 print_sexpr(e);
@@ -277,4 +275,8 @@ size_t expr_list_len(const Expr* e) {
         result++;
 
     return result;
+}
+
+bool expr_is_nil(const Expr* e) {
+    return e != NULL && e->type == EXPR_PARENT && e->val.children == NULL;
 }

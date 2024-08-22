@@ -88,4 +88,7 @@ void expr_print_debug(const Expr* e);
 /* Calculate number of elements in a linked list of Expr structures */
 size_t expr_list_len(const Expr* e);
 
+/* Is the specified expression an empty list? */
+bool expr_is_nil(const Expr* e);
+
 #endif /* EXPR_H_ */

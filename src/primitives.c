@@ -155,9 +155,11 @@ Expr* prim_apply(Env* env, Expr* e) {
 Expr* prim_begin(Env* env, Expr* e) {
     SL_ON_ERR(return NULL);
 
-    /* In Scheme, begin is technically a special form because when making a
+    /*
+     * In Scheme, begin is technically a special form because when making a
      * call, the arguments are not required to be evaluated in order. In this
-     * Lisp, however, they are. */
+     * Lisp, however, they are.
+     */
     SL_EXPECT(e != NULL, "Expected at least 1 expression.");
 
     Expr* last_evaluated = NULL;
@@ -197,8 +199,10 @@ Expr* prim_car(Env* env, Expr* e) {
     EXPECT_ARG_NUM(e, 1);
     EXPECT_TYPE(e, EXPR_PARENT);
 
-    /* (car '()) ===> nil */
-    if (e->val.children == NULL)
+    /*
+     * (car '()) ===> nil
+     */
+    if (expr_is_nil(e))
         return expr_clone(e);
 
     /*
@@ -242,7 +246,6 @@ Expr* prim_add(Env* env, Expr* e) {
 
     for (Expr* arg = e; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
-
         total += arg->val.n;
     }
 
@@ -286,7 +289,6 @@ Expr* prim_mul(Env* env, Expr* e) {
 
     for (Expr* arg = e; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
-
         total *= arg->val.n;
     }
 
@@ -305,7 +307,6 @@ Expr* prim_div(Env* env, Expr* e) {
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
         SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
-
         total /= arg->val.n;
     }
 
