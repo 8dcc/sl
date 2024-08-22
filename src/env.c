@@ -41,6 +41,13 @@ void env_init_defaults(Env* env) {
     };
     env_bind(env, "nil", &nil_expr);
 
+    Expr tru_expr = {
+        .type  = EXPR_SYMBOL,
+        .val.s = "tru",
+        .next  = NULL,
+    };
+    env_bind(env, "tru", &tru_expr);
+
     /* Bind primitive C functions */
     BIND_PRIM(env, "quote", quote);
     BIND_PRIM(env, "define", define);
