@@ -10,6 +10,7 @@ struct Expr; /* expr.h */
 DECLARE_PRIM(quote);
 DECLARE_PRIM(define);
 DECLARE_PRIM(lambda);
+DECLARE_PRIM(if);
 DECLARE_PRIM(eval);
 DECLARE_PRIM(apply);
 DECLARE_PRIM(begin);

@@ -76,6 +76,8 @@ Expr* eval(Env* env, Expr* e) {
         return prim_define(env, e->val.children->next);
     if (is_special_form(e, "lambda"))
         return prim_lambda(env, e->val.children->next);
+    if (is_special_form(e, "if"))
+        return prim_if(env, e->val.children->next);
 
     switch (e->type) {
         case EXPR_PARENT: {

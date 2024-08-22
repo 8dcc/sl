@@ -134,6 +134,28 @@ Expr* prim_lambda(Env* env, Expr* e) {
     return ret;
 }
 
+Expr* prim_if(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(expr_list_len(e) == 3,
+              "The special form `if' expects exactly 3 arguments: Predicate, "
+              "consequent and alternative.");
+
+    /* Evaluate the predicate (first argument) */
+    Expr* evaluated_predicate = eval(env, e);
+
+    /* If the predicate is false (nil), the expression to be evaluated is the
+     * "consequent" (second argument), otherwise, evaluate the "alternative"
+     * (third argument). */
+    Expr* result = expr_is_nil(evaluated_predicate) ? e->next : e->next->next;
+
+    /* Make sure we free the expression allocated by `eval' */
+    expr_free(evaluated_predicate);
+
+    /* Since `if' is a special form, we need to evaluate the result */
+    return eval(env, result);
+}
+
 /*----------------------------------------------------------------------------*/
 /* Primitives that should have their parameters evaluated by the caller */
 
