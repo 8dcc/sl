@@ -299,3 +299,63 @@ size_t expr_list_len(const Expr* e) {
 bool expr_is_nil(const Expr* e) {
     return e != NULL && e->type == EXPR_PARENT && e->val.children == NULL;
 }
+
+bool expr_equal(const Expr* a, const Expr* b) {
+    /* If one of them is NULL, they are equal if the other is also NULL. This is
+     * an important check, specially since when calling ourselves recursively.
+     */
+    if (a == NULL || b == NULL)
+        return a == b;
+
+    if (a->type != b->type)
+        return false;
+
+    switch (a->type) {
+        case EXPR_CONST:
+            /* Compare the decimal values */
+            return a->val.n == b->val.n;
+
+        case EXPR_SYMBOL:
+            /* Compare the symbol strings */
+            return strcmp(a->val.s, b->val.s) == 0;
+
+        case EXPR_PARENT: {
+            Expr* child_a = a->val.children;
+            Expr* child_b = b->val.children;
+
+            /*
+             * Keep iterating while both children are equal. We check this by
+             * calling ourselves recursivelly.
+             *
+             * Since inside the loop both children are equal, if one of them is
+             * NULL, it means we reached the end of both lists and they are
+             * equal.
+             *
+             * This whole loop is similar an implementation of strcmp().
+             */
+            while (expr_equal(child_a, child_b)) {
+                if (child_a == NULL)
+                    return true;
+
+                child_a = child_a->next;
+                child_b = child_b->next;
+            }
+
+            /* If we broke out of the loop, a children didn't match */
+            return false;
+        }
+
+        case EXPR_PRIM:
+            /* Compare the C pointers for the primitive functions */
+            return a->val.prim == b->val.prim;
+
+        case EXPR_LAMBDA:
+            /* TODO: Compare lambda bodies and parameters */
+            return false;
+
+        case EXPR_ERR:
+            return false;
+    }
+
+    return true;
+}

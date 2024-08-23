@@ -91,4 +91,7 @@ size_t expr_list_len(const Expr* e);
 /* Is the specified expression an empty list? */
 bool expr_is_nil(const Expr* e);
 
+/* Return true if `a' and `b' have the same effective value */
+bool expr_equal(const Expr* a, const Expr* b);
+
 #endif /* EXPR_H_ */
