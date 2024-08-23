@@ -301,7 +301,8 @@ bool expr_is_nil(const Expr* e) {
 }
 
 bool expr_equal(const Expr* a, const Expr* b) {
-    /* If one of them is NULL, they are equal if the other is also NULL. This is
+    /*
+     * If one of them is NULL, they are equal if the other is also NULL. This is
      * an important check, specially since when calling ourselves recursively.
      */
     if (a == NULL || b == NULL)

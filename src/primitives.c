@@ -145,9 +145,9 @@ Expr* prim_if(Env* env, Expr* e) {
     Expr* evaluated_predicate = eval(env, e);
 
     /* If the predicate is false (nil), the expression to be evaluated is the
-     * "consequent" (second argument), otherwise, evaluate the "alternative"
-     * (third argument). */
-    Expr* result = expr_is_nil(evaluated_predicate) ? e->next : e->next->next;
+     * "alternative" (third argument) , otherwise, evaluate the "consequent"
+     * (second argument). */
+    Expr* result = expr_is_nil(evaluated_predicate) ? e->next->next : e->next;
 
     /* Make sure we free the expression allocated by `eval' */
     expr_free(evaluated_predicate);
