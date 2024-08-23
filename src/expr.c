@@ -69,19 +69,27 @@ Expr* expr_clone(const Expr* e) {
 
     switch (e->type) {
         case EXPR_SYMBOL:
-            /* Allocate a new copy of the string */
+            /* Don't reuse the old pointer */
             ret->val.s = strdup(e->val.s);
             break;
+
         case EXPR_CONST:
             ret->val.n = e->val.n;
             break;
+
         case EXPR_PARENT:
+            /* See `expr_clone_recur' for recursive cloning */
             ret->val.children = NULL;
             break;
+
         case EXPR_PRIM:
+            /* Copy the C function pointer */
             ret->val.prim = e->val.prim;
             break;
-        case EXPR_LAMBDA:
+
+        case EXPR_LAMBDA: {
+            /* Allocate a new LambdaCtx structure, clone the environment and
+             * body expressions. */
             ret->val.lambda       = sl_safe_malloc(sizeof(LambdaCtx));
             ret->val.lambda->env  = env_clone(e->val.lambda->env);
             ret->val.lambda->body = expr_clone_list(e->val.lambda->body);
@@ -92,14 +100,15 @@ Expr* expr_clone(const Expr* e) {
               sl_safe_malloc(ret->val.lambda->formals_num * sizeof(char*));
             for (size_t i = 0; i < ret->val.lambda->formals_num; i++)
                 ret->val.lambda->formals[i] = strdup(e->val.lambda->formals[i]);
+        } break;
 
-            break;
         case EXPR_ERR:
             ERR("Trying to clone <error>");
             break;
     }
 
-    /* NOTE: We don't copy pointers like e->next or e->val.children  */
+    /* We don't copy inferior or adjacent nodes. See, `expr_clone_recur' and
+     * `expr_clone_list' respectively. */
     ret->next = NULL;
     return ret;
 }
@@ -164,13 +173,15 @@ void expr_print_debug(const Expr* e) {
         putchar(' ');
 
     switch (e->type) {
-        case EXPR_CONST:
+        case EXPR_CONST: {
             printf("[NUM] %f\n", e->val.n);
-            break;
-        case EXPR_SYMBOL:
+        } break;
+
+        case EXPR_SYMBOL: {
             printf("[SYM] \"%s\"\n", e->val.s);
-            break;
-        case EXPR_PARENT:
+        } break;
+
+        case EXPR_PARENT: {
             printf("[LST]");
 
             if (expr_is_nil(e)) {
@@ -184,11 +195,13 @@ void expr_print_debug(const Expr* e) {
             indent += INDENT_STEP;
             expr_print_debug(e->val.children);
             indent -= INDENT_STEP;
-            break;
-        case EXPR_PRIM:
+        } break;
+
+        case EXPR_PRIM: {
             printf("[PRI] <primitive %p>\n", e->val.prim);
-            break;
-        case EXPR_LAMBDA:
+        } break;
+
+        case EXPR_LAMBDA: {
             printf("[FUN] <lambda>\n");
 
             /* Print list of formal arguments */
@@ -207,10 +220,12 @@ void expr_print_debug(const Expr* e) {
             /* Print each expression in the body of the function */
             expr_print_debug(e->val.lambda->body);
             indent -= INDENT_STEP;
-            break;
-        case EXPR_ERR:
+        } break;
+
+        case EXPR_ERR: {
             printf("[ERR] (Stopping)");
             return;
+        }
     }
 
     if (e->next != NULL)
@@ -239,22 +254,26 @@ void expr_print(const Expr* e) {
         case EXPR_CONST:
             printf("%f", e->val.n);
             break;
+
         case EXPR_SYMBOL:
             printf("%s", e->val.s);
             break;
+
         case EXPR_PARENT:
             if (expr_is_nil(e))
                 printf("nil");
             else
                 print_sexpr(e);
-
             break;
+
         case EXPR_PRIM:
             printf("<primitive %p>", e->val.prim);
             break;
+
         case EXPR_LAMBDA:
             printf("<lambda>");
             break;
+
         case EXPR_ERR:
             printf("<error>");
             break;
