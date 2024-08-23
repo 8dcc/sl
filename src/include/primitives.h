@@ -21,5 +21,6 @@ DECLARE_PRIM(add);
 DECLARE_PRIM(sub);
 DECLARE_PRIM(mul);
 DECLARE_PRIM(div);
+DECLARE_PRIM(equal);
 
 #endif /* PRIMITIVES_H_ */
