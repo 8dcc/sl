@@ -29,7 +29,7 @@ typedef struct Token {
 
 /* Allocate and fill an array of Tokens from the input. Must be freed by the
  * caller. */
-Token* tokens_scan(char* input);
+Token* tokenize(char* input);
 
 /* Free an array of tokens, along with all the memory used by each element */
 void tokens_free(Token* arr);

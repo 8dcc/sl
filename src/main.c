@@ -97,7 +97,7 @@ int main(void) {
         got_eof     = input_read(&input);
 
         /* Get token array from input */
-        Token* tokens = tokens_scan(input);
+        Token* tokens = tokenize(input);
 
         /* We are done with the raw input, free it */
         free(input);

@@ -137,8 +137,7 @@ done:
 
 /*----------------------------------------------------------------------------*/
 
-/* TODO: Rename lexer functions */
-Token* tokens_scan(char* input) {
+Token* tokenize(char* input) {
     size_t tokens_num = TOKEN_BUFSZ;
     Token* tokens     = sl_safe_calloc(TOKEN_BUFSZ, sizeof(Token));
 
