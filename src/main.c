@@ -34,6 +34,15 @@ static bool input_read(char** input) {
             sl_safe_realloc(*input, input_sz);
         }
 
+        /* Check if this is a comment start. If so, skip until the end of the
+         * line. */
+        if (c == ';') {
+            do {
+                c = getchar();
+            } while (c != '\n');
+            continue;
+        }
+
         /* Store character in string */
         (*input)[i++] = c;
 
