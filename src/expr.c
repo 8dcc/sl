@@ -162,15 +162,15 @@ Expr* expr_clone_list(const Expr* e) {
 void expr_print_debug(const Expr* e) {
     static int indent = 0;
 
+    for (int i = 0; i < indent; i++)
+        putchar(' ');
+
     /* This function shouldn't be called with NULL */
     if (e == NULL) {
         printf("[ERR] ");
-        ERR("Got NULL as argument. Aborting...");
+        ERR("Got NULL as argument. Returning...");
         return;
     }
-
-    for (int i = 0; i < indent; i++)
-        putchar(' ');
 
     switch (e->type) {
         case EXPR_CONST: {
