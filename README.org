@@ -30,14 +30,15 @@ the basic [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][
    will read across lines making sure that all opened expressions are closed
    before sending the data back to =main()=.
 2. The raw user input is converted into an array of =Token= structures using the
-   =tokens_scan()= function. This step might be redundant for such a simple
-   language as LISP, but I decided to do it anyway. After calling this function,
-   it frees the input. You could print the =Token= array using =token_print()=, if
-   needed. All these functions are defined in [[file:src/lexer.c][lexer.c]].
+   =tokenize()= function, which calls the static function =get_token()=. This step
+   might be redundant for such a simple language as LISP, but I decided to do it
+   anyway. After calling this function, the input is freed in =main()=. After this
+   step the =Token= array could be printed using =token_print()=, if needed. All
+   these functions are defined in [[file:src/lexer.c][lexer.c]].
 3. The =Token= array is converted into a linked list of =Expr= structures using the
    =parse()= function from [[file:src/parser.c][parser.c]]. At this point, nothing has been evaluated, it
    should just be a different representation of the user input. Then, the =Token=
-   array is freed. Note how all the values allocated by =tokens_scan()= have been
+   array is freed. Note how all the values allocated by =tokenize()= have been
    copied instead of reused, so they can be freed safely.
 4. We evaluate the expression using =eval()=, which will call =apply()= if
    needed. Both of these are defined in [[file:src/eval.c][eval.c]]. This function will return
@@ -60,6 +61,8 @@ $ make
 #+end_src
 
 * Usage
+
+For more examples, see the [[file:test/][test]] folder.
 
 #+begin_src console
 $ ./sl
