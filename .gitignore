@@ -1,9 +1,6 @@
 # Binary
 sl
 
-# Tests folder
-test/
-
 # Doxygen documentation
 /doc/html/
 /doc/latex/
