@@ -4,12 +4,12 @@
 #include <stdlib.h>
 #include <unistd.h> /* isatty() */
 
+#include "include/env.h"
+#include "include/expr.h"
 #include "include/util.h"
 #include "include/lexer.h"
-#include "include/expr.h"
 #include "include/parser.h"
 #include "include/eval.h"
-#include "include/env.h"
 
 #define INPUT_BUFSZ 100
 

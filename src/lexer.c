@@ -6,8 +6,8 @@
 #include <ctype.h>
 #include <math.h> /* pow() */
 
-#include "include/lexer.h"
 #include "include/util.h"
+#include "include/lexer.h"
 
 #define TOKEN_BUFSZ 100
 

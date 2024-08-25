@@ -4,12 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "include/util.h"
-#include "include/parser.h"
 #include "include/expr.h"
+#include "include/env.h"
+#include "include/util.h"
 #include "include/eval.h"
 #include "include/primitives.h"
-#include "include/env.h"
 
 /*----------------------------------------------------------------------------*/
 /* NOTE: Make sure we only allocate when we are sure the expression will be

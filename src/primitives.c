@@ -4,11 +4,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "include/util.h"
-#include "include/parser.h"
-#include "include/eval.h"
 #include "include/expr.h"
 #include "include/env.h"
+#include "include/util.h"
+#include "include/eval.h"
 #include "include/primitives.h"
 
 #define EXPECT_ARG_NUM(EXPR, NUM)                            \

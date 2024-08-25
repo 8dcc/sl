@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "include/expr.h"
 #include "include/util.h"
 #include "include/lexer.h"
-#include "include/expr.h"
 #include "include/parser.h"
 
 static Expr* parse_recur(const Token* tokens, size_t* parsed) {

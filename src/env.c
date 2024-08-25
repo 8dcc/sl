@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "include/util.h"
 #include "include/expr.h"
-#include "include/primitives.h"
 #include "include/env.h"
+#include "include/util.h"
+#include "include/primitives.h"
 
 /* Used in `env_init_defaults' */
 #define BIND_PRIM(ENV, SYM, FUNC)         \
