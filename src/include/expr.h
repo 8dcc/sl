@@ -2,12 +2,13 @@
 #ifndef EXPR_H_
 #define EXPR_H_ 1
 
+#include <stddef.h>
 #include <stdbool.h>
 
-struct Env; /* env.h */
+struct Env;       /* env.h */
+struct LambdaCtx; /* lambda.h */
 
 typedef struct Expr Expr;
-typedef struct LambdaCtx LambdaCtx;
 
 typedef Expr* (*PrimitiveFuncPtr)(struct Env*, Expr*);
 
@@ -20,13 +21,6 @@ enum EExprType {
     EXPR_LAMBDA,
 };
 
-struct LambdaCtx {
-    struct Env* env;
-    char** formals;
-    size_t formals_num;
-    Expr* body;
-};
-
 struct Expr {
     /* Type and value of the expression */
     enum EExprType type;
@@ -35,7 +29,7 @@ struct Expr {
         char* s;
         Expr* children;
         PrimitiveFuncPtr prim;
-        LambdaCtx* lambda;
+        struct LambdaCtx* lambda;
     } val;
 
     /* Next expression in the linked list */

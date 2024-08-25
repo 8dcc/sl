@@ -6,6 +6,7 @@
 
 #include "include/expr.h"
 #include "include/env.h"
+#include "include/lambda.h"
 #include "include/util.h"
 
 Expr* expr_new(enum EExprType type) {
@@ -36,18 +37,7 @@ void expr_free(Expr* root) {
             free(root->val.s);
             break;
         case EXPR_LAMBDA:
-            /* Free each component, allocated in prim_lambda().
-             * First, the environment and the body of the lambda */
-            env_free(root->val.lambda->env);
-            expr_free(root->val.lambda->body);
-
-            /* Free each formal argument string, and the array itself */
-            for (size_t i = 0; i < root->val.lambda->formals_num; i++)
-                free(root->val.lambda->formals[i]);
-            free(root->val.lambda->formals);
-
-            /* And finally, the LambdaCtx structure itself */
-            free(root->val.lambda);
+            lambda_ctx_free(root->val.lambda);
             break;
         case EXPR_ERR:
         case EXPR_CONST:
@@ -88,18 +78,7 @@ Expr* expr_clone(const Expr* e) {
             break;
 
         case EXPR_LAMBDA: {
-            /* Allocate a new LambdaCtx structure, clone the environment and
-             * body expressions. */
-            ret->val.lambda       = sl_safe_malloc(sizeof(LambdaCtx));
-            ret->val.lambda->env  = env_clone(e->val.lambda->env);
-            ret->val.lambda->body = expr_clone_list(e->val.lambda->body);
-
-            /* Allocate a new string array for the formals, and copy them */
-            ret->val.lambda->formals_num = e->val.lambda->formals_num;
-            ret->val.lambda->formals =
-              sl_safe_malloc(ret->val.lambda->formals_num * sizeof(char*));
-            for (size_t i = 0; i < ret->val.lambda->formals_num; i++)
-                ret->val.lambda->formals[i] = sl_safe_strdup(e->val.lambda->formals[i]);
+            ret->val.lambda = lambda_ctx_clone(e->val.lambda);
         } break;
 
         case EXPR_ERR:

@@ -6,6 +6,7 @@
 
 #include "include/expr.h"
 #include "include/env.h"
+#include "include/lambda.h"
 #include "include/util.h"
 #include "include/eval.h"
 #include "include/primitives.h"
@@ -86,49 +87,16 @@ Expr* prim_lambda(Env* env, Expr* e) {
               "and body.");
     EXPECT_TYPE(e, EXPR_PARENT);
 
-    /* Count the number of formal arguments, and verify that they are all
-     * symbols. */
-    size_t formals_num = 0;
-    for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
-        if (cur->type != EXPR_SYMBOL) {
-            ERR("Formal arguments of `lambda' must be of type 'Symbol', got "
-                "'%s'.",
-                exprtype2str(cur->type));
-            return NULL;
-        }
-
-        formals_num++;
-    }
-
-    Expr* ret = expr_new(EXPR_LAMBDA);
+    const Expr* formals = e;
+    const Expr* body    = e->next;
 
     /*
-     * Create a new LambdaCtx structure that will contain:
-     *   - A new environment whose parent will be set when making the actual
-     *     function call.
-     *   - A string array for the formal arguments of the function, the first
-     *     argument of `lambda'. It will be filled below.
-     *   - The body of the function, the rest of the arguments of `lambda'.
-     *
-     * Note that since `lambda' is a special form, it's handled differently in
-     * `eval' and its arguments won't be evaluated.
+     * Allocate and initialize a new `LambdaCtx' structure using the formals and
+     * the body expressions we received. Store that context structure in the
+     * expression we will return.
      */
-    ret->val.lambda              = sl_safe_malloc(sizeof(LambdaCtx));
-    ret->val.lambda->env         = env_new();
-    ret->val.lambda->formals     = sl_safe_malloc(formals_num * sizeof(char*));
-    ret->val.lambda->formals_num = formals_num;
-    ret->val.lambda->body        = expr_clone_list(e->next);
-
-    Expr* cur_formal = e->val.children;
-    for (size_t i = 0; i < formals_num; i++) {
-        /* Store the symbol as a C string in the array we just allocated. Note
-         * that we already verified that all of the formals are symbols when
-         * counting the arguments. */
-        ret->val.lambda->formals[i] = sl_safe_strdup(cur_formal->val.s);
-
-        /* Go to the next formal argument */
-        cur_formal = cur_formal->next;
-    }
+    Expr* ret       = expr_new(EXPR_LAMBDA);
+    ret->val.lambda = lambda_ctx_new(formals, body);
 
     return ret;
 }

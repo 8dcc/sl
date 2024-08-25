@@ -1,6 +1,8 @@
 #ifndef UTIL_H_
 #define UTIL_H_ 1
 
+#include <stdlib.h> /* abort() */
+
 #define LENGTH(ARR) ((int)(sizeof(ARR) / sizeof((ARR)[0])))
 
 /* Wrapper for err_msg() */
