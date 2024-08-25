@@ -9,14 +9,14 @@
 #include "include/expr.h"
 #include "include/parser.h"
 
-static Expr* parse_recur(const Token* token, size_t* parsed) {
-    SL_ASSERT(token != NULL, "Got invalid Token pointer.");
-    SL_ASSERT(token->type != TOKEN_LIST_CLOSE, "Got invalid Token type.");
+static Expr* parse_recur(const Token* tokens, size_t* parsed) {
+    SL_ASSERT(tokens != NULL, "Got invalid Tokens pointer.");
+    SL_ASSERT(tokens[0].type != TOKEN_LIST_CLOSE, "Got invalid Token type.");
 
-    if (token->type == TOKEN_EOF)
+    if (tokens[0].type == TOKEN_EOF)
         return NULL;
 
-    /* Number of parsed tokens in the current call, including recursive
+    /* Number of parsed Tokens in the current call, including recursive
      * sub-calls. See the comment on `parse' for more information. */
     *parsed = 1;
 
@@ -24,10 +24,10 @@ static Expr* parse_recur(const Token* token, size_t* parsed) {
     expr->next = NULL;
 
     /* Expression type and value should be set on each case */
-    switch (token->type) {
+    switch (tokens[0].type) {
         case TOKEN_NUM: {
             expr->type  = EXPR_CONST;
-            expr->val.n = token->val.n;
+            expr->val.n = tokens[0].val.n;
         } break;
 
         case TOKEN_SYMBOL: {
@@ -36,7 +36,7 @@ static Expr* parse_recur(const Token* token, size_t* parsed) {
             /* Allocate a new copy of the string from `tokens_scan', since the
              * lexer is responsible of freeing the original pointer. The ones we
              * are allocating will be freed in `expr_free'. */
-            expr->val.s = strdup(token->val.s);
+            expr->val.s = strdup(tokens[0].val.s);
         } break;
 
         case TOKEN_LIST_OPEN: {
@@ -48,15 +48,16 @@ static Expr* parse_recur(const Token* token, size_t* parsed) {
 
             /* Parse each children */
             Expr* cur_child = &dummy;
-            while (token[*parsed].type != TOKEN_LIST_CLOSE &&
-                   token[*parsed].type != TOKEN_EOF) {
+            while (tokens[*parsed].type != TOKEN_LIST_CLOSE &&
+                   tokens[*parsed].type != TOKEN_EOF) {
                 SL_ASSERT(cur_child != NULL, "Unexpected NULL child.");
 
                 /* Parse the current children recursively, storing the parsed
                  * Tokens in that call. */
                 size_t parsed_in_call = 0;
-                cur_child->next = parse_recur(&token[*parsed], &parsed_in_call);
-                cur_child       = cur_child->next;
+                cur_child->next =
+                  parse_recur(&tokens[*parsed], &parsed_in_call);
+                cur_child = cur_child->next;
 
                 SL_ASSERT(parsed_in_call > 0,
                           "When iterating a list, no tokens were parsed after "
@@ -85,7 +86,7 @@ static Expr* parse_recur(const Token* token, size_t* parsed) {
             /* Second element, the actual expression. */
             size_t parsed_in_call = 0;
             expr->val.children->next =
-              parse_recur(&token[*parsed], &parsed_in_call);
+              parse_recur(&tokens[*parsed], &parsed_in_call);
 
             SL_ASSERT(parsed_in_call > 0, "When parsing a quoted expression, "
                                           "no tokens were parsed.");
@@ -97,7 +98,7 @@ static Expr* parse_recur(const Token* token, size_t* parsed) {
 
         case TOKEN_EOF:
         case TOKEN_LIST_CLOSE: {
-            ERR("Reached invalid case (Token type %d).", token->type);
+            ERR("Reached invalid case (Token type %d).", tokens[0].type);
             abort();
         }
     }
@@ -105,7 +106,7 @@ static Expr* parse_recur(const Token* token, size_t* parsed) {
     return expr;
 }
 
-Expr* parse(const Token* token) {
+Expr* parse(const Token* tokens) {
     /*
      * We need another function with another parameter because when it makes a
      * recursive call, the caller needs to know how many Tokens were parsed
@@ -130,5 +131,5 @@ Expr* parse(const Token* token) {
      * parsing at the "4", not at the "3".
      */
     size_t unused;
-    return parse_recur(token, &unused);
+    return parse_recur(tokens, &unused);
 }
