@@ -54,4 +54,8 @@ void err_msg(const char* func, const char* fmt, ...);
 void* sl_safe_malloc(size_t sz);
 void* sl_safe_calloc(size_t nmemb, size_t size);
 
+/* Allocate a new string big enough to hold `s', and copy it. Ensures a valid
+ * pointer is returned. */
+char* sl_safe_strdup(const char* s);
+
 #endif /* UTIL_H_ */

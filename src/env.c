@@ -79,7 +79,7 @@ Env* env_clone(Env* env) {
 
     /* Store a copy of each symbol and value pair */
     for (size_t i = 0; i < cloned->size; i++) {
-        cloned->symbols[i] = strdup(env->symbols[i]);
+        cloned->symbols[i] = sl_safe_strdup(env->symbols[i]);
         cloned->values[i]  = expr_clone_recur(env->values[i]);
     }
 
@@ -128,7 +128,7 @@ void env_bind(Env* env, const char* sym, const Expr* val) {
     sl_safe_realloc(env->values, env->size * sizeof(Expr*));
 
     /* Copy the symbol name and clone the associated expression */
-    env->symbols[env->size - 1] = strdup(sym);
+    env->symbols[env->size - 1] = sl_safe_strdup(sym);
     env->values[env->size - 1]  = expr_clone_recur(val);
 }
 

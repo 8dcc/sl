@@ -70,7 +70,7 @@ Expr* expr_clone(const Expr* e) {
     switch (e->type) {
         case EXPR_SYMBOL:
             /* Don't reuse the old pointer */
-            ret->val.s = strdup(e->val.s);
+            ret->val.s = sl_safe_strdup(e->val.s);
             break;
 
         case EXPR_CONST:
@@ -99,7 +99,7 @@ Expr* expr_clone(const Expr* e) {
             ret->val.lambda->formals =
               sl_safe_malloc(ret->val.lambda->formals_num * sizeof(char*));
             for (size_t i = 0; i < ret->val.lambda->formals_num; i++)
-                ret->val.lambda->formals[i] = strdup(e->val.lambda->formals[i]);
+                ret->val.lambda->formals[i] = sl_safe_strdup(e->val.lambda->formals[i]);
         } break;
 
         case EXPR_ERR:

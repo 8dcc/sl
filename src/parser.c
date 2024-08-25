@@ -36,7 +36,7 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
             /* Allocate a new copy of the string from `tokens_scan', since the
              * lexer is responsible of freeing the original pointer. The ones we
              * are allocating will be freed in `expr_free'. */
-            expr->val.s = strdup(tokens[0].val.s);
+            expr->val.s = sl_safe_strdup(tokens[0].val.s);
         } break;
 
         case TOKEN_LIST_OPEN: {
@@ -81,7 +81,7 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
 
             /* First element of the list, "quote" */
             expr->val.children        = expr_new(EXPR_SYMBOL);
-            expr->val.children->val.s = strdup("quote");
+            expr->val.children->val.s = sl_safe_strdup("quote");
 
             /* Second element, the actual expression. */
             size_t parsed_in_call = 0;

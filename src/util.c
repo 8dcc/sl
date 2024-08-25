@@ -32,3 +32,10 @@ void* sl_safe_calloc(size_t nmemb, size_t size) {
               nmemb, size, strerror(errno), errno);
     return result;
 }
+
+char* sl_safe_strdup(const char* s) {
+    char* result = strdup(s);
+    SL_ASSERT(result != NULL, "Failed to copy string: %s (%d).",
+              strerror(errno), errno);
+    return result;
+}

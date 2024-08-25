@@ -125,7 +125,7 @@ Expr* prim_lambda(Env* env, Expr* e) {
         /* Store the symbol as a C string in the array we just allocated. Note
          * that we already verified that all of the formals are symbols when
          * counting the arguments. */
-        ret->val.lambda->formals[i] = strdup(cur_formal->val.s);
+        ret->val.lambda->formals[i] = sl_safe_strdup(cur_formal->val.s);
 
         /* Go to the next formal argument */
         cur_formal = cur_formal->next;
