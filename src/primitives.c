@@ -4,11 +4,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "include/util.h"
-#include "include/parser.h"
-#include "include/eval.h"
 #include "include/expr.h"
 #include "include/env.h"
+#include "include/lambda.h"
+#include "include/util.h"
+#include "include/eval.h"
 #include "include/primitives.h"
 
 #define EXPECT_ARG_NUM(EXPR, NUM)                            \
@@ -20,64 +20,6 @@
     SL_EXPECT((EXPR)->type == TYPE,                          \
               "Expected expression of type '%s', got '%s'.", \
               exprtype2str(TYPE), exprtype2str((EXPR)->type))
-
-/*----------------------------------------------------------------------------*/
-/* Static util functions used by the primitives */
-
-/* Count the number of mandatory and optional formal arguments in a list. */
-static bool count_formals(const Expr* list, size_t* mandatory, size_t* optional,
-                          bool* has_rest) {
-    SL_ON_ERR(return false);
-
-    /* Initialize output variables */
-    *mandatory = 0;
-    *optional  = 0;
-    *has_rest  = false;
-
-    /* Current stage when parsing the formal argument list */
-    enum {
-        READING_MANDATORY,
-        READING_OPTIONAL,
-        READING_REST,
-    } state = READING_MANDATORY;
-
-    for (const Expr* cur = list; cur != NULL; cur = cur->next) {
-        SL_EXPECT(cur->type == EXPR_SYMBOL,
-                  "Invalid formal argument expected type 'Symbol', got '%s'.",
-                  exprtype2str(cur->type));
-
-        if (strcmp(cur->val.s, "&optional") == 0) {
-            /* Check if we should change state from mandatory to optional, and
-             * continue reading. */
-            SL_EXPECT(cur->next != NULL && state == READING_MANDATORY,
-                      "Wrong usage of `&optional' keyword.");
-            state = READING_OPTIONAL;
-            continue;
-        } else if (strcmp(cur->val.s, "&rest") == 0) {
-            SL_EXPECT(cur->next != NULL && state != READING_REST,
-                      "Wrong usage of `&rest' keyword.");
-            state = READING_REST;
-            continue;
-        }
-
-        switch (state) {
-            case READING_MANDATORY:
-                *mandatory += 1;
-                break;
-            case READING_OPTIONAL:
-                *optional += 1;
-                break;
-            case READING_REST:
-                /* Verify that the next argument to "&rest" is the last one. */
-                SL_EXPECT(cur->next == NULL,
-                          "Expected exactly 1 formal after `&rest' keyword.");
-                *has_rest = true;
-                break;
-        }
-    }
-
-    return true;
-}
 
 /*----------------------------------------------------------------------------*/
 /* Special Form primitives. See SICP Chapter 4.1.1 */
@@ -145,64 +87,40 @@ Expr* prim_lambda(Env* env, Expr* e) {
               "and body.");
     EXPECT_TYPE(e, EXPR_PARENT);
 
-    /* Count and validate the formal arguments */
-    size_t mandatory;
-    size_t optional;
-    bool has_rest;
-    if (!count_formals(e->val.children, &mandatory, &optional, &has_rest))
-        return NULL;
-    const size_t total_formals = mandatory + optional + (has_rest ? 1 : 0);
+    const Expr* formals = e;
+    const Expr* body    = e->next;
 
     /*
-     * Create a new LambdaCtx structure that will contain:
-     *   - A new environment whose parent will be set when making the actual
-     *     function call.
-     *   - A string array for the formal arguments of the function, the first
-     *     argument of `lambda'. It will be filled below.
-     *   - The body of the function, the rest of the arguments of `lambda'.
-     *
-     * Note that since `lambda' is a special form, it's handled differently in
-     * `eval' and its arguments won't be evaluated.
+     * Allocate and initialize a new `LambdaCtx' structure using the formals and
+     * the body expressions we received. Store that context structure in the
+     * expression we will return.
      */
-    Expr* ret                = expr_new(EXPR_LAMBDA);
-    ret->val.lambda          = sl_safe_malloc(sizeof(LambdaCtx));
-    ret->val.lambda->env     = env_new();
-    ret->val.lambda->formals = sl_safe_malloc(total_formals * sizeof(char*));
-    ret->val.lambda->formals_mandatory = mandatory;
-    ret->val.lambda->formals_optional  = optional;
-    ret->val.lambda->formals_rest      = has_rest;
-    ret->val.lambda->body              = expr_clone_list(e->next);
-
-    /*
-     * For each formal argument we counted above, store the symbol as a C string
-     * in the array we just allocated. Note that we already verified that all of
-     * the formals are symbols when counting them in `count_formals'.
-     */
-    Expr* cur_formal = e->val.children;
-    size_t i         = 0;
-    while (i < mandatory) {
-        ret->val.lambda->formals[i++] = strdup(cur_formal->val.s);
-        cur_formal                    = cur_formal->next;
-    }
-
-    /* Skip "&optional" */
-    if (optional > 0)
-        cur_formal = cur_formal->next;
-
-    while (i < optional) {
-        ret->val.lambda->formals[i++] = strdup(cur_formal->val.s);
-        cur_formal                    = cur_formal->next;
-    }
-
-    if (has_rest) {
-        /* Skip "&rest" */
-        cur_formal = cur_formal->next;
-
-        /* There should only be one formal left after "&rest" */
-        ret->val.lambda->formals[i] = strdup(cur_formal->val.s);
-    }
+    Expr* ret       = expr_new(EXPR_LAMBDA);
+    ret->val.lambda = lambda_ctx_new(formals, body);
 
     return ret;
+}
+
+Expr* prim_if(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(expr_list_len(e) == 3,
+              "The special form `if' expects exactly 3 arguments: Predicate, "
+              "consequent and alternative.");
+
+    /* Evaluate the predicate (first argument) */
+    Expr* evaluated_predicate = eval(env, e);
+
+    /* If the predicate is false (nil), the expression to be evaluated is the
+     * "alternative" (third argument) , otherwise, evaluate the "consequent"
+     * (second argument). */
+    Expr* result = expr_is_nil(evaluated_predicate) ? e->next->next : e->next;
+
+    /* Make sure we free the expression allocated by `eval' */
+    expr_free(evaluated_predicate);
+
+    /* Since `if' is a special form, we need to evaluate the result */
+    return eval(env, result);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -226,9 +144,11 @@ Expr* prim_apply(Env* env, Expr* e) {
 Expr* prim_begin(Env* env, Expr* e) {
     SL_ON_ERR(return NULL);
 
-    /* In Scheme, begin is technically a special form because when making a
+    /*
+     * In Scheme, begin is technically a special form because when making a
      * call, the arguments are not required to be evaluated in order. In this
-     * Lisp, however, they are. */
+     * Lisp, however, they are.
+     */
     SL_EXPECT(e != NULL, "Expected at least 1 expression.");
 
     Expr* last_evaluated = NULL;
@@ -268,8 +188,10 @@ Expr* prim_car(Env* env, Expr* e) {
     EXPECT_ARG_NUM(e, 1);
     EXPECT_TYPE(e, EXPR_PARENT);
 
-    /* (car '()) ===> nil */
-    if (e->val.children == NULL)
+    /*
+     * (car '()) ===> nil
+     */
+    if (expr_is_nil(e))
         return expr_clone(e);
 
     /*
@@ -313,7 +235,6 @@ Expr* prim_add(Env* env, Expr* e) {
 
     for (Expr* arg = e; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
-
         total += arg->val.n;
     }
 
@@ -357,7 +278,6 @@ Expr* prim_mul(Env* env, Expr* e) {
 
     for (Expr* arg = e; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
-
         total *= arg->val.n;
     }
 
@@ -376,11 +296,28 @@ Expr* prim_div(Env* env, Expr* e) {
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
         SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
-
         total /= arg->val.n;
     }
 
     Expr* ret  = expr_new(EXPR_CONST);
     ret->val.n = total;
     return ret;
+}
+
+Expr* prim_equal(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(expr_list_len(e) >= 2, "Expected at least 2 arguments.");
+
+    bool result = true;
+
+    for (Expr* arg = e; arg->next != NULL; arg = arg->next) {
+        if (!expr_equal(arg, arg->next)) {
+            result = false;
+            break;
+        }
+    }
+
+    /* Get the true or false expressions from the environment */
+    return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }

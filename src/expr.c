@@ -6,6 +6,7 @@
 
 #include "include/expr.h"
 #include "include/env.h"
+#include "include/lambda.h"
 #include "include/util.h"
 
 Expr* expr_new(enum EExprType type) {
@@ -36,22 +37,7 @@ void expr_free(Expr* root) {
             free(root->val.s);
             break;
         case EXPR_LAMBDA:
-            /* Free each component, allocated in prim_lambda().
-             * First, the environment and the body of the lambda */
-            env_free(root->val.lambda->env);
-            expr_free(root->val.lambda->body);
-
-            /* Free each formal argument string, and the array itself */
-            const size_t total_formals =
-              root->val.lambda->formals_mandatory +
-              root->val.lambda->formals_optional +
-              (root->val.lambda->formals_rest ? 1 : 0);
-            for (size_t i = 0; i < total_formals; i++)
-                free(root->val.lambda->formals[i]);
-            free(root->val.lambda->formals);
-
-            /* And finally, the LambdaCtx structure itself */
-            free(root->val.lambda);
+            lambda_ctx_free(root->val.lambda);
             break;
         case EXPR_ERR:
         case EXPR_CONST:
@@ -73,44 +59,35 @@ Expr* expr_clone(const Expr* e) {
 
     switch (e->type) {
         case EXPR_SYMBOL:
-            /* Allocate a new copy of the string */
-            ret->val.s = strdup(e->val.s);
+            /* Don't reuse the old pointer */
+            ret->val.s = sl_safe_strdup(e->val.s);
             break;
+
         case EXPR_CONST:
             ret->val.n = e->val.n;
             break;
+
         case EXPR_PARENT:
+            /* See `expr_clone_recur' for recursive cloning */
             ret->val.children = NULL;
             break;
+
         case EXPR_PRIM:
+            /* Copy the C function pointer */
             ret->val.prim = e->val.prim;
             break;
-        case EXPR_LAMBDA:
-            ret->val.lambda       = sl_safe_malloc(sizeof(LambdaCtx));
-            ret->val.lambda->env  = env_clone(e->val.lambda->env);
-            ret->val.lambda->body = expr_clone_list(e->val.lambda->body);
 
-            ret->val.lambda->formals_mandatory =
-              e->val.lambda->formals_mandatory;
-            ret->val.lambda->formals_optional = e->val.lambda->formals_optional;
-            ret->val.lambda->formals_rest     = e->val.lambda->formals_rest;
+        case EXPR_LAMBDA: {
+            ret->val.lambda = lambda_ctx_clone(e->val.lambda);
+        } break;
 
-            /* Allocate a new string array for the formals, and copy them */
-            const size_t total_formals = e->val.lambda->formals_mandatory +
-                                         e->val.lambda->formals_optional +
-                                         (e->val.lambda->formals_rest ? 1 : 0);
-            ret->val.lambda->formals =
-              sl_safe_malloc(total_formals * sizeof(char*));
-            for (size_t i = 0; i < total_formals; i++)
-                ret->val.lambda->formals[i] = strdup(e->val.lambda->formals[i]);
-
-            break;
         case EXPR_ERR:
             ERR("Trying to clone <error>");
             break;
     }
 
-    /* NOTE: We don't copy pointers like e->next or e->val.children  */
+    /* We don't copy inferior or adjacent nodes. See, `expr_clone_recur' and
+     * `expr_clone_list' respectively. */
     ret->next = NULL;
     return ret;
 }
@@ -164,28 +141,29 @@ Expr* expr_clone_list(const Expr* e) {
 void expr_print_debug(const Expr* e) {
     static int indent = 0;
 
-    /* This function shouldn't be called with NULL */
-    if (e == NULL) {
-        printf("[ERR] ");
-        ERR("Got NULL as argument. Aborting...");
-        return;
-    }
-
     for (int i = 0; i < indent; i++)
         putchar(' ');
 
+    /* This function shouldn't be called with NULL */
+    if (e == NULL) {
+        printf("[ERR] ");
+        ERR("Got NULL as argument. Returning...");
+        return;
+    }
+
     switch (e->type) {
-        case EXPR_CONST:
+        case EXPR_CONST: {
             printf("[NUM] %f\n", e->val.n);
-            break;
-        case EXPR_SYMBOL:
+        } break;
+
+        case EXPR_SYMBOL: {
             printf("[SYM] \"%s\"\n", e->val.s);
-            break;
-        case EXPR_PARENT:
+        } break;
+
+        case EXPR_PARENT: {
             printf("[LST]");
 
-            /* List with no children: NIL */
-            if (e->val.children == NULL) {
+            if (expr_is_nil(e)) {
                 printf(" (NIL)\n");
                 break;
             }
@@ -196,43 +174,32 @@ void expr_print_debug(const Expr* e) {
             indent += INDENT_STEP;
             expr_print_debug(e->val.children);
             indent -= INDENT_STEP;
-            break;
-        case EXPR_PRIM:
+        } break;
+
+        case EXPR_PRIM: {
             printf("[PRI] <primitive %p>\n", e->val.prim);
-            break;
-        case EXPR_LAMBDA:
+        } break;
+
+        case EXPR_LAMBDA: {
             printf("[FUN] <lambda>\n");
 
             /* Print list of formal arguments */
             indent += INDENT_STEP;
             for (int i = 0; i < indent; i++)
                 putchar(' ');
-
-            printf("Formals: (");
-            size_t formals_pos = 0;
-            for (size_t i = 0; i < e->val.lambda->formals_mandatory; i++) {
-                if (i > 0)
-                    putchar(' ');
-                printf("%s", e->val.lambda->formals[formals_pos++]);
-            }
-            if (e->val.lambda->formals_optional > 0)
-                printf(" &optional ");
-            for (size_t i = 0; i < e->val.lambda->formals_optional; i++) {
-                if (i > 0)
-                    putchar(' ');
-                printf("%s", e->val.lambda->formals[formals_pos++]);
-            }
-            if (e->val.lambda->formals_rest)
-                printf(" &rest %s", e->val.lambda->formals[formals_pos]);
-            printf(")\n");
+            printf("Formals: ");
+            lambda_ctx_print_args(e->val.lambda);
+            putchar('\n');
 
             /* Print each expression in the body of the function */
             expr_print_debug(e->val.lambda->body);
             indent -= INDENT_STEP;
-            break;
-        case EXPR_ERR:
+        } break;
+
+        case EXPR_ERR: {
             printf("[ERR] (Stopping)");
             return;
+        }
     }
 
     if (e->next != NULL)
@@ -261,23 +228,26 @@ void expr_print(const Expr* e) {
         case EXPR_CONST:
             printf("%f", e->val.n);
             break;
+
         case EXPR_SYMBOL:
             printf("%s", e->val.s);
             break;
+
         case EXPR_PARENT:
-            /* List with no children: NIL */
-            if (e->val.children == NULL)
+            if (expr_is_nil(e))
                 printf("nil");
             else
                 print_sexpr(e);
-
             break;
+
         case EXPR_PRIM:
             printf("<primitive %p>", e->val.prim);
             break;
+
         case EXPR_LAMBDA:
             printf("<lambda>");
             break;
+
         case EXPR_ERR:
             printf("<error>");
             break;
@@ -298,4 +268,69 @@ size_t expr_list_len(const Expr* e) {
         result++;
 
     return result;
+}
+
+bool expr_is_nil(const Expr* e) {
+    return e != NULL && e->type == EXPR_PARENT && e->val.children == NULL;
+}
+
+bool expr_equal(const Expr* a, const Expr* b) {
+    /*
+     * If one of them is NULL, they are equal if the other is also NULL. This is
+     * an important check, specially since when calling ourselves recursively.
+     */
+    if (a == NULL || b == NULL)
+        return a == b;
+
+    if (a->type != b->type)
+        return false;
+
+    switch (a->type) {
+        case EXPR_CONST:
+            /* Compare the decimal values */
+            return a->val.n == b->val.n;
+
+        case EXPR_SYMBOL:
+            /* Compare the symbol strings */
+            return strcmp(a->val.s, b->val.s) == 0;
+
+        case EXPR_PARENT: {
+            Expr* child_a = a->val.children;
+            Expr* child_b = b->val.children;
+
+            /*
+             * Keep iterating while both children are equal. We check this by
+             * calling ourselves recursivelly.
+             *
+             * Since inside the loop both children are equal, if one of them is
+             * NULL, it means we reached the end of both lists and they are
+             * equal.
+             *
+             * This whole loop is similar an implementation of strcmp().
+             */
+            while (expr_equal(child_a, child_b)) {
+                if (child_a == NULL)
+                    return true;
+
+                child_a = child_a->next;
+                child_b = child_b->next;
+            }
+
+            /* If we broke out of the loop, a children didn't match */
+            return false;
+        }
+
+        case EXPR_PRIM:
+            /* Compare the C pointers for the primitive functions */
+            return a->val.prim == b->val.prim;
+
+        case EXPR_LAMBDA:
+            /* TODO: Compare lambda bodies and parameters */
+            return false;
+
+        case EXPR_ERR:
+            return false;
+    }
+
+    return true;
 }

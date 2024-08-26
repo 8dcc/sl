@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "include/util.h"
 #include "include/expr.h"
-#include "include/primitives.h"
 #include "include/env.h"
+#include "include/util.h"
+#include "include/primitives.h"
 
 /* Used in `env_init_defaults' */
 #define BIND_PRIM(ENV, SYM, FUNC)         \
@@ -41,10 +41,18 @@ void env_init_defaults(Env* env) {
     };
     env_bind(env, "nil", &nil_expr);
 
+    Expr tru_expr = {
+        .type  = EXPR_SYMBOL,
+        .val.s = "tru",
+        .next  = NULL,
+    };
+    env_bind(env, "tru", &tru_expr);
+
     /* Bind primitive C functions */
     BIND_PRIM(env, "quote", quote);
     BIND_PRIM(env, "define", define);
     BIND_PRIM(env, "lambda", lambda);
+    BIND_PRIM(env, "if", if);
     BIND_PRIM(env, "eval", eval);
     BIND_PRIM(env, "apply", apply);
     BIND_PRIM(env, "begin", begin);
@@ -55,6 +63,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "-", sub);
     BIND_PRIM(env, "*", mul);
     BIND_PRIM(env, "/", div);
+    BIND_PRIM(env, "equal?", equal);
 }
 
 Env* env_clone(Env* env) {
@@ -70,7 +79,7 @@ Env* env_clone(Env* env) {
 
     /* Store a copy of each symbol and value pair */
     for (size_t i = 0; i < cloned->size; i++) {
-        cloned->symbols[i] = strdup(env->symbols[i]);
+        cloned->symbols[i] = sl_safe_strdup(env->symbols[i]);
         cloned->values[i]  = expr_clone_recur(env->values[i]);
     }
 
@@ -119,7 +128,7 @@ void env_bind(Env* env, const char* sym, const Expr* val) {
     sl_safe_realloc(env->values, env->size * sizeof(Expr*));
 
     /* Copy the symbol name and clone the associated expression */
-    env->symbols[env->size - 1] = strdup(sym);
+    env->symbols[env->size - 1] = sl_safe_strdup(sym);
     env->values[env->size - 1]  = expr_clone_recur(val);
 }
 

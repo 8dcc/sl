@@ -1,6 +1,8 @@
 #ifndef UTIL_H_
 #define UTIL_H_ 1
 
+#include <stdlib.h> /* abort() */
+
 #define LENGTH(ARR) ((int)(sizeof(ARR) / sizeof((ARR)[0])))
 
 /* Wrapper for err_msg() */
@@ -53,5 +55,9 @@ void err_msg(const char* func, const char* fmt, ...);
  * returned. */
 void* sl_safe_malloc(size_t sz);
 void* sl_safe_calloc(size_t nmemb, size_t size);
+
+/* Allocate a new string big enough to hold `s', and copy it. Ensures a valid
+ * pointer is returned. */
+char* sl_safe_strdup(const char* s);
 
 #endif /* UTIL_H_ */

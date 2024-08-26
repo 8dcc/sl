@@ -6,11 +6,13 @@
 #include <ctype.h>
 #include <math.h> /* pow() */
 
-#include "include/lexer.h"
 #include "include/util.h"
+#include "include/lexer.h"
 
 #define TOKEN_BUFSZ 100
 
+/* Try to parse `str' as a decimal number, and store it in `out'. Returns true
+ * if the conversion was successful. */
 static bool parse_number(const char* str, double* out) {
     /* 0 means we are in the integer part of the number */
     int decimal_position = 0;
@@ -58,64 +60,84 @@ static bool parse_number(const char* str, double* out) {
     return true;
 }
 
-/* Scan and store the next token from `in' to `out'. Returns the next character
- * after the token, or NULL if the next char is the end of the string. */
-static char* token_store(Token* out, char* in) {
-    /* Skip spaces, if any */
-    while (isspace(*in))
-        in++;
+/*
+ * Try to scan a Token in the string pointed by `input_ptr', and increase the
+ * pointer accordingly.
+ *
+ * If the end of the string is found, TOKEN_EOF is returned and `input_ptr' is
+ * set to NULL.
+ */
+static Token get_token(char** input_ptr) {
+    char* input = *input_ptr;
+
+    /* Skip the spaces before the token, if any */
+    while (isspace(*input))
+        input++;
+
+    Token result;
 
     /* Check for simple tokens */
-    switch (*in) {
+    switch (*input) {
         case '(':
-            out->type = TOKEN_LIST_OPEN;
-            return in + 1;
+            result.type = TOKEN_LIST_OPEN;
+            input++;
+            goto done;
+
         case ')':
-            out->type = TOKEN_LIST_CLOSE;
-            return in + 1;
+            result.type = TOKEN_LIST_CLOSE;
+            input++;
+            goto done;
+
         case '\'':
-            out->type = TOKEN_QUOTE;
-            return in + 1;
+            result.type = TOKEN_QUOTE;
+            input++;
+            goto done;
+
         case '\0':
-            out->type = TOKEN_EOF;
-            return NULL;
+            result.type = TOKEN_EOF;
+            input       = NULL;
+            goto done;
+
         default:
             break;
     }
 
-    /* Go until next token separator */
-    size_t i;
-    for (i = 0; !is_token_separator(in[i]); i++)
+    /* Get the token length by looking for the next token separator */
+    size_t token_sz;
+    for (token_sz = 0; !is_token_separator(input[token_sz]); token_sz++)
         ;
 
     /* Temporarily terminate string at token separator, for parsing as number */
-    char tmp = in[i];
-    in[i]    = '\0';
+    char tmp        = input[token_sz];
+    input[token_sz] = '\0';
 
     double parsed;
-    if (parse_number(in, &parsed)) {
+    if (parse_number(input, &parsed)) {
         /* Number (double) */
-        out->type  = TOKEN_NUM;
-        out->val.n = parsed;
+        result.type  = TOKEN_NUM;
+        result.val.n = parsed;
     } else {
         /* Symbol (string) */
-        out->type  = TOKEN_SYMBOL;
-        out->val.s = sl_safe_malloc(i + 1);
-        strcpy(out->val.s, in);
+        result.type  = TOKEN_SYMBOL;
+        result.val.s = sl_safe_malloc(token_sz + 1);
+        memcpy(result.val.s, input, token_sz + 1);
     }
 
     /* Restore the token separator we had overwritten */
-    in[i] = tmp;
+    input[token_sz] = tmp;
 
-    /* Return next char */
-    return &in[i];
+    /* Move the input pointer to the next token separator */
+    input += token_sz;
+
+done:
+    /* Update the input pointer for the caller, and return the token */
+    *input_ptr = input;
+    return result;
 }
 
-bool is_token_separator(char c) {
-    return isspace(c) || c == '\0' || c == '(' || c == ')';
-}
+/*----------------------------------------------------------------------------*/
 
-Token* tokens_scan(char* input) {
+Token* tokenize(char* input) {
     size_t tokens_num = TOKEN_BUFSZ;
     Token* tokens     = sl_safe_calloc(TOKEN_BUFSZ, sizeof(Token));
 
@@ -125,23 +147,27 @@ Token* tokens_scan(char* input) {
             sl_safe_realloc(tokens, tokens_num * sizeof(Token));
         }
 
-        input = token_store(&tokens[i], input);
+        /* Try to scan the token pointed to by `input', and increase the pointer
+         * accordingly */
+        tokens[i] = get_token(&input);
     }
 
     return tokens;
 }
 
 void tokens_free(Token* arr) {
-    for (int i = 0; arr[i].type != TOKEN_EOF; i++) {
-        if (arr[i].type == TOKEN_SYMBOL) {
-            /* Free the string we allocated in token_store() */
+    /* Free the strings we allocated in `token_store', if any */
+    for (int i = 0; arr[i].type != TOKEN_EOF; i++)
+        if (arr[i].type == TOKEN_SYMBOL)
             free(arr[i].val.s);
-        }
-    }
 
     /* Once we are done freeing all the allocations we made inside the array,
      * free the array itself */
     free(arr);
+}
+
+bool is_token_separator(char c) {
+    return isspace(c) || c == '\0' || c == '(' || c == ')';
 }
 
 void tokens_print(Token* arr) {
@@ -152,18 +178,23 @@ void tokens_print(Token* arr) {
             case TOKEN_NUM:
                 printf("%f, ", arr->val.n);
                 break;
+
             case TOKEN_SYMBOL:
                 printf("\"%s\", ", arr->val.s);
                 break;
+
             case TOKEN_LIST_OPEN:
                 printf("LIST_OPEN, ");
                 break;
+
             case TOKEN_LIST_CLOSE:
                 printf("LIST_CLOSE, ");
                 break;
+
             case TOKEN_QUOTE:
                 printf("QUOTE, ");
                 break;
+
             case TOKEN_EOF:
                 printf("???");
                 break;

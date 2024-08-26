@@ -4,12 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "include/util.h"
-#include "include/parser.h"
 #include "include/expr.h"
+#include "include/env.h"
+#include "include/lambda.h"
+#include "include/util.h"
 #include "include/eval.h"
 #include "include/primitives.h"
-#include "include/env.h"
 
 /*----------------------------------------------------------------------------*/
 /* NOTE: Make sure we only allocate when we are sure the expression will be
@@ -76,6 +76,8 @@ Expr* eval(Env* env, Expr* e) {
         return prim_define(env, e->val.children->next);
     if (is_special_form(e, "lambda"))
         return prim_lambda(env, e->val.children->next);
+    if (is_special_form(e, "if"))
+        return prim_if(env, e->val.children->next);
 
     switch (e->type) {
         case EXPR_PARENT: {
@@ -134,46 +136,6 @@ Expr* eval(Env* env, Expr* e) {
 }
 
 /*----------------------------------------------------------------------------*/
-
-static Expr* lambda_call(Env* env, Expr* func, Expr* args) {
-    SL_ON_ERR(return NULL);
-
-    /* Count the number of arguments that we received */
-    const size_t arg_num = expr_list_len(args);
-
-    /* Make sure the number of arguments that we got is what we expected */
-    /* TODO: Valid checks for optional/rest arguments. Set ommited optionals to
-     * 'nil'. */
-    SL_EXPECT(func->val.lambda->formals_mandatory == arg_num,
-              "Invalid number of arguments. Expected %d, got %d.",
-              func->val.lambda->formals_mandatory, arg_num);
-
-    Expr* cur_arg = args;
-    for (size_t i = 0; i < arg_num && cur_arg != NULL; i++) {
-        /* In the lambda's environment, bind the i-th formal argument to its
-         * corresponding argument value */
-        env_bind(func->val.lambda->env, func->val.lambda->formals[i], cur_arg);
-
-        /* Move to the next argument value */
-        cur_arg = cur_arg->next;
-    }
-
-    /* Set the environment used when calling the lambda as the parent
-     * environment of the lambda itself. It's important that we set this now,
-     * and not when defining the lambda. */
-    func->val.lambda->env->parent = env;
-
-    /* Evaluate each expression in the body of the lambda, using its environment
-     * with the bound the formal arguments. Return the last evaluated
-     * expression. */
-    Expr* last_evaluated = NULL;
-    for (Expr* cur = func->val.lambda->body; cur != NULL; cur = cur->next) {
-        expr_free(last_evaluated);
-        last_evaluated = eval(func->val.lambda->env, cur);
-    }
-
-    return last_evaluated;
-}
 
 Expr* apply(Env* env, Expr* func, Expr* args) {
     SL_ON_ERR(return NULL);

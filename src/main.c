@@ -4,12 +4,12 @@
 #include <stdlib.h>
 #include <unistd.h> /* isatty() */
 
+#include "include/env.h"
+#include "include/expr.h"
 #include "include/util.h"
 #include "include/lexer.h"
-#include "include/expr.h"
 #include "include/parser.h"
 #include "include/eval.h"
-#include "include/env.h"
 
 #define INPUT_BUFSZ 100
 
@@ -32,6 +32,15 @@ static bool input_read(char** input) {
         if (i >= input_sz) {
             input_sz += INPUT_BUFSZ;
             sl_safe_realloc(*input, input_sz);
+        }
+
+        /* Check if this is a comment start. If so, skip until the end of the
+         * line. */
+        if (c == ';') {
+            do {
+                c = getchar();
+            } while (c != '\n');
+            continue;
         }
 
         /* Store character in string */
@@ -88,7 +97,7 @@ int main(void) {
         got_eof     = input_read(&input);
 
         /* Get token array from input */
-        Token* tokens = tokens_scan(input);
+        Token* tokens = tokenize(input);
 
         /* We are done with the raw input, free it */
         free(input);

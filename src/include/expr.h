@@ -2,12 +2,13 @@
 #ifndef EXPR_H_
 #define EXPR_H_ 1
 
+#include <stddef.h>
 #include <stdbool.h>
 
-struct Env; /* env.h */
+struct Env;       /* env.h */
+struct LambdaCtx; /* lambda.h */
 
 typedef struct Expr Expr;
-typedef struct LambdaCtx LambdaCtx;
 
 typedef Expr* (*PrimitiveFuncPtr)(struct Env*, Expr*);
 
@@ -20,22 +21,6 @@ enum EExprType {
     EXPR_LAMBDA,
 };
 
-struct LambdaCtx {
-    /* Environment for binding the formal arguments to the actual values when
-     * calling the lambda. */
-    struct Env* env;
-
-    /* Formal arguments. Mandatory go first, then optional, and finally a single
-     * one used for the rest. */
-    char** formals;
-    size_t formals_mandatory;
-    size_t formals_optional;
-    bool formals_rest;
-
-    /* List of expressions to be evaluated in order when calling the lambda */
-    Expr* body;
-};
-
 struct Expr {
     /* Type and value of the expression */
     enum EExprType type;
@@ -44,7 +29,7 @@ struct Expr {
         char* s;
         Expr* children;
         PrimitiveFuncPtr prim;
-        LambdaCtx* lambda;
+        struct LambdaCtx* lambda;
     } val;
 
     /* Next expression in the linked list */
@@ -96,5 +81,11 @@ void expr_print_debug(const Expr* e);
 
 /* Calculate number of elements in a linked list of Expr structures */
 size_t expr_list_len(const Expr* e);
+
+/* Is the specified expression an empty list? */
+bool expr_is_nil(const Expr* e);
+
+/* Return true if `a' and `b' have the same effective value */
+bool expr_equal(const Expr* a, const Expr* b);
 
 #endif /* EXPR_H_ */

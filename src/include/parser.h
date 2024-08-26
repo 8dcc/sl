@@ -5,6 +5,6 @@ struct Token; /* lexer.h */
 struct Expr;  /* expr.h */
 
 /* Convert array of tokens into a expression tree */
-struct Expr* parse(struct Token* tokens);
+struct Expr* parse(const struct Token* tokens);
 
 #endif /* PARSER_H_ */
