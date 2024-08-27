@@ -3,8 +3,9 @@
 ;;   - Variable definitions (global and local)
 ;;   - Function calls (lambdas and primitives)
 ;;   - Nested functions
+;;   - Functions as arguments
 ;;   - Conditionals (if)
-;;   - Logical operators (equal?)
+;;   - Logical primitives (equal?, >)
 ;;------------------------------------------------------------------------------
 
 ;; Defined in the global environment
@@ -38,6 +39,16 @@
       (* n (fact (- n 1))))))
 
 (fact 5)  ; Expected: 120
+
+;; Example for testing functions as arguments
+(define summation
+  (lambda (i n f)
+    (if (> i n)
+      0
+      (+ (f i)
+         (summation (+ i 1) n f)))))
+
+(summation 1 5 (lambda (x) (* x 2)))  ; Expected: 30
 
 ;; Example function with optional arguments
 (define test-rest

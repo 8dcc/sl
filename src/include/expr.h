@@ -71,12 +71,8 @@ Expr* expr_clone_recur(const Expr* e);
 Expr* expr_clone_list(const Expr* e);
 
 /* Print formatted expression */
-void expr_print(const Expr* root);
-
-/* Print formatted expression and a newline  */
+void expr_print(const Expr* e);
 void expr_println(const Expr* e);
-
-/* Print expression in detailed tree format */
 void expr_print_debug(const Expr* e);
 
 /* Calculate number of elements in a linked list of Expr structures */
@@ -87,5 +83,9 @@ bool expr_is_nil(const Expr* e);
 
 /* Return true if `a' and `b' have the same effective value */
 bool expr_equal(const Expr* a, const Expr* b);
+
+/* Return true if `a' is less/greater than `b' */
+bool expr_lt(const Expr* a, const Expr* b);
+bool expr_gt(const Expr* a, const Expr* b);
 
 #endif /* EXPR_H_ */

@@ -31,5 +31,7 @@ DECLARE_PRIM(div);
 
 /* Logical primitives */
 DECLARE_PRIM(equal);
+DECLARE_PRIM(lt);
+DECLARE_PRIM(gt);
 
 #endif /* PRIMITIVES_H_ */

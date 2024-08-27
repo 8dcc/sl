@@ -334,3 +334,45 @@ bool expr_equal(const Expr* a, const Expr* b) {
 
     return true;
 }
+
+bool expr_lt(const Expr* a, const Expr* b) {
+    if (a == NULL || b == NULL || a->type != b->type)
+        return false;
+
+    switch (a->type) {
+        case EXPR_CONST:
+            return a->val.n < b->val.n;
+
+        case EXPR_SYMBOL:
+            return strcmp(a->val.s, b->val.s) < 0;
+
+        case EXPR_PARENT:
+        case EXPR_PRIM:
+        case EXPR_LAMBDA:
+        case EXPR_ERR:
+            return false;
+    }
+
+    return true;
+}
+
+bool expr_gt(const Expr* a, const Expr* b) {
+    if (a == NULL || b == NULL || a->type != b->type)
+        return false;
+
+    switch (a->type) {
+        case EXPR_CONST:
+            return a->val.n > b->val.n;
+
+        case EXPR_SYMBOL:
+            return strcmp(a->val.s, b->val.s) > 0;
+
+        case EXPR_PARENT:
+        case EXPR_PRIM:
+        case EXPR_LAMBDA:
+        case EXPR_ERR:
+            return false;
+    }
+
+    return true;
+}
