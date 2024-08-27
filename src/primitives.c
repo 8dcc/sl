@@ -22,7 +22,8 @@
               exprtype2str(TYPE), exprtype2str((EXPR)->type))
 
 /*----------------------------------------------------------------------------*/
-/* Special Form primitives. See SICP Chapter 4.1.1 */
+/* Special Form primitives, their arguments are not evaluated normally by the
+ * caller. See SICP Chapter 4.1.1 */
 
 Expr* prim_quote(Env* env, Expr* e) {
     SL_UNUSED(env);
@@ -124,7 +125,7 @@ Expr* prim_if(Env* env, Expr* e) {
 }
 
 /*----------------------------------------------------------------------------*/
-/* Primitives that should have their parameters evaluated by the caller */
+/* General primitives */
 
 Expr* prim_eval(Env* env, Expr* e) {
     return eval(env, e);
@@ -142,23 +143,23 @@ Expr* prim_apply(Env* env, Expr* e) {
 }
 
 Expr* prim_begin(Env* env, Expr* e) {
+    SL_UNUSED(env);
     SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Expected at least 1 expression.");
 
     /*
      * In Scheme, begin is technically a special form because when making a
      * call, the arguments are not required to be evaluated in order. In this
      * Lisp, however, they are.
      */
-    SL_EXPECT(e != NULL, "Expected at least 1 expression.");
+    while (e->next != NULL)
+        e = e->next;
 
-    Expr* last_evaluated = NULL;
-    for (Expr* cur = e; cur != NULL; cur = cur->next) {
-        expr_free(last_evaluated);
-        last_evaluated = eval(env, cur);
-    }
-
-    return last_evaluated;
+    return expr_clone_recur(e);
 }
+
+/*----------------------------------------------------------------------------*/
+/* List-related primitives */
 
 Expr* prim_cons(Env* env, Expr* e) {
     SL_UNUSED(env);
@@ -225,6 +226,9 @@ Expr* prim_cdr(Env* env, Expr* e) {
 
     return ret;
 }
+
+/*----------------------------------------------------------------------------*/
+/* Arithmetic primitives */
 
 Expr* prim_add(Env* env, Expr* e) {
     SL_UNUSED(env);
@@ -303,6 +307,9 @@ Expr* prim_div(Env* env, Expr* e) {
     ret->val.n = total;
     return ret;
 }
+
+/*----------------------------------------------------------------------------*/
+/* Logical primitives */
 
 Expr* prim_equal(Env* env, Expr* e) {
     SL_UNUSED(env);
