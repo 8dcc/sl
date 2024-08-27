@@ -161,18 +161,30 @@ Expr* lambda_call(Env* env, Expr* func, Expr* args) {
     const size_t arg_num = expr_list_len(args);
 
     /* Make sure the number of arguments that we got is what we expected */
-    SL_EXPECT(arg_num == func->val.lambda->formals_num,
+    SL_EXPECT(func->val.lambda->formal_rest != NULL ||
+                arg_num == func->val.lambda->formals_num,
               "Invalid number of arguments. Expected %d, got %d.",
               func->val.lambda->formals_num, arg_num);
 
+    /* In the lambda's environment, bind each mandatory formal argument to its
+     * corresponding argument value */
     Expr* cur_arg = args;
-    for (size_t i = 0; i < arg_num && cur_arg != NULL; i++) {
-        /* In the lambda's environment, bind the i-th formal argument to its
-         * corresponding argument value */
+    for (size_t i = 0; i < func->val.lambda->formals_num && cur_arg != NULL;
+         i++) {
         env_bind(func->val.lambda->env, func->val.lambda->formals[i], cur_arg);
-
-        /* Move to the next argument value */
         cur_arg = cur_arg->next;
+    }
+
+    /* If the lambda has a "&rest" formal, bind it. */
+    if (func->val.lambda->formal_rest != NULL) {
+        Expr* rest_list         = expr_new(EXPR_PARENT);
+        rest_list->val.children = cur_arg;
+
+        env_bind(func->val.lambda->env, func->val.lambda->formal_rest,
+                 rest_list);
+
+        rest_list->val.children = NULL;
+        expr_free(rest_list);
     }
 
     /* Set the environment used when calling the lambda as the parent
