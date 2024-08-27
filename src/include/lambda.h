@@ -14,12 +14,13 @@ struct LambdaCtx {
      * calling the lambda. */
     struct Env* env;
 
-    /* Formal arguments. Mandatory go first, then optional, and finally a single
-     * one used for the rest. */
+    /* Mandatory formal arguments */
     char** formals;
-    size_t formals_mandatory;
-    size_t formals_optional;
-    bool formals_rest;
+    size_t formals_num;
+
+    /* Non-mandatory arguments will be placed on a list bound to a symbol after
+     * the "&rest" keyword. */
+    char* formal_rest;
 
     /* List of expressions to be evaluated in order when calling the lambda */
     Expr* body;
