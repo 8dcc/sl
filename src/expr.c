@@ -187,14 +187,9 @@ void expr_print_debug(const Expr* e) {
             indent += INDENT_STEP;
             for (int i = 0; i < indent; i++)
                 putchar(' ');
-
-            printf("Formals: (");
-            for (size_t i = 0; i < e->val.lambda->formals_num; i++) {
-                if (i > 0)
-                    putchar(' ');
-                printf("%s", e->val.lambda->formals[i]);
-            }
-            printf(")\n");
+            printf("Formals: ");
+            lambda_ctx_print_args(e->val.lambda);
+            putchar('\n');
 
             /* Print each expression in the body of the function */
             expr_print_debug(e->val.lambda->body);

@@ -38,3 +38,11 @@
       (* n (fact (- n 1))))))
 
 (fact 5)  ; Expected: 120
+
+;; Example function with optional arguments
+(define test-rest
+  (lambda (a b &rest etc)
+    (+ a b
+       (apply + etc))))
+
+(test-rest 1 2 10 20)  ; Expected: 33
