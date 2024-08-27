@@ -9,7 +9,7 @@
 #include "include/util.h"
 #include "include/eval.h"
 
-/* Count the number of mandatory and optional formal arguments in a list. */
+/* Count and validate the number of formal arguments in a list */
 static bool count_formals(const Expr* list, size_t* mandatory, bool* has_rest) {
     SL_ON_ERR(return false);
 
