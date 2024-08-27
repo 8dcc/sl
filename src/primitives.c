@@ -132,13 +132,13 @@ Expr* prim_eval(Env* env, Expr* e) {
 
 Expr* prim_apply(Env* env, Expr* e) {
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL, "Got empty expression.");
+    EXPECT_ARG_NUM(e, 2);
+    SL_EXPECT(e->type == EXPR_PRIM || e->type == EXPR_LAMBDA,
+              "Expected a function as the first argument, got '%s'.",
+              exprtype2str(e->type));
+    EXPECT_TYPE(e->next, EXPR_PARENT);
 
-    /*
-     * (define prim-apply (env e)
-     *   (apply (car e) (cdr e)))
-     */
-    return apply(env, e, e->next);
+    return apply(env, e, e->next->val.children);
 }
 
 Expr* prim_begin(Env* env, Expr* e) {
