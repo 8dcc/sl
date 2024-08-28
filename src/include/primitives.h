@@ -18,6 +18,7 @@ DECLARE_PRIM(if);
 DECLARE_PRIM(eval);
 DECLARE_PRIM(apply);
 DECLARE_PRIM(begin);
+DECLARE_PRIM(macroexpand);
 
 /* List-related primitives */
 DECLARE_PRIM(cons);

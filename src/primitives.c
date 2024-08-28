@@ -180,6 +180,29 @@ Expr* prim_begin(Env* env, Expr* e) {
     return expr_clone_recur(e);
 }
 
+Expr* prim_macroexpand(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 1);
+    EXPECT_TYPE(e, EXPR_PARENT);
+
+    /* This is similar to how `eval' handles EXPR_PARENT expressions. */
+    Expr* func = e->val.children;
+    SL_EXPECT(func != NULL, "The macro call must have at least one element.");
+
+    /* Save unevaluated args before evaluating the function */
+    Expr* args = func->next;
+
+    func = eval(env, func);
+    if (func == NULL)
+        return NULL;
+
+    Expr* expanded = macro_expand(env, func, args);
+    expr_free(func);
+
+    return expanded;
+}
+
 /*----------------------------------------------------------------------------*/
 /* List-related primitives */
 
