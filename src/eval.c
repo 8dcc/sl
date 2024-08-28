@@ -67,8 +67,10 @@ Expr* eval(Env* env, Expr* e) {
      *   - When defining a variable, the symbol should not be evaluated. The
      *     value, however, will be evaluated from the primitive (our Lisp don't
      *     use lazy evaluation).
-     *   - The arguments of a call to `lambda' (formal arguments and body) are
-     *     not supposed to be evaluated.
+     *   - The arguments of a call to `lambda' or `macro' (formal arguments and
+     *     body) are not supposed to be evaluated.
+     *   - In an `if' call, only the "consequent" or "alternative" expression is
+     *     supposed to be evaluated, depending on the evaluated "predicate".
      */
     if (is_special_form(e, "quote"))
         return prim_quote(env, e->val.children->next);
@@ -76,6 +78,8 @@ Expr* eval(Env* env, Expr* e) {
         return prim_define(env, e->val.children->next);
     if (is_special_form(e, "lambda"))
         return prim_lambda(env, e->val.children->next);
+    if (is_special_form(e, "macro"))
+        return prim_macro(env, e->val.children->next);
     if (is_special_form(e, "if"))
         return prim_if(env, e->val.children->next);
 
@@ -96,9 +100,16 @@ Expr* eval(Env* env, Expr* e) {
             /* Evaluate the function expression */
             func = eval(env, func);
 
-            /* Could not eval function symbol/closure, stop */
+            /* Could not eval function symbol, stop */
             if (func == NULL)
                 return NULL;
+
+            /* Macro arguments are not evaluated immediately */
+            if (func->type == EXPR_MACRO) {
+                Expr* applied = macro_call(env, func, args);
+                expr_free(func);
+                return applied;
+            }
 
             /* Evaluate each of the arguments before applying them to the
              * function. Also note that the returned list is allocated, so we
@@ -125,7 +136,8 @@ Expr* eval(Env* env, Expr* e) {
         case EXPR_ERR:
         case EXPR_CONST:
         case EXPR_PRIM:
-        case EXPR_LAMBDA: {
+        case EXPR_LAMBDA:
+        case EXPR_MACRO: {
             /* Not a parent nor a symbol, evaluates to itself */
             return expr_clone(e);
         }
@@ -158,7 +170,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
         }
 
         default: {
-            ERR("Expected primitive or lambda, got '%s'.",
+            ERR("Expected 'Primitive' or 'Lambda', got '%s'.",
                 exprtype2str(func->type));
             return NULL;
         }

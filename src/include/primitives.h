@@ -11,6 +11,7 @@ struct Expr; /* expr.h */
 DECLARE_PRIM(quote);
 DECLARE_PRIM(define);
 DECLARE_PRIM(lambda);
+DECLARE_PRIM(macro);
 DECLARE_PRIM(if);
 
 /* General primitives */

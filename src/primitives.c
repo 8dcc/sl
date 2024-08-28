@@ -102,6 +102,28 @@ Expr* prim_lambda(Env* env, Expr* e) {
     return ret;
 }
 
+Expr* prim_macro(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(expr_list_len(e) == 2,
+              "The special form `macro' expects exactly 2 arguments: Formals "
+              "and body.");
+    EXPECT_TYPE(e, EXPR_PARENT);
+
+    const Expr* formals = e;
+    const Expr* body    = e->next;
+
+    /*
+     * Allocate and initialize a new `LambdaCtx' structure using the formals and
+     * the body expressions we received. Store that context structure in the
+     * expression we will return.
+     */
+    Expr* ret       = expr_new(EXPR_MACRO);
+    ret->val.lambda = lambda_ctx_new(formals, body);
+
+    return ret;
+}
+
 Expr* prim_if(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);

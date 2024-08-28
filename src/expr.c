@@ -37,6 +37,7 @@ void expr_free(Expr* root) {
             free(root->val.s);
             break;
         case EXPR_LAMBDA:
+        case EXPR_MACRO:
             lambda_ctx_free(root->val.lambda);
             break;
         case EXPR_ERR:
@@ -77,6 +78,7 @@ Expr* expr_clone(const Expr* e) {
             ret->val.prim = e->val.prim;
             break;
 
+        case EXPR_MACRO:
         case EXPR_LAMBDA: {
             ret->val.lambda = lambda_ctx_clone(e->val.lambda);
         } break;
@@ -180,8 +182,10 @@ void expr_print_debug(const Expr* e) {
             printf("[PRI] <primitive %p>\n", e->val.prim);
         } break;
 
+        case EXPR_MACRO:
         case EXPR_LAMBDA: {
-            printf("[FUN] <lambda>\n");
+            printf("[FUN] <%s>\n",
+                   (e->type == EXPR_LAMBDA) ? "lambda" : "macro");
 
             /* Print list of formal arguments */
             indent += INDENT_STEP;
@@ -246,6 +250,10 @@ void expr_print(const Expr* e) {
 
         case EXPR_LAMBDA:
             printf("<lambda>");
+            break;
+
+        case EXPR_MACRO:
+            printf("<macro>");
             break;
 
         case EXPR_ERR:
@@ -324,6 +332,7 @@ bool expr_equal(const Expr* a, const Expr* b) {
             /* Compare the C pointers for the primitive functions */
             return a->val.prim == b->val.prim;
 
+        case EXPR_MACRO:
         case EXPR_LAMBDA:
             /* TODO: Compare lambda bodies and parameters */
             return false;
@@ -349,6 +358,7 @@ bool expr_lt(const Expr* a, const Expr* b) {
         case EXPR_PARENT:
         case EXPR_PRIM:
         case EXPR_LAMBDA:
+        case EXPR_MACRO:
         case EXPR_ERR:
             return false;
     }
@@ -370,6 +380,7 @@ bool expr_gt(const Expr* a, const Expr* b) {
         case EXPR_PARENT:
         case EXPR_PRIM:
         case EXPR_LAMBDA:
+        case EXPR_MACRO:
         case EXPR_ERR:
             return false;
     }

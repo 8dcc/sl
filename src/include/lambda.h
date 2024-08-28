@@ -55,4 +55,16 @@ void lambda_ctx_print_args(const LambdaCtx* ctx);
  */
 Expr* lambda_call(struct Env* env, struct Expr* func, struct Expr* args);
 
+/*
+ * Expand the specified `macro' in the specified environment `env' with the
+ * specified arguments `args'.
+ */
+Expr* macro_expand(Env* env, Expr* macro, Expr* args);
+
+/*
+ * Call the specified `macro' in the specified environment `env' with the
+ * specified arguments `args'.
+ */
+Expr* macro_call(Env* env, Expr* func, Expr* args);
+
 #endif /* LAMBDA_H_ */

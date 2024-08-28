@@ -151,11 +151,10 @@ void lambda_ctx_print_args(const LambdaCtx* ctx) {
 /*----------------------------------------------------------------------------*/
 
 Expr* lambda_call(Env* env, Expr* func, Expr* args) {
-    SL_ASSERT(func->type == EXPR_LAMBDA,
-              "Expected function of type 'Lambda', got '%s'.",
-              exprtype2str(func->type));
-
     SL_ON_ERR(return NULL);
+    SL_ASSERT(func->type == EXPR_LAMBDA,
+              "Expected expression of type 'Lambda', got '%s'.",
+              exprtype2str(func->type));
 
     /* Count the number of arguments that we received */
     const size_t arg_num = expr_list_len(args);
@@ -167,7 +166,7 @@ Expr* lambda_call(Env* env, Expr* func, Expr* args) {
               func->val.lambda->formals_num, arg_num);
 
     /* In the lambda's environment, bind each mandatory formal argument to its
-     * corresponding argument value */
+     * corresponding argument value. */
     Expr* cur_arg = args;
     for (size_t i = 0; i < func->val.lambda->formals_num && cur_arg != NULL;
          i++) {
@@ -175,7 +174,7 @@ Expr* lambda_call(Env* env, Expr* func, Expr* args) {
         cur_arg = cur_arg->next;
     }
 
-    /* If the lambda has a "&rest" formal, bind it. */
+    /* If the lambda has a "&rest" formal, bind it */
     if (func->val.lambda->formal_rest != NULL) {
         Expr* rest_list         = expr_new(EXPR_PARENT);
         rest_list->val.children = cur_arg;
@@ -202,4 +201,54 @@ Expr* lambda_call(Env* env, Expr* func, Expr* args) {
     }
 
     return last_evaluated;
+}
+
+/*----------------------------------------------------------------------------*/
+
+Expr* macro_expand(Env* env, Expr* func, Expr* args) {
+    SL_ON_ERR(return NULL);
+    SL_ASSERT(func->type == EXPR_MACRO,
+              "Expected expression of type 'Macro', got '%s'.",
+              exprtype2str(func->type));
+
+    const size_t arg_num = expr_list_len(args);
+    SL_EXPECT(func->val.lambda->formal_rest != NULL ||
+                arg_num == func->val.lambda->formals_num,
+              "Invalid number of arguments. Expected %d, got %d.",
+              func->val.lambda->formals_num, arg_num);
+
+    /* In the macro's environment, bind each mandatory formal argument to its
+     * corresponding argument value. */
+    Expr* cur_arg = args;
+    for (size_t i = 0; i < func->val.lambda->formals_num && cur_arg != NULL;
+         i++) {
+        env_bind(func->val.lambda->env, func->val.lambda->formals[i], cur_arg);
+        cur_arg = cur_arg->next;
+    }
+
+    /* If the macro has a "&rest" formal, bind it */
+    if (func->val.lambda->formal_rest != NULL) {
+        Expr* rest_list         = expr_new(EXPR_PARENT);
+        rest_list->val.children = cur_arg;
+
+        env_bind(func->val.lambda->env, func->val.lambda->formal_rest,
+                 rest_list);
+
+        rest_list->val.children = NULL;
+        expr_free(rest_list);
+    }
+
+    /* Set the parent environment of the macro */
+    func->val.lambda->env->parent = env;
+
+    /* Evaluate the body once to expand the macro */
+    return eval(func->val.lambda->env, func->val.lambda->body);
+}
+
+Expr* macro_call(Env* env, Expr* func, Expr* args) {
+    /* Calling a macro is just evaluation its macro exansion */
+    Expr* expansion = macro_expand(env, func, args);
+    Expr* evaluated = eval(env, expansion);
+    expr_free(expansion);
+    return evaluated;
 }

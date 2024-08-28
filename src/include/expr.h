@@ -19,6 +19,7 @@ enum EExprType {
     EXPR_PARENT,
     EXPR_PRIM,
     EXPR_LAMBDA,
+    EXPR_MACRO,
 };
 
 struct Expr {
@@ -47,6 +48,7 @@ static inline const char* exprtype2str(enum EExprType type) {
         case EXPR_PARENT: return "List";
         case EXPR_PRIM:   return "Primitive";
         case EXPR_LAMBDA: return "Lambda";
+        case EXPR_MACRO:  return "Macro";
     }
     /* clang-format on */
 
