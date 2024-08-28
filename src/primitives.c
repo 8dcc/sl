@@ -161,6 +161,7 @@ Expr* prim_begin(Env* env, Expr* e) {
 /*----------------------------------------------------------------------------*/
 /* List-related primitives */
 
+/* TODO: Make `cons' a macro that uses `list', or remove it entirely */
 Expr* prim_cons(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
@@ -179,6 +180,19 @@ Expr* prim_cons(Env* env, Expr* e) {
 
     /* Append the cdr to the car */
     ret->val.children->next = expr_clone_recur(e->next);
+
+    return ret;
+}
+
+Expr* prim_list(Env* env, Expr* e) {
+    SL_UNUSED(env);
+
+    /*
+     * (list)          ===> nil
+     * (list 'a 'b 'c) ===> (a b c)
+     */
+    Expr* ret         = expr_new(EXPR_PARENT);
+    ret->val.children = expr_clone_list(e);
 
     return ret;
 }

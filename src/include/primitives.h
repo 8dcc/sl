@@ -20,6 +20,7 @@ DECLARE_PRIM(begin);
 
 /* List-related primitives */
 DECLARE_PRIM(cons);
+DECLARE_PRIM(list);
 DECLARE_PRIM(car);
 DECLARE_PRIM(cdr);
 

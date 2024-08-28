@@ -57,6 +57,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "apply", apply);
     BIND_PRIM(env, "begin", begin);
     BIND_PRIM(env, "cons", cons);
+    BIND_PRIM(env, "list", list);
     BIND_PRIM(env, "car", car);
     BIND_PRIM(env, "cdr", cdr);
     BIND_PRIM(env, "+", add);
