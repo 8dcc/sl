@@ -54,9 +54,9 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "lambda", lambda);
     BIND_PRIM(env, "macro", macro);
     BIND_PRIM(env, "if", if);
+    BIND_PRIM(env, "begin", begin);
     BIND_PRIM(env, "eval", eval);
     BIND_PRIM(env, "apply", apply);
-    BIND_PRIM(env, "begin", begin);
     BIND_PRIM(env, "macroexpand", macroexpand);
     BIND_PRIM(env, "cons", cons);
     BIND_PRIM(env, "list", list);

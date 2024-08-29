@@ -146,6 +146,33 @@ Expr* prim_if(Env* env, Expr* e) {
     return eval(env, result);
 }
 
+Expr* prim_begin(Env* env, Expr* e) {
+    /*
+     * In Scheme, `begin' is a special form for various reasons. When making a
+     * call, the arguments are not required to be evaluated in order, when using
+     * `begin', they are. The fact that it has to evaluate the expressions is
+     * helpful when combined with something like `apply' and a quoted
+     * expression:
+     *
+     *   ;; Arguments not evaluated because it's a special form. Returns 7.
+     *   (begin
+     *     (+ 1 2)
+     *     (+ 3 4))
+     *
+     *   ;; Arguments not evaluated because the list is quoted. Also returns 7.
+     *   (apply begin
+     *          '((+ 1 2)
+     *            (+ 3 4)))
+     */
+    Expr* last_evaluated = NULL;
+    for (Expr* cur = e; cur != NULL; cur = cur->next) {
+        expr_free(last_evaluated);
+        last_evaluated = eval(env, cur);
+    }
+
+    return last_evaluated;
+}
+
 /*----------------------------------------------------------------------------*/
 /* General primitives */
 
@@ -162,22 +189,6 @@ Expr* prim_apply(Env* env, Expr* e) {
     EXPECT_TYPE(e->next, EXPR_PARENT);
 
     return apply(env, e, e->next->val.children);
-}
-
-Expr* prim_begin(Env* env, Expr* e) {
-    SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL, "Expected at least 1 expression.");
-
-    /*
-     * In Scheme, begin is technically a special form because when making a
-     * call, the arguments are not required to be evaluated in order. In this
-     * Lisp, however, they are.
-     */
-    while (e->next != NULL)
-        e = e->next;
-
-    return expr_clone_recur(e);
 }
 
 Expr* prim_macroexpand(Env* env, Expr* e) {
