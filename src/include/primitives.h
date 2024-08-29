@@ -13,15 +13,14 @@ DECLARE_PRIM(define);
 DECLARE_PRIM(lambda);
 DECLARE_PRIM(macro);
 DECLARE_PRIM(if);
+DECLARE_PRIM(begin);
 
 /* General primitives */
 DECLARE_PRIM(eval);
 DECLARE_PRIM(apply);
-DECLARE_PRIM(begin);
 DECLARE_PRIM(macroexpand);
 
 /* List-related primitives */
-DECLARE_PRIM(cons);
 DECLARE_PRIM(list);
 DECLARE_PRIM(car);
 DECLARE_PRIM(cdr);

@@ -217,29 +217,6 @@ Expr* prim_macroexpand(Env* env, Expr* e) {
 /*----------------------------------------------------------------------------*/
 /* List-related primitives */
 
-/* TODO: Make `cons' a macro that uses `list', or remove it entirely */
-Expr* prim_cons(Env* env, Expr* e) {
-    SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
-    EXPECT_ARG_NUM(e, 2);
-
-    /*
-     * The `cons' implementation is a bit different for now.
-     *
-     *   (cons x y) =!=> (x . y)
-     *   (cons x y) ===> (x y)
-     *
-     * Maybe we could add a EXPR_CONS type.
-     */
-    Expr* ret         = expr_new(EXPR_PARENT);
-    ret->val.children = expr_clone_recur(e);
-
-    /* Append the cdr to the car */
-    ret->val.children->next = expr_clone_recur(e->next);
-
-    return ret;
-}
-
 Expr* prim_list(Env* env, Expr* e) {
     SL_UNUSED(env);
 
