@@ -61,7 +61,7 @@ static inline const char* exprtype2str(enum EExprType type) {
 Expr* expr_new(enum EExprType type);
 
 /* Free expression and adjacent expressions, along with their children */
-void expr_free(Expr* root);
+void expr_free(Expr* e);
 
 /* Allocate a new expr and copy `e'. Needed to avoid double frees and leaks */
 Expr* expr_clone(const Expr* e);

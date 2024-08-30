@@ -28,11 +28,13 @@
 Expr* prim_quote(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL && e->next == NULL,
+    SL_EXPECT(expr_list_len(e) == 1,
               "The special form `quote' expects exactly 1 argument.");
 
-    /* This `prim' function is useful for binding it to `quote' in the
-     * environment. */
+    /*
+     * The special form `quote' simply returns the expression it receives,
+     * effectively delaying its evaluation.
+     */
     return expr_clone_recur(e);
 }
 
@@ -41,11 +43,13 @@ Expr* prim_define(Env* env, Expr* e) {
      * The `define' function binds the even arguments to the odd arguments.
      * Therefore, it expects an even number of arguments.
      *
+     * Since it's a special form, the arguments we received in `e' are not
+     * evaluated. Before binding each even argument, we evaluate it. We don't
+     * bind it if there is an error in the evaluation.
+     *
      * Returns an evaluated copy of the last bound expression.
      */
     Expr* last_bound = NULL;
-
-    /* See note at the bottom */
     SL_ON_ERR(return last_bound);
 
     for (Expr* arg = e; arg != NULL; arg = arg->next) {
@@ -59,45 +63,41 @@ Expr* prim_define(Env* env, Expr* e) {
         /* Even argument: Expression */
         arg = arg->next;
 
-        /* We evaluate the expression before binding. Invalid expressions are
-         * not defined. */
         Expr* evaluated = eval(env, arg);
         if (evaluated == NULL)
             continue;
 
-        /* Bind a copy of the evaluated expression to the current environment */
         env_bind(env, sym, evaluated);
 
-        /* The `last_bound' variable holds either NULL or the last returned
-         * expression by `eval'. Before overwriting the copy returned by `eval',
-         * free it. */
         expr_free(last_bound);
         last_bound = evaluated;
     }
 
-    /* Last bound holds either NULL or the last valid expression returned by
-     * `eval'. Since eval returns a new expression, we can return it safely. */
+    /*
+     * Last bound holds either NULL or the last valid expression returned by
+     * `eval'. Since `eval' returns a new expression, we can return it safely.
+     */
     return last_bound;
 }
 
 Expr* prim_lambda(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL && e->next != NULL,
+    SL_EXPECT(expr_list_len(e) >= 2,
               "The special form `lambda' expects at least 2 arguments: Formals "
               "and body.");
     EXPECT_TYPE(e, EXPR_PARENT);
-
-    const Expr* formals = e;
-    const Expr* body    = e->next;
 
     /*
      * Allocate and initialize a new `LambdaCtx' structure using the formals and
      * the body expressions we received. Store that context structure in the
      * expression we will return.
      */
-    Expr* ret       = expr_new(EXPR_LAMBDA);
-    ret->val.lambda = lambda_ctx_new(formals, body);
+    Expr* ret = expr_new(EXPR_LAMBDA);
+
+    const Expr* formals = e;
+    const Expr* body    = e->next;
+    ret->val.lambda     = lambda_ctx_new(formals, body);
 
     return ret;
 }
@@ -110,16 +110,15 @@ Expr* prim_macro(Env* env, Expr* e) {
               "and body.");
     EXPECT_TYPE(e, EXPR_PARENT);
 
+    /*
+     * The `macro' and `lambda' primitives are identical, but the type of the
+     * returned expression changes.
+     */
+    Expr* ret = expr_new(EXPR_MACRO);
+
     const Expr* formals = e;
     const Expr* body    = e->next;
-
-    /*
-     * Allocate and initialize a new `LambdaCtx' structure using the formals and
-     * the body expressions we received. Store that context structure in the
-     * expression we will return.
-     */
-    Expr* ret       = expr_new(EXPR_MACRO);
-    ret->val.lambda = lambda_ctx_new(formals, body);
+    ret->val.lambda     = lambda_ctx_new(formals, body);
 
     return ret;
 }
@@ -131,18 +130,14 @@ Expr* prim_if(Env* env, Expr* e) {
               "The special form `if' expects exactly 3 arguments: Predicate, "
               "consequent and alternative.");
 
-    /* Evaluate the predicate (first argument) */
+    /*
+     * First, evaluate the predicate (first argument). If the predicate is false
+     * (nil), the expression to be evaluated is the "alternative" (third
+     * argument); otherwise, evaluate the "consequent" (second argument).
+     */
     Expr* evaluated_predicate = eval(env, e);
-
-    /* If the predicate is false (nil), the expression to be evaluated is the
-     * "alternative" (third argument) , otherwise, evaluate the "consequent"
-     * (second argument). */
     Expr* result = expr_is_nil(evaluated_predicate) ? e->next->next : e->next;
-
-    /* Make sure we free the expression allocated by `eval' */
     expr_free(evaluated_predicate);
-
-    /* Since `if' is a special form, we need to evaluate the result */
     return eval(env, result);
 }
 
@@ -418,7 +413,6 @@ Expr* prim_equal(Env* env, Expr* e) {
         }
     }
 
-    /* Get the true or false expressions from the environment */
     return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }
 
@@ -437,7 +431,6 @@ Expr* prim_lt(Env* env, Expr* e) {
         }
     }
 
-    /* Get the true or false expressions from the environment */
     return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }
 
@@ -456,6 +449,5 @@ Expr* prim_gt(Env* env, Expr* e) {
         }
     }
 
-    /* Get the true or false expressions from the environment */
     return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }

@@ -17,37 +17,41 @@ Expr* expr_new(enum EExprType type) {
     return ret;
 }
 
-void expr_free(Expr* root) {
-    /* This function shouldn't be called with NULL */
-    if (root == NULL)
+void expr_free(Expr* e) {
+    if (e == NULL)
         return;
 
-    /* If the expression has an adjacent one, free that one first */
-    if (root->next != NULL)
-        expr_free(root->next);
+    /*
+     * If the expression has an adjacent one, free that one first. Then, check
+     * if the value of the current expression was allocated, and free it.
+     * Finally, free the `Expr' structure itself, usually allocated in
+     * `expr_new'.
+     */
+    if (e->next != NULL)
+        expr_free(e->next);
 
-    switch (root->type) {
+    switch (e->type) {
         case EXPR_PARENT:
-            /* If the expression has children, free them */
-            if (root->val.children != NULL)
-                expr_free(root->val.children);
+            if (e->val.children != NULL)
+                expr_free(e->val.children);
             break;
+
         case EXPR_SYMBOL:
-            /* Free the symbol string, allocated in tokens_scan() */
-            free(root->val.s);
+            free(e->val.s);
             break;
+
         case EXPR_LAMBDA:
         case EXPR_MACRO:
-            lambda_ctx_free(root->val.lambda);
+            lambda_ctx_free(e->val.lambda);
             break;
+
         case EXPR_ERR:
         case EXPR_CONST:
         case EXPR_PRIM:
             break;
     }
 
-    /* Free the expression itself, that we allocated on parse() */
-    free(root);
+    free(e);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -56,11 +60,17 @@ Expr* expr_clone(const Expr* e) {
     if (e == NULL)
         return NULL;
 
+    /*
+     * Nothing allocated (e.g. symbol strings) is re-used from the old
+     * expression, everything is allocated and copied again.
+     *
+     * Note that this function does NOT clone inferior or adjacent nodes. See
+     * `expr_clone_recur' and `expr_clone_list' respectively.
+     */
     Expr* ret = expr_new(e->type);
 
     switch (e->type) {
         case EXPR_SYMBOL:
-            /* Don't reuse the old pointer */
             ret->val.s = sl_safe_strdup(e->val.s);
             break;
 
@@ -69,27 +79,23 @@ Expr* expr_clone(const Expr* e) {
             break;
 
         case EXPR_PARENT:
-            /* See `expr_clone_recur' for recursive cloning */
             ret->val.children = NULL;
             break;
 
         case EXPR_PRIM:
-            /* Copy the C function pointer */
             ret->val.prim = e->val.prim;
             break;
 
         case EXPR_MACRO:
-        case EXPR_LAMBDA: {
+        case EXPR_LAMBDA:
             ret->val.lambda = lambda_ctx_clone(e->val.lambda);
-        } break;
+            break;
 
         case EXPR_ERR:
             ERR("Trying to clone <error>");
             break;
     }
 
-    /* We don't copy inferior or adjacent nodes. See, `expr_clone_recur' and
-     * `expr_clone_list' respectively. */
     ret->next = NULL;
     return ret;
 }
@@ -100,24 +106,20 @@ Expr* expr_clone_recur(const Expr* e) {
 
     Expr* cloned = expr_clone(e);
 
-    /* If the expression we just cloned is a parent */
     if (e->type == EXPR_PARENT) {
-        /* The copy of the first child will be stored in dummy_copy.next */
+        /*
+         * The copy of the first child will be stored in `dummy_copy.next'. This
+         * will be stored in `val.children' below.
+         */
         Expr dummy_copy;
         dummy_copy.next = NULL;
         Expr* cur_copy  = &dummy_copy;
 
-        /* Clone all children, while linking them together in the new list. This
-         * is similar to how we evaluate function arguments in `eval' */
         for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
-            /* Clone each children recursively */
             cur_copy->next = expr_clone_recur(cur);
-
-            /* Move to the next argument in our copy list */
-            cur_copy = cur_copy->next;
+            cur_copy       = cur_copy->next;
         }
 
-        /* See comment above */
         cloned->val.children = dummy_copy.next;
     }
 
@@ -146,7 +148,6 @@ void expr_print_debug(const Expr* e) {
     for (int i = 0; i < indent; i++)
         putchar(' ');
 
-    /* This function shouldn't be called with NULL */
     if (e == NULL) {
         printf("[ERR] ");
         ERR("Got NULL as argument. Returning...");
@@ -222,7 +223,6 @@ static void print_sexpr(const Expr* e) {
 }
 
 void expr_print(const Expr* e) {
-    /* This function shouldn't be called with NULL */
     if (e == NULL) {
         ERR("Got null expression.");
         return;
@@ -295,11 +295,9 @@ bool expr_equal(const Expr* a, const Expr* b) {
 
     switch (a->type) {
         case EXPR_CONST:
-            /* Compare the decimal values */
             return a->val.n == b->val.n;
 
         case EXPR_SYMBOL:
-            /* Compare the symbol strings */
             return strcmp(a->val.s, b->val.s) == 0;
 
         case EXPR_PARENT: {
@@ -329,7 +327,6 @@ bool expr_equal(const Expr* a, const Expr* b) {
         }
 
         case EXPR_PRIM:
-            /* Compare the C pointers for the primitive functions */
             return a->val.prim == b->val.prim;
 
         case EXPR_MACRO:
