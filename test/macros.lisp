@@ -46,8 +46,7 @@
 ;; that directly to a lambda.
 (defmacro defun (name formals &rest body)
   (list 'define name
-    (list 'lambda formals
-      (list 'apply 'begin (list 'quote body)))))
+        (append (list 'lambda formals) body)))
 
 ;; Define a simple function using the previous `defun' macro. Wrap the call in:
 ;;
@@ -55,5 +54,6 @@
 ;;
 ;; To see how the macro expands.
 (defun my-function (a b)
+  (define unused 'not-returned)
   (+ a b 10))
 (my-function 1 2)
