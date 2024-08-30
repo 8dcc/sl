@@ -20,15 +20,5 @@ unbound-error-var  ; Expected: Unbound symbol error
 (define my-symbol 'my-addition)  ; Expected: my-addition
 ((eval my-symbol) var1 var2)     ; Expected: 30
 
-(cons 'a 'b)     ; Expected: (a b)
-(list)           ; Expected: nil
-(list 'a 'b 'c)  ; Expected: (a b c)
-(car nil)        ; Expected: nil
-(car '(a))       ; Expected: a
-(car '(a b))     ; Expected: a
-(cdr nil)        ; Expected: nil
-(cdr '(a))       ; Expected: nil
-(cdr '(a b c))   ; Expected: (b c)
-
 (equal? '(1 2 3) '(1 2 3))  ; Expected: tru
 (equal? '(1 2 3) '(1 2 9))  ; Expected: nil

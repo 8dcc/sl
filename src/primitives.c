@@ -237,15 +237,13 @@ Expr* prim_car(Env* env, Expr* e) {
     EXPECT_TYPE(e, EXPR_PARENT);
 
     /*
-     * (car '()) ===> nil
+     * (car '())          ===> nil
+     * (car '(a b c))     ===> a
+     * (car '((a b) y z)) ===> (a b)
      */
     if (expr_is_nil(e))
         return expr_clone(e);
 
-    /*
-     * (car '(a b c))     ===> a
-     * (car '((a b) y z)) ===> (a b)
-     */
     return expr_clone_recur(e->val.children);
 }
 
@@ -255,24 +253,71 @@ Expr* prim_cdr(Env* env, Expr* e) {
     EXPECT_ARG_NUM(e, 1);
     EXPECT_TYPE(e, EXPR_PARENT);
 
+    /*
+     * (cdr '())          ===> nil
+     * (cdr '(a))         ===> nil
+     * (cdr '(a b c))     ===> (b c)
+     * (cdr '((a b) y z)) ===> (y z)
+     */
     Expr* ret = expr_new(EXPR_PARENT);
 
-    if (e->val.children == NULL || e->val.children->next == NULL) {
-        /*
-         * (cdr '())  ===> nil
-         * (cdr '(a)) ===> nil
-         */
+    if (e->val.children == NULL || e->val.children->next == NULL)
         ret->val.children = NULL;
-    } else {
-        /*
-         * (cdr '(a b c))     ===> (b c)
-         * (cdr '((a b) y z)) ===> (y z)
-         */
+    else
         ret->val.children = expr_clone_list(e->val.children->next);
-    }
 
     return ret;
 }
+
+Expr* prim_append(Env* env, Expr* e) {
+    SL_UNUSED(env);
+
+    /*
+     * (append)                ===> nil
+     * (append nil)            ===> nil
+     * (append 'a 'b 'c)       ===> (a b c)
+     * (append 'a nil 'b)      ===> (a b)
+     * (append 'a 'b '(1 2 3)) ===> (a b 1 2 3)
+     */
+    Expr* ret = expr_new(EXPR_PARENT);
+    if (e == NULL) {
+        ret->val.children = NULL;
+        return ret;
+    }
+
+    /*
+     * For more information about the `dummy_copy' variable, see
+     * `expr_clone_recur'.
+     */
+    Expr dummy_copy;
+    dummy_copy.next = NULL;
+    Expr* cur_copy  = &dummy_copy;
+
+    for (Expr* arg = e; arg != NULL; arg = arg->next) {
+        /*
+         * The `append' primitive "extracts" the top-level elements from
+         * the list arguments.
+         */
+        if (arg->type == EXPR_PARENT) {
+            if (arg->val.children != NULL) {
+                cur_copy->next = expr_clone_list(arg->val.children);
+                while (cur_copy->next != NULL)
+                    cur_copy = cur_copy->next;
+            }
+            continue;
+        }
+
+        cur_copy->next = expr_clone_recur(arg);
+        cur_copy       = cur_copy->next;
+    }
+
+    ret->val.children = dummy_copy.next;
+    return ret;
+}
+
+/*
+ * TODO: prim_member()
+ */
 
 /*----------------------------------------------------------------------------*/
 /* Arithmetic primitives */

@@ -29,7 +29,7 @@
 (define my-variable 10)
 
 ;; First, test the `macroexpand' primitive, which should return:
-;;   (define my-variable (+ my-variable 1.000000))
+;;   (define my-variable (+ my-variable 1))
 (macroexpand '(inc my-variable))
 
 ;; Then the actual macro call, which is just the evaluated expansion
