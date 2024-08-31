@@ -9,14 +9,15 @@
 ;; Define a macro called `defmacro'. It will take a `name', a list of `formals'
 ;; and a single `body' expression. For example:
 ;;
-;;   (defmacro inc (var)
-;;     (list '+ var 1))
+;;   (defmacro 1+ (var)
+;;     (list '+ 1 var))
 ;;
 ;; Will expand to:
 ;;
-;;   (define inc
+;;   (define 1+
 ;;     (macro (var)
-;;       (list '+ var 1)))
+;;       (list '+ 1 var)))
+;;
 (define defmacro
   (macro (name formals body)
     (list 'define name (list 'macro formals body))))
@@ -38,15 +39,20 @@
 ;; Should be equivalent to the previous macro call
 (eval (macroexpand '(inc my-variable)))
 
-;; A messy implementation of `defun'. The whole:
+;; Simle implmentation of `defun'. For example:
 ;;
-;;   (apply begin (quote ...))
+;;     (defun my-function (n)
+;;       (+ 1 n))
 ;;
-;; Part is needed because the body is a list of expressions, and we can't pass
-;; that directly to a lambda.
-(defmacro defun (name formals &rest body)
+;; Will expand to:
+;;
+;;     (define my-function
+;;       (lambda (n)
+;;         (+ 1 n)))
+;;
+(defmacro defun (name &rest lambda-args)
   (list 'define name
-        (append (list 'lambda formals) body)))
+        (append 'lambda lambda-args)))
 
 ;; Define a simple function using the previous `defun' macro. Wrap the call in:
 ;;
