@@ -32,8 +32,18 @@ Env* env_new(void) {
 }
 
 void env_init_defaults(Env* env) {
-    /* First constant of the environment, NIL. The Expr will be cloned, so it's
-     * safe to pass the stack address to env_bind. */
+    /*
+     * The default environment has very little constants appart from C
+     * primitives:
+     *
+     *   - nil: Empty list, used to represent "false". Parent expression with
+     *     NULL as `val.children'.
+     *   - tru: Symbol that evaluates to itself, used for explicit truth in
+     *     boolean functions.
+     *
+     * Since the expressions will be cloned, it's safe to pass the stack address
+     * to `env_bind'.
+     */
     Expr nil_expr = {
         .type         = EXPR_PARENT,
         .val.children = NULL,
@@ -72,17 +82,18 @@ void env_init_defaults(Env* env) {
 }
 
 Env* env_clone(Env* env) {
-    Env* cloned = env_new();
-
-    /* They share the same Env* for the parent, not a copy */
+    /*
+     * When cloning an environment, the same parent pointer is shared, not a
+     * copy. New arrays are allocated for symbols and values, and a new copy is
+     * created for each one.
+     */
+    Env* cloned    = env_new();
     cloned->parent = env->parent;
 
-    /* Allocate the same number of symbols and values */
     cloned->size    = env->size;
     cloned->symbols = sl_safe_malloc(cloned->size * sizeof(char*));
     cloned->values  = sl_safe_malloc(cloned->size * sizeof(Expr*));
 
-    /* Store a copy of each symbol and value pair */
     for (size_t i = 0; i < cloned->size; i++) {
         cloned->symbols[i] = sl_safe_strdup(env->symbols[i]);
         cloned->values[i]  = expr_clone_recur(env->values[i]);
@@ -114,25 +125,26 @@ void env_bind(Env* env, const char* sym, const Expr* val) {
     SL_ASSERT(env != NULL, "Invalid environment.");
     SL_ASSERT(sym != NULL, "Symbol is empty.");
 
-    /* Iterate until the last node of the linked list */
+    /*
+     * Before creating a new item in the environment, traverse the existing
+     * nodes on the linked list and check if one of the symbols matches what we
+     * are trying to bind. If we find a match, overwrite its value.
+     *
+     * Otherwise, reallocate the `symbols' and `values' arrays, and add a clone
+     * of the symbol string and value expression we received.
+     */
     for (size_t i = 0; i < env->size; i++) {
         if (!strcmp(env->symbols[i], sym)) {
-            /* We found a value associated to this symbol, overwrite with new
-             * value. First we free the Expr we allocated on the first
-             * asignment, and then we allocate a copy of the new value. */
             expr_free(env->values[i]);
             env->values[i] = expr_clone_recur(val);
             return;
         }
     }
 
-    /* If we reached here, the symbol is not currently associated. Allocate one
-     * more symbol and one more value in the environment. */
     env->size++;
     sl_safe_realloc(env->symbols, env->size * sizeof(char*));
     sl_safe_realloc(env->values, env->size * sizeof(Expr*));
 
-    /* Copy the symbol name and clone the associated expression */
     env->symbols[env->size - 1] = sl_safe_strdup(sym);
     env->values[env->size - 1]  = expr_clone_recur(val);
 }
