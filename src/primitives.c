@@ -123,24 +123,6 @@ Expr* prim_macro(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_if(Env* env, Expr* e) {
-    SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
-    SL_EXPECT(expr_list_len(e) == 3,
-              "The special form `if' expects exactly 3 arguments: Predicate, "
-              "consequent and alternative.");
-
-    /*
-     * First, evaluate the predicate (first argument). If the predicate is false
-     * (nil), the expression to be evaluated is the "alternative" (third
-     * argument); otherwise, evaluate the "consequent" (second argument).
-     */
-    Expr* evaluated_predicate = eval(env, e);
-    Expr* result = expr_is_nil(evaluated_predicate) ? e->next->next : e->next;
-    expr_free(evaluated_predicate);
-    return eval(env, result);
-}
-
 Expr* prim_begin(Env* env, Expr* e) {
     /*
      * In Scheme, `begin' is a special form for various reasons. When making a
@@ -166,6 +148,61 @@ Expr* prim_begin(Env* env, Expr* e) {
     }
 
     return last_evaluated;
+}
+
+Expr* prim_if(Env* env, Expr* e) {
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(expr_list_len(e) == 3,
+              "The special form `if' expects exactly 3 arguments: Predicate, "
+              "consequent and alternative.");
+
+    /*
+     * First, evaluate the predicate (first argument). If the predicate is false
+     * (nil), the expression to be evaluated is the "alternative" (third
+     * argument); otherwise, evaluate the "consequent" (second argument).
+     */
+    Expr* evaluated_predicate = eval(env, e);
+    Expr* result = expr_is_nil(evaluated_predicate) ? e->next->next : e->next;
+    expr_free(evaluated_predicate);
+    return eval(env, result);
+}
+
+Expr* prim_or(Env* env, Expr* e) {
+    /*
+     * The `or' function does not have to be a primitive, it can be built with
+     * `if' and macros. In any case, we can't use normal evaluation rules
+     * because not all arguments of `or' are always evaluated. As soon as one of
+     * them is true, we stop evaluating the arguments and return that one. The
+     * same is true for `prim_and', but we stop as soon as one of them is `nil'
+     * (false).
+     */
+    Expr* result = NULL;
+    for (Expr* cur = e; cur != NULL; cur = cur->next) {
+        expr_free(result);
+        result = eval(env, cur);
+        if (!expr_is_nil(result))
+            break;
+    }
+
+    return (result == NULL) ? env_get(env, "nil") : result;
+}
+
+Expr* prim_and(Env* env, Expr* e) {
+    /*
+     * For more information, see comment in `prim_or'.
+     *
+     * Also note that we are returning `tru' if we didn't receive any arguments.
+     * This is the standard behavior in Scheme.
+     */
+    Expr* result = NULL;
+    for (Expr* cur = e; cur != NULL; cur = cur->next) {
+        expr_free(result);
+        result = eval(env, cur);
+        if (expr_is_nil(result))
+            break;
+    }
+
+    return (result == NULL) ? env_get(env, "tru") : result;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -309,10 +346,6 @@ Expr* prim_append(Env* env, Expr* e) {
     ret->val.children = dummy_copy.next;
     return ret;
 }
-
-/*
- * TODO: prim_member()
- */
 
 /*----------------------------------------------------------------------------*/
 /* Arithmetic primitives */

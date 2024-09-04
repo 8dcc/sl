@@ -22,3 +22,10 @@ unbound-error-var  ; Expected: Unbound symbol error
 
 (equal? '(1 2 3) '(1 2 3))  ; Expected: tru
 (equal? '(1 2 3) '(1 2 9))  ; Expected: nil
+
+(or)                        ; Expected: nil
+(and)                       ; Expected: tru
+(or nil nil nil)            ; Expected: nil
+(and 1 2 3)                 ; Expected: 3
+(or nil tru 'unreachable)   ; Expected: tru
+(and 123 nil 'unreachable)  ; Expected: nil

@@ -80,10 +80,14 @@ Expr* eval(Env* env, Expr* e) {
         return prim_lambda(env, e->val.children->next);
     if (is_special_form(e, "macro"))
         return prim_macro(env, e->val.children->next);
-    if (is_special_form(e, "if"))
-        return prim_if(env, e->val.children->next);
     if (is_special_form(e, "begin"))
         return prim_begin(env, e->val.children->next);
+    if (is_special_form(e, "if"))
+        return prim_if(env, e->val.children->next);
+    if (is_special_form(e, "or"))
+        return prim_or(env, e->val.children->next);
+    if (is_special_form(e, "and"))
+        return prim_and(env, e->val.children->next);
 
     switch (e->type) {
         case EXPR_PARENT: {

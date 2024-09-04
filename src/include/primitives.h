@@ -12,8 +12,10 @@ DECLARE_PRIM(quote);
 DECLARE_PRIM(define);
 DECLARE_PRIM(lambda);
 DECLARE_PRIM(macro);
-DECLARE_PRIM(if);
 DECLARE_PRIM(begin);
+DECLARE_PRIM(if);
+DECLARE_PRIM(or);
+DECLARE_PRIM(and);
 
 /* General primitives */
 DECLARE_PRIM(eval);
