@@ -1,6 +1,8 @@
 
 #include <stdbool.h>
+#include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <unistd.h> /* isatty() */
 
@@ -12,8 +14,25 @@
 #include "include/parser.h"
 #include "include/eval.h"
 
-int main(void) {
-    const bool print_prompt = isatty(0);
+static FILE* get_input_file(int argc, char** argv) {
+    FILE* result = stdin;
+
+    if (argc > 1) {
+        const char* filename = argv[1];
+        result               = fopen(filename, "r");
+        if (result == NULL) {
+            fprintf(stderr, "Error opening '%s': %s.", filename,
+                    strerror(errno));
+            exit(1);
+        }
+    }
+
+    return result;
+}
+
+int main(int argc, char** argv) {
+    FILE* input_file        = get_input_file(argc, argv);
+    const bool print_prompt = input_file == stdin && isatty(0);
 
     /* Initialize global environment with symbols like "nil" */
     Env* global_env = env_new();
@@ -26,7 +45,7 @@ int main(void) {
 
         /* Allocate string and read an expression. If `read' returned NULL, it
          * encountered EOF. */
-        char* input = read_expr(stdin);
+        char* input = read_expr(input_file);
         if (input == NULL)
             break;
 
@@ -64,6 +83,6 @@ int main(void) {
     }
 
     env_free(global_env);
-
+    fclose(input_file);
     return 0;
 }
