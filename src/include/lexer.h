@@ -34,7 +34,7 @@ Token* tokenize(char* input);
 /* Free an array of tokens, along with all the memory used by each element */
 void tokens_free(Token* arr);
 
-/* Is `c' a token separator? Used by `get_token' and `input_read'. */
+/* Is `c' a token separator? Used by `get_token' and `read_expr'. */
 bool is_token_separator(char c);
 
 /* Print all tokens in a Token array terminated by TOKEN_EOF */

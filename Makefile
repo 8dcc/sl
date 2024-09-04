@@ -3,7 +3,7 @@ CC=gcc
 CFLAGS=-std=gnu99 -Wall -Wextra -ggdb3
 LDLIBS=-lm
 
-OBJ_FILES=main.c.o expr.c.o env.c.o lambda.c.o util.c.o lexer.c.o parser.c.o eval.c.o primitives.c.o
+OBJ_FILES=main.c.o expr.c.o env.c.o lambda.c.o util.c.o read.c.o lexer.c.o parser.c.o eval.c.o primitives.c.o
 OBJS=$(addprefix obj/, $(OBJ_FILES))
 
 BIN=sl
