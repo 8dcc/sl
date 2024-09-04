@@ -69,8 +69,13 @@ Expr* eval(Env* env, Expr* e) {
      *     use lazy evaluation).
      *   - The arguments of a call to `lambda' or `macro' (formal arguments and
      *     body) are not supposed to be evaluated.
+     *   - Each argument of a call to `begin' is evaluated in order, and the
+     *     last one is returned.
      *   - In an `if' call, only the "consequent" or "alternative" expression is
      *     supposed to be evaluated, depending on the evaluated "predicate".
+     *   - The `or' and `and' primitives stop evaluating their arguments as soon
+     *     as one of them is non-nil or nil respectively, and return the last
+     *     evaluated argument.
      */
     if (is_special_form(e, "quote"))
         return prim_quote(env, e->val.children->next);
