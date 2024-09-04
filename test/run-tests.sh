@@ -32,7 +32,7 @@ for file in $(ls "$SCRIPT_DIR"/*.lisp); do
     valgrind --leak-check=full   \
              --track-origins=yes \
              --error-exitcode=1  \
-             $SL_BIN < $file
+             $SL_BIN $file
     valgrind_code=$?
 
     echo "-------------------------------------------------------------------"
