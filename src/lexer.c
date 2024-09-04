@@ -14,8 +14,9 @@
 /* Try to parse `str' as a decimal number, and store it in `out'. Returns true
  * if the conversion was successful. */
 static bool parse_number(const char* str, double* out) {
-    /* 0 means we are in the integer part of the number */
-    int decimal_position = 0;
+    /* Starts at 0 and means that we are in the integer part of the number. It
+     * will decrease with each fractional digit parsed. */
+    int fractional_position = 0;
 
     /* First, clear the output */
     *out = 0.0;
@@ -28,24 +29,24 @@ static bool parse_number(const char* str, double* out) {
 
     while (!is_token_separator(*str)) {
         if (isdigit(*str)) {
-            if (decimal_position == 0) {
+            if (fractional_position == 0) {
                 /* Shift 1 digit to the left and add new one */
                 *out *= 10;
                 *out += *str - '0';
             } else {
                 /* '4' -> 0.004 */
-                double tmp = (*str - '0') * pow(10.0, decimal_position);
+                double tmp = (*str - '0') * pow(10.0, fractional_position);
                 *out += tmp;
 
                 /* If we added 0.01, add 0.001 next */
-                decimal_position--;
+                fractional_position--;
             }
         } else if (*str == '.') {
             /* Found dot in the number, but we are already in the decimal part.
              * Error. */
-            if (decimal_position != 0)
+            if (fractional_position != 0)
                 return false;
-            decimal_position--;
+            fractional_position--;
         } else {
             /* Unknown digit, not a number */
             return false;
@@ -148,7 +149,7 @@ Token* tokenize(char* input) {
         }
 
         /* Try to scan the token pointed to by `input', and increase the pointer
-         * accordingly */
+         * accordingly. */
         tokens[i] = get_token(&input);
     }
 
@@ -156,13 +157,10 @@ Token* tokenize(char* input) {
 }
 
 void tokens_free(Token* arr) {
-    /* Free the strings we allocated in `token_store', if any */
     for (int i = 0; arr[i].type != TOKEN_EOF; i++)
         if (arr[i].type == TOKEN_SYMBOL)
             free(arr[i].val.s);
 
-    /* Once we are done freeing all the allocations we made inside the array,
-     * free the array itself */
     free(arr);
 }
 

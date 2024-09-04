@@ -32,10 +32,6 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
 
         case TOKEN_SYMBOL: {
             expr->type = EXPR_SYMBOL;
-
-            /* Allocate a new copy of the string from `tokens_scan', since the
-             * lexer is responsible of freeing the original pointer. The ones we
-             * are allocating will be freed in `expr_free'. */
             expr->val.s = sl_safe_strdup(tokens[0].val.s);
         } break;
 
@@ -46,7 +42,6 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
             Expr dummy;
             dummy.next = NULL;
 
-            /* Parse each children */
             Expr* cur_child = &dummy;
             while (tokens[*parsed].type != TOKEN_LIST_CLOSE &&
                    tokens[*parsed].type != TOKEN_EOF) {

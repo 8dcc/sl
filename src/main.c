@@ -13,8 +13,12 @@
 
 #define INPUT_BUFSZ 100
 
-/* Allocate buffer and store a LISP expression in string format. Must be freed
- * by the caller. Returns true if it got EOF. */
+/*
+ * Allocate buffer and store a Lisp expression in string format. Must be freed
+ * by the caller. Returns true if it got EOF.
+ *
+ * TODO: Make more modular.
+ */
 static bool input_read(char** input) {
     size_t input_sz = INPUT_BUFSZ;
     *input          = sl_safe_malloc(input_sz);
