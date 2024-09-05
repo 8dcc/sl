@@ -38,13 +38,12 @@ int main(int argc, char** argv) {
     Env* global_env = env_new();
     env_init_defaults(global_env);
 
-    bool got_eof = false;
-    while (!got_eof) {
+    for (;;) {
         if (print_prompt)
             printf("sl> ");
 
-        /* Allocate string and read an expression. If `read' returned NULL, it
-         * encountered EOF. */
+        /* Allocate string and read an expression. If `read_expr' returned NULL,
+         * it encountered EOF. */
         char* input = read_expr(input_file);
         if (input == NULL)
             break;
@@ -52,7 +51,7 @@ int main(int argc, char** argv) {
         /* Tokenize input. We don't need to check for NULL. */
         Token* tokens = tokenize(input);
 
-        /* We are done with the string from `read', free it */
+        /* We are done with the string from `read_expr', free it */
         free(input);
 
         /* Get expression (AST) from token array */
