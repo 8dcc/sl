@@ -19,10 +19,6 @@ For more information, see:
 
 * Components
 
-#+begin_quote
-*Note:* This project is still WIP, so this section might be a bit outdated.
-#+end_quote
-
 This LISP has a few components that are responsible for their own data. This is
 the basic [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][REPL]] process:
 
@@ -47,10 +43,6 @@ the basic [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][
 5. After that, we print the evaluated expression using =expr_print()=, defined in
    [[file:src/expr.c][expr.c]].
 
-#+begin_comment
-TODO: Explain step 4 in more detail.
-#+end_comment
-
 * Building
 
 #+begin_src console
@@ -69,9 +61,6 @@ $ ./sl
 sl> (+ 1 2 (- 5 4) (* 3 4) 10)
 26.000000
 
-sl> define
-<primitive 0x55d31f51b900>
-
 sl> (define my-symbol 'Testing)
 Testing
 
@@ -88,4 +77,68 @@ sl> (define my-lambda
 
 sl> (my-lambda 3 4)
 70.000000
+
+sl> (define defmacro
+      (macro (name formals body)
+        (list 'define name (list 'macro formals body))))
+<macro>
+
+sl> (defmacro inc (var)
+      (list 'define var (list '+ var 1)))
+<macro>
+
+sl> (inc my-global)
+11.000000
+
+sl> my-global
+11.000000
 #+end_src
+
+* Todo list
+
+These are some things that need to be done. Feel free to make a PR if you want
+to contribute.
+
+** Better closures
+
+In the following example:
+
+#+begin_src scheme
+(define get-inner
+  (lambda (a)
+    (lambda (b)
+      (+ a b))))
+
+(define inner (get-inner 10))
+(inner 20) ; Error: Unbound symbol `a'
+#+end_src
+
+The function =inner= can't access =a=, even though it was defined when =get-inner=
+returned the lambda. This happens because the parent environment of =inner= is set
+whenever it gets called, not when it's defined. This means that it can access
+global symbols, and even =a= as long as =inner= was called /within/ the body of
+=get-inner=.
+
+** Tail-call optimization
+
+The following code defines a /recursive procedure/ that performs an /iterative
+process/.
+
+#+begin_src emacs-lisp
+(defun sum-iter (i end total)
+  (if (> i end)
+      total
+      (sum-iter (+ i 1)
+                end
+                (+ total i))))
+
+(sum-iter 1 5 0) ; 15
+#+end_src
+
+Even though that /procedure/ is recursive, since it calls itself, the /process/ is
+iterative, because it has all the necessary information for continuing the
+computation in its parameters. The interpreter doesn't *need* to keep track of
+where it was called from, it can just jump to the start of the function with the
+new parameters and no information will be lost. This jump optimization is called
+/tail-call optimization/, and an interpreter with this feature is called
+/tail-recursive/. For more information, see [[https://web.mit.edu/6.001/6.037/sicp.pdf#subsection.1.2.1][section 1.2.1 of SICP]].
