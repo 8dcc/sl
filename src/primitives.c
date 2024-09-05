@@ -305,11 +305,9 @@ Expr* prim_append(Env* env, Expr* e) {
     SL_UNUSED(env);
 
     /*
-     * (append)                ===> nil
-     * (append nil)            ===> nil
-     * (append 'a 'b 'c)       ===> (a b c)
-     * (append 'a nil 'b)      ===> (a b)
-     * (append 'a 'b '(1 2 3)) ===> (a b 1 2 3)
+     * (append)                   ===> nil
+     * (append nil)               ===> nil
+     * (append '(a b) ... '(y z)) ===> (a b ... y z)
      */
     Expr* ret = expr_new(EXPR_PARENT);
     if (e == NULL) {
@@ -317,30 +315,21 @@ Expr* prim_append(Env* env, Expr* e) {
         return ret;
     }
 
-    /*
-     * For more information about the `dummy_copy' variable, see
-     * `expr_clone_recur'.
-     */
+    SL_ON_ERR(return ret);
+
     Expr dummy_copy;
     dummy_copy.next = NULL;
     Expr* cur_copy  = &dummy_copy;
 
     for (Expr* arg = e; arg != NULL; arg = arg->next) {
-        /*
-         * The `append' primitive "extracts" the top-level elements from
-         * the list arguments.
-         */
-        if (arg->type == EXPR_PARENT) {
-            if (arg->val.children != NULL) {
-                cur_copy->next = expr_clone_list(arg->val.children);
-                while (cur_copy->next != NULL)
-                    cur_copy = cur_copy->next;
-            }
-            continue;
-        }
+        EXPECT_TYPE(arg, EXPR_PARENT);
 
-        cur_copy->next = expr_clone_recur(arg);
-        cur_copy       = cur_copy->next;
+        if (arg->val.children == NULL)
+            continue;
+
+        cur_copy->next = expr_clone_list(arg->val.children);
+        while (cur_copy->next != NULL)
+            cur_copy = cur_copy->next;
     }
 
     ret->val.children = dummy_copy.next;

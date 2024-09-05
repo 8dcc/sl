@@ -6,6 +6,8 @@
 ;;   - Usage of `defmacro' and `defun' macros.
 ;;------------------------------------------------------------------------------
 
+;; TODO: Move important macros to stdlib, import from here.
+
 ;; Define a macro called `defmacro'. It will take a `name', a list of `formals'
 ;; and a single `body' expression. For example:
 ;;
@@ -27,19 +29,19 @@
 (defmacro inc (var)
   (list 'define var (list '+ var 1)))
 
-(define my-variable 10)
-
 ;; First, test the `macroexpand' primitive, which should return:
 ;;   (define my-variable (+ my-variable 1))
+;;
+;; Then the actual macro call, which is just the evaluated expansion.
+;;
+;; Then try to evaluate the expression returned by `macroexpand', which should
+;; be equivalent to calling the macro normally.
+(define my-variable 10)
 (macroexpand '(inc my-variable))
-
-;; Then the actual macro call, which is just the evaluated expansion
 (inc my-variable)
-
-;; Should be equivalent to the previous macro call
 (eval (macroexpand '(inc my-variable)))
 
-;; Simle implmentation of `defun'. For example:
+;; Simple implmentation of `defun'. For example:
 ;;
 ;;     (defun my-function (n)
 ;;       (+ 1 n))
@@ -52,7 +54,7 @@
 ;;
 (defmacro defun (name &rest lambda-args)
   (list 'define name
-        (append 'lambda lambda-args)))
+        (append '(lambda) lambda-args)))
 
 ;; Define a simple function using the previous `defun' macro. Wrap the call in:
 ;;
