@@ -65,7 +65,7 @@ char* read_expr(FILE* fp) {
     size_t i         = 0;
 
     for (;;) {
-        if (i >= result_sz) {
+        if (i >= result_sz - 1) {
             result_sz += READ_BUFSZ;
             sl_safe_realloc(result, result_sz);
         }
