@@ -7,6 +7,10 @@
 (list)          ; Expected: nil
 (list 'a 'b 'c) ; Expected: (a b c)
 
+(cons 'a nil)        ; Expected: (a)
+(cons 'a '(b c))     ; Expected: (a b c)
+(cons '(a b) '(y z)) ; Expected: ((a b) y z)
+
 (car nil)    ; Expected: nil
 (car '(a))   ; Expected: a
 (car '(a b)) ; Expected: a

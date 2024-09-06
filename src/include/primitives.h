@@ -24,6 +24,7 @@ DECLARE_PRIM(macroexpand);
 
 /* List-related primitives */
 DECLARE_PRIM(list);
+DECLARE_PRIM(cons);
 DECLARE_PRIM(car);
 DECLARE_PRIM(cdr);
 DECLARE_PRIM(append);

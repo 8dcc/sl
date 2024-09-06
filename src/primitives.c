@@ -262,6 +262,24 @@ Expr* prim_list(Env* env, Expr* e) {
     return ret;
 }
 
+Expr* prim_cons(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 2);
+    EXPECT_TYPE(e->next, EXPR_PARENT);
+
+    /*
+     * (cons a nil)    ===> (a)
+     * (cons a '(b c)) ===> (a b c)
+     */
+    Expr* ret         = expr_new(EXPR_PARENT);
+    ret->val.children = expr_clone_recur(e);
+
+    if (e->next->val.children != NULL)
+        ret->val.children->next = expr_clone_list(e->next->val.children);
+
+    return ret;}
+
 Expr* prim_car(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);

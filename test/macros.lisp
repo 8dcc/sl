@@ -54,7 +54,7 @@
 ;;
 (defmacro defun (name &rest lambda-args)
   (list 'define name
-        (append '(lambda) lambda-args)))
+        (cons 'lambda lambda-args)))
 
 ;; Define a simple function using the previous `defun' macro. Wrap the call in:
 ;;
