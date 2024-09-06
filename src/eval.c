@@ -125,7 +125,11 @@ Expr* eval(Env* env, Expr* e) {
             /* Evaluate each of the arguments before applying them to the
              * function. Also note that the returned list is allocated, so we
              * will have to free it after calling `apply'. */
-            args = eval_args(env, args);
+            if (args != NULL) {
+                args = eval_args(env, args);
+                if (args == NULL)
+                    return NULL;
+            }
 
             /* Apply the evaluated function to the evaluated argument list */
             Expr* applied = apply(env, func, args);
