@@ -96,16 +96,17 @@ Expr* eval(Env* env, Expr* e) {
 
     switch (e->type) {
         case EXPR_PARENT: {
+            if (expr_is_nil(e))
+                return expr_clone(e);
+
             /* The evaluated car of the expression will be the function */
             Expr* func = e->val.children;
 
-            /* We got a list with no children: NIL */
-            if (func == NULL)
-                return expr_clone(e);
-
-            /* Store the original function arguments in a variable before
+            /*
+             * Store the original function arguments in a variable before
              * evaluating the function itself. Note that the cdr of the function
-             * call is the argument list, if any. */
+             * call is the argument list, if any.
+             */
             Expr* args = func->next;
 
             /* Evaluate the function expression */
@@ -122,9 +123,12 @@ Expr* eval(Env* env, Expr* e) {
                 return applied;
             }
 
-            /* Evaluate each of the arguments before applying them to the
-             * function. Also note that the returned list is allocated, so we
-             * will have to free it after calling `apply'. */
+            /*
+             * Evaluate each the argument before applying them to the function.
+             * If one of them didn't evaluate correctly, it printed an error
+             * message so we just have to stop. Also note that the returned list
+             * is allocated, so we will have to free it after calling `apply'.
+             */
             if (args != NULL) {
                 args = eval_args(env, args);
                 if (args == NULL)
@@ -134,8 +138,7 @@ Expr* eval(Env* env, Expr* e) {
             /* Apply the evaluated function to the evaluated argument list */
             Expr* applied = apply(env, func, args);
 
-            /* The last evaluations of `func' and `args' returned a clone, we
-             * have to free it here. */
+            /* The last evaluations of `func' and `args' returned clones */
             expr_free(func);
             expr_free(args);
 
