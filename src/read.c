@@ -10,14 +10,6 @@
 
 /*----------------------------------------------------------------------------*/
 
-/*
- * Last character we read with `fgetc'. Useful to see if the last call to
- * `read' ended because of EOF.
- */
-static int last_read = 0;
-
-/*----------------------------------------------------------------------------*/
-
 static bool is_comment_start(int c) {
     return c == ';';
 }
@@ -46,14 +38,9 @@ static int get_next_non_comment(FILE* fp) {
     return c;
 }
 
-char* read_expr(FILE* fp) {
-    /*
-     * If the last call to `read' was terminated by EOF, don't allocate anything
-     * and return NULL to let the caller know.
-     */
-    if (last_read == EOF)
-        return NULL;
+/*----------------------------------------------------------------------------*/
 
+char* read_expr(FILE* fp) {
     /* Will increase when encountering '(' and decrease with ')' */
     int nesting_level = 0;
 
@@ -71,9 +58,10 @@ char* read_expr(FILE* fp) {
         }
 
         const int c = get_next_non_comment(fp);
-        last_read   = c;
-        if (c == EOF)
-            break;
+        if (c == EOF) {
+            free(result);
+            return NULL;
+        }
 
         result[i++] = c;
 

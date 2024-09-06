@@ -45,8 +45,11 @@ int main(int argc, char** argv) {
         /* Allocate string and read an expression. If `read_expr' returned NULL,
          * it encountered EOF. */
         char* input = read_expr(input_file);
-        if (input == NULL)
+        if (input == NULL) {
+            if (print_prompt)
+                putchar('\n');
             break;
+        }
 
         /* Tokenize input. We don't need to check for NULL. */
         Token* tokens = tokenize(input);
