@@ -33,3 +33,9 @@ unbound-error-var  ; Expected: Unbound symbol: unbound-error-var
 (and 1 2 3)                ; Expected: 3
 (or nil tru 'unreachable)  ; Expected: tru
 (and 123 nil 'unreachable) ; Expected: nil
+
+;; TODO: Add `import' primitive and import stdlib.
+;;
+;;  (cond ((equal? 1 2) 123)
+;;        ((equal? 5 6) 333)
+;;        (tru          777))
