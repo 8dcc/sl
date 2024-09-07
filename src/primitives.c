@@ -1,5 +1,6 @@
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -365,7 +366,6 @@ Expr* prim_add(Env* env, Expr* e) {
     SL_EXPECT(e != NULL, "Missing arguments.");
 
     double total = 0;
-
     for (Expr* arg = e; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
         total += arg->val.n;
@@ -408,7 +408,6 @@ Expr* prim_mul(Env* env, Expr* e) {
     SL_EXPECT(e != NULL, "Missing arguments.");
 
     double total = 1;
-
     for (Expr* arg = e; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
         total *= arg->val.n;
@@ -425,7 +424,6 @@ Expr* prim_div(Env* env, Expr* e) {
     SL_EXPECT(e != NULL, "Missing arguments.");
 
     double total = e->val.n;
-
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
         SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
@@ -443,7 +441,6 @@ Expr* prim_mod(Env* env, Expr* e) {
     SL_EXPECT(e != NULL, "Missing arguments.");
 
     double total = e->val.n;
-
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
         SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
@@ -459,6 +456,95 @@ Expr* prim_mod(Env* env, Expr* e) {
 
     Expr* ret  = expr_new(EXPR_CONST);
     ret->val.n = total;
+    return ret;
+}
+
+/*----------------------------------------------------------------------------*/
+/* Bit-wise primitives */
+
+Expr* prim_bit_and(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Missing arguments.");
+
+    uint64_t total = (uint64_t)e->val.n;
+    for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
+        EXPECT_TYPE(arg, EXPR_CONST);
+        SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
+        total &= (uint64_t)arg->val.n;
+    }
+
+    Expr* ret  = expr_new(EXPR_CONST);
+    ret->val.n = (double)total;
+    return ret;
+}
+
+Expr* prim_bit_or(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Missing arguments.");
+
+    uint64_t total = (uint64_t)e->val.n;
+    for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
+        EXPECT_TYPE(arg, EXPR_CONST);
+        SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
+        total |= (uint64_t)arg->val.n;
+    }
+
+    Expr* ret  = expr_new(EXPR_CONST);
+    ret->val.n = (double)total;
+    return ret;
+}
+
+Expr* prim_bit_xor(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Missing arguments.");
+
+    uint64_t total = (uint64_t)e->val.n;
+    for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
+        EXPECT_TYPE(arg, EXPR_CONST);
+        SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
+        total ^= (uint64_t)arg->val.n;
+    }
+
+    Expr* ret  = expr_new(EXPR_CONST);
+    ret->val.n = (double)total;
+    return ret;
+}
+
+Expr* prim_bit_not(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 1);
+    EXPECT_TYPE(e, EXPR_CONST);
+
+    Expr* ret  = expr_new(EXPR_CONST);
+    ret->val.n = (double)(~((uint64_t)e->val.n));
+    return ret;
+}
+
+Expr* prim_shr(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 2);
+    EXPECT_TYPE(e, EXPR_CONST);
+    EXPECT_TYPE(e->next, EXPR_CONST);
+
+    Expr* ret  = expr_new(EXPR_CONST);
+    ret->val.n = (double)((uint64_t)e->val.n >> (uint64_t)e->next->val.n);
+    return ret;
+}
+
+Expr* prim_shl(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 2);
+    EXPECT_TYPE(e, EXPR_CONST);
+    EXPECT_TYPE(e->next, EXPR_CONST);
+
+    Expr* ret  = expr_new(EXPR_CONST);
+    ret->val.n = (double)((uint64_t)e->val.n << (uint64_t)e->next->val.n);
     return ret;
 }
 

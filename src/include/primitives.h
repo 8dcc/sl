@@ -36,6 +36,14 @@ DECLARE_PRIM(mul);
 DECLARE_PRIM(div);
 DECLARE_PRIM(mod);
 
+/* Bit-wise primitives */
+DECLARE_PRIM(bit_and);
+DECLARE_PRIM(bit_or);
+DECLARE_PRIM(bit_xor);
+DECLARE_PRIM(bit_not);
+DECLARE_PRIM(shr);
+DECLARE_PRIM(shl);
+
 /* Logical primitives */
 DECLARE_PRIM(equal);
 DECLARE_PRIM(lt);

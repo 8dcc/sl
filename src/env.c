@@ -80,6 +80,12 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "*", mul);
     BIND_PRIM(env, "/", div);
     BIND_PRIM(env, "mod", mod);
+    BIND_PRIM(env, "bit-and", bit_and);
+    BIND_PRIM(env, "bit-or", bit_or);
+    BIND_PRIM(env, "bit-xor", bit_xor);
+    BIND_PRIM(env, "bit-not", bit_not);
+    BIND_PRIM(env, "shr", shr);
+    BIND_PRIM(env, "shl", shl);
     BIND_PRIM(env, "equal?", equal);
     BIND_PRIM(env, "<", lt);
     BIND_PRIM(env, ">", gt);

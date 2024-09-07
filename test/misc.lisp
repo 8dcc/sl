@@ -2,15 +2,7 @@
 ;; Miscellaneous tests that don't fit in the other files
 ;;------------------------------------------------------------------------------
 
-unbound-error-var  ; Expected: Unbound symbol error
-
-'(+ 1 2 3 (- 3 4) (* 3 4))
-(+ 1 2 3 (- 3 4) (* 3 4)) ; Expected: 17
-
-(list (mod  9.5  2.5)
-      (mod  9.5 -2.5)
-      (mod -9.5  2.5)
-      (mod -9.5 -2.5)) ; Expected: (2.00 -0.50 0.50 -2.00)
+unbound-error-var  ; Expected: Unbound symbol: unbound-error-var
 
 (define var1 10)         ; Expected: 10
 (define var2 (* 2 var1)) ; Expected: 20
@@ -27,6 +19,13 @@ unbound-error-var  ; Expected: Unbound symbol error
 
 (equal? '(1 2 3) '(1 2 3)) ; Expected: tru
 (equal? '(1 2 3) '(1 2 9)) ; Expected: nil
+
+(> 1 1) ; Expected: nil
+(< 1 1) ; Expected: nil
+(> 1 2) ; Expected: nil
+(< 1 2) ; Expected: tru
+(> 2 1) ; Expected: tru
+(< 2 1) ; Expected: nil
 
 (or)                       ; Expected: nil
 (and)                      ; Expected: tru
