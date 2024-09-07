@@ -241,8 +241,14 @@ Expr* macro_expand(Env* env, Expr* func, Expr* args) {
     /* Set the parent environment of the macro */
     func->val.lambda->env->parent = env;
 
-    /* Evaluate the body once to expand the macro */
-    return eval(func->val.lambda->env, func->val.lambda->body);
+    /* Evaluate each expression in the body once to expand the macro */
+    Expr* last_evaluated = NULL;
+    for (Expr* cur = func->val.lambda->body; cur != NULL; cur = cur->next) {
+        expr_free(last_evaluated);
+        last_evaluated = eval(func->val.lambda->env, cur);
+    }
+
+    return last_evaluated;
 }
 
 Expr* macro_call(Env* env, Expr* func, Expr* args) {

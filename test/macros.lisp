@@ -8,8 +8,10 @@
 
 ;; TODO: Move important macros to stdlib, import from here.
 
-;; Define a macro called `defmacro'. It will take a `name', a list of `formals'
-;; and a single `body' expression. For example:
+;; Define a macro called `defmacro'. It will take a `name', and the rest of the
+;; arguments will be stored in a list `macro-args'. The expanded macro will just
+;; append a symbol "macro" to the beginning of `macro-args', and wrap that
+;; expression in a call to `define' with the specified `name'. For example:
 ;;
 ;;   (defmacro 1+ (var)
 ;;     (list '+ 1 var))
@@ -21,8 +23,9 @@
 ;;       (list '+ 1 var)))
 ;;
 (define defmacro
-  (macro (name formals body)
-    (list 'define name (list 'macro formals body))))
+  (macro (name &rest macro-args)
+    (list 'define name
+          (cons 'macro macro-args))))
 
 ;; Example usage of `defmacro'. Create a macro that will take a variable and
 ;; re-define it to its value plus one.

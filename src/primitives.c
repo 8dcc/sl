@@ -107,8 +107,8 @@ Expr* prim_lambda(Env* env, Expr* e) {
 Expr* prim_macro(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(expr_list_len(e) == 2,
-              "The special form `macro' expects exactly 2 arguments: Formals "
+    SL_EXPECT(expr_list_len(e) >= 2,
+              "The special form `macro' expects at least 2 arguments: Formals "
               "and body.");
     EXPECT_TYPE(e, EXPR_PARENT);
 
