@@ -79,6 +79,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "-", sub);
     BIND_PRIM(env, "*", mul);
     BIND_PRIM(env, "/", div);
+    BIND_PRIM(env, "mod", mod);
     BIND_PRIM(env, "equal?", equal);
     BIND_PRIM(env, "<", lt);
     BIND_PRIM(env, ">", gt);

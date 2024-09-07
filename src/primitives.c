@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "include/expr.h"
 #include "include/env.h"
@@ -278,7 +279,8 @@ Expr* prim_cons(Env* env, Expr* e) {
     if (e->next->val.children != NULL)
         ret->val.children->next = expr_clone_list(e->next->val.children);
 
-    return ret;}
+    return ret;
+}
 
 Expr* prim_car(Env* env, Expr* e) {
     SL_UNUSED(env);
@@ -428,6 +430,31 @@ Expr* prim_div(Env* env, Expr* e) {
         EXPECT_TYPE(arg, EXPR_CONST);
         SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
         total /= arg->val.n;
+    }
+
+    Expr* ret  = expr_new(EXPR_CONST);
+    ret->val.n = total;
+    return ret;
+}
+
+Expr* prim_mod(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Missing arguments.");
+
+    double total = e->val.n;
+
+    for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
+        EXPECT_TYPE(arg, EXPR_CONST);
+        SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
+
+        /*
+         * Allow decimal and negative inputs when calculating the modulus.
+         * See: https://8dcc.github.io/programming/fmod.html
+         */
+        total = fmod(total, arg->val.n);
+        if (arg->val.n < 0 ? total > 0 : total < 0)
+            total += arg->val.n;
     }
 
     Expr* ret  = expr_new(EXPR_CONST);

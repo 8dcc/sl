@@ -34,6 +34,7 @@ DECLARE_PRIM(add);
 DECLARE_PRIM(sub);
 DECLARE_PRIM(mul);
 DECLARE_PRIM(div);
+DECLARE_PRIM(mod);
 
 /* Logical primitives */
 DECLARE_PRIM(equal);
