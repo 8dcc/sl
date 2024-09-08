@@ -1,7 +1,7 @@
 #ifndef UTIL_H_
 #define UTIL_H_ 1
 
-#include <stdlib.h> /* abort() */
+#include <stdlib.h> /* exit() */
 
 #define LENGTH(ARR) ((int)(sizeof(ARR) / sizeof((ARR)[0])))
 
@@ -25,25 +25,31 @@ sl_lbl_on_err:                  \
         }                                                            \
     } while (0)
 
-/* If COND is not true, show error and abort */
-#define SL_ASSERT(COND, ...)  \
-    do {                      \
-        if (!(COND)) {        \
-            ERR(__VA_ARGS__); \
-            abort();          \
-        }                     \
+/* Show error message and exit */
+#define SL_FATAL(...)                \
+    do {                             \
+        fprintf(stderr, "[Fatal] "); \
+        ERR(__VA_ARGS__);            \
+        exit(1);                     \
+    } while (0)
+
+/* If COND is not true, show error and exit */
+#define SL_ASSERT(COND, ...)       \
+    do {                           \
+        if (!(COND)) {             \
+            SL_FATAL(__VA_ARGS__); \
+        }                          \
     } while (0)
 
 /* Avoid -Wunused-parameter */
 #define SL_UNUSED(VAR) (void)VAR
 
-#define sl_safe_realloc(PTR, SZ)         \
-    do {                                 \
-        PTR = realloc(PTR, SZ);          \
-        if (PTR == NULL) {               \
-            ERR("Reallocation failed."); \
-            abort();                     \
-        }                                \
+#define sl_safe_realloc(PTR, SZ)              \
+    do {                                      \
+        PTR = realloc(PTR, SZ);               \
+        if (PTR == NULL) {                    \
+            SL_FATAL("Reallocation failed."); \
+        }                                     \
     } while (0)
 
 /*----------------------------------------------------------------------------*/

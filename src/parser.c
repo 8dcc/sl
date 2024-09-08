@@ -98,8 +98,7 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
 
         case TOKEN_EOF:
         case TOKEN_LIST_CLOSE: {
-            ERR("Reached invalid case (Token type %d).", tokens[0].type);
-            abort();
+            SL_FATAL("Reached invalid case (Token type %d).", tokens[0].type);
         }
     }
 
