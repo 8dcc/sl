@@ -470,7 +470,6 @@ Expr* prim_bit_and(Env* env, Expr* e) {
     uint64_t total = (uint64_t)e->val.n;
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
-        SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
         total &= (uint64_t)arg->val.n;
     }
 
@@ -487,7 +486,6 @@ Expr* prim_bit_or(Env* env, Expr* e) {
     uint64_t total = (uint64_t)e->val.n;
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
-        SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
         total |= (uint64_t)arg->val.n;
     }
 
@@ -504,7 +502,6 @@ Expr* prim_bit_xor(Env* env, Expr* e) {
     uint64_t total = (uint64_t)e->val.n;
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         EXPECT_TYPE(arg, EXPR_CONST);
-        SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
         total ^= (uint64_t)arg->val.n;
     }
 
