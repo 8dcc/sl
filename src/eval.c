@@ -131,8 +131,10 @@ Expr* eval(Env* env, Expr* e) {
              */
             if (args != NULL) {
                 args = eval_args(env, args);
-                if (args == NULL)
+                if (args == NULL) {
+                    expr_free(func);
                     return NULL;
+                }
             }
 
             /* Apply the evaluated function to the evaluated argument list */
