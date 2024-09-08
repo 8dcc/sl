@@ -4,61 +4,41 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h> /* pow() */
 
 #include "include/util.h"
 #include "include/lexer.h"
 
+#define ANY_BASE 0 /* For strtoll() */
+
 #define TOKEN_BUFSZ 100
 
-/* Try to parse `str' as a decimal number, and store it in `out'. Returns true
- * if the conversion was successful. */
-static bool parse_number(const char* str, double* out) {
-    /* Starts at 0 and means that we are in the integer part of the number. It
-     * will decrease with each fractional digit parsed. */
-    int fractional_position = 0;
+/*
+ * Set the value and type of the token based on the input. Only checks for
+ * integers, floats or symbols.
+ */
+static void set_value_from_str(Token* dst, char* str) {
+    char* endptr;
 
-    /* First, clear the output */
-    *out = 0.0;
-
-    bool negate_result = false;
-    if (str[0] == '-' && !is_token_separator(str[1])) {
-        str++;
-        negate_result = true;
+    /* Try to fully convert the string into a `long long' using `strtoll' */
+    long long int_num = strtoll(str, &endptr, ANY_BASE);
+    if (endptr != NULL && str != endptr && *endptr == '\0') {
+        dst->type  = TOKEN_NUM_INT;
+        dst->val.n = int_num;
+        return;
     }
 
-    while (!is_token_separator(*str)) {
-        if (isdigit(*str)) {
-            if (fractional_position == 0) {
-                /* Shift 1 digit to the left and add new one */
-                *out *= 10;
-                *out += *str - '0';
-            } else {
-                /* '4' -> 0.004 */
-                double tmp = (*str - '0') * pow(10.0, fractional_position);
-                *out += tmp;
-
-                /* If we added 0.01, add 0.001 next */
-                fractional_position--;
-            }
-        } else if (*str == '.') {
-            /* Found dot in the number, but we are already in the decimal part.
-             * Error. */
-            if (fractional_position != 0)
-                return false;
-            fractional_position--;
-        } else {
-            /* Unknown digit, not a number */
-            return false;
-        }
-
-        str++;
+    /* Try to fully convert the string into a `double' using `strtod' */
+    double flt_num = strtod(str, &endptr);
+    if (endptr != NULL && str != endptr && *endptr == '\0') {
+        dst->type  = TOKEN_NUM_FLT;
+        dst->val.f = flt_num;
+        return;
     }
 
-    if (negate_result)
-        *out *= -1;
-
-    return true;
+    /* If we couldn't convert it to a `double' or a `long long', assume it's a
+     * symbol. */
+    dst->type  = TOKEN_SYMBOL;
+    dst->val.s = sl_safe_strdup(str);
 }
 
 /*
@@ -112,17 +92,8 @@ static Token get_token(char** input_ptr) {
     char tmp        = input[token_sz];
     input[token_sz] = '\0';
 
-    double parsed;
-    if (parse_number(input, &parsed)) {
-        /* Number (double) */
-        result.type  = TOKEN_NUM;
-        result.val.n = parsed;
-    } else {
-        /* Symbol (string) */
-        result.type  = TOKEN_SYMBOL;
-        result.val.s = sl_safe_malloc(token_sz + 1);
-        memcpy(result.val.s, input, token_sz + 1);
-    }
+    /* Set the value and type of the token based on the input. */
+    set_value_from_str(&result, input);
 
     /* Restore the token separator we had overwritten */
     input[token_sz] = tmp;
@@ -173,8 +144,12 @@ void tokens_print(Token* arr) {
 
     while (arr->type != TOKEN_EOF) {
         switch (arr->type) {
-            case TOKEN_NUM:
-                printf("%f, ", arr->val.n);
+            case TOKEN_NUM_INT:
+                printf("%lld, ", arr->val.n);
+                break;
+
+            case TOKEN_NUM_FLT:
+                printf("%f, ", arr->val.f);
                 break;
 
             case TOKEN_SYMBOL:

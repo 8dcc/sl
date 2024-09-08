@@ -46,7 +46,8 @@ void expr_free(Expr* e) {
             break;
 
         case EXPR_ERR:
-        case EXPR_CONST:
+        case EXPR_NUM_INT:
+        case EXPR_NUM_FLT:
         case EXPR_PRIM:
             break;
     }
@@ -74,8 +75,12 @@ Expr* expr_clone(const Expr* e) {
             ret->val.s = sl_safe_strdup(e->val.s);
             break;
 
-        case EXPR_CONST:
+        case EXPR_NUM_INT:
             ret->val.n = e->val.n;
+            break;
+
+        case EXPR_NUM_FLT:
+            ret->val.f = e->val.f;
             break;
 
         case EXPR_PARENT:
@@ -155,8 +160,12 @@ void expr_print_debug(const Expr* e) {
     }
 
     switch (e->type) {
-        case EXPR_CONST: {
-            printf("[NUM] %f\n", e->val.n);
+        case EXPR_NUM_INT: {
+            printf("[INT] %lld\n", e->val.n);
+        } break;
+
+        case EXPR_NUM_FLT: {
+            printf("[FLT] %f\n", e->val.f);
         } break;
 
         case EXPR_SYMBOL: {
@@ -229,8 +238,12 @@ void expr_print(const Expr* e) {
     }
 
     switch (e->type) {
-        case EXPR_CONST:
-            printf("%f", e->val.n);
+        case EXPR_NUM_INT:
+            printf("%lld", e->val.n);
+            break;
+
+        case EXPR_NUM_FLT:
+            printf("%f", e->val.f);
             break;
 
         case EXPR_SYMBOL:
@@ -269,6 +282,10 @@ void expr_println(const Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
+bool expr_is_nil(const Expr* e) {
+    return e != NULL && e->type == EXPR_PARENT && e->val.children == NULL;
+}
+
 size_t expr_list_len(const Expr* e) {
     size_t result = 0;
 
@@ -278,9 +295,23 @@ size_t expr_list_len(const Expr* e) {
     return result;
 }
 
-bool expr_is_nil(const Expr* e) {
-    return e != NULL && e->type == EXPR_PARENT && e->val.children == NULL;
+bool expr_list_contains_type(const Expr* e, enum EExprType type) {
+    for (; e != NULL; e = e->next)
+        if (e->type == type)
+            return true;
+
+    return false;
 }
+
+bool expr_is_number_list(const Expr* e) {
+    for (; e != NULL; e = e->next)
+        if (!expr_is_number(e))
+            return false;
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
 
 bool expr_equal(const Expr* a, const Expr* b) {
     /*
@@ -294,8 +325,11 @@ bool expr_equal(const Expr* a, const Expr* b) {
         return false;
 
     switch (a->type) {
-        case EXPR_CONST:
+        case EXPR_NUM_INT:
             return a->val.n == b->val.n;
+
+        case EXPR_NUM_FLT:
+            return a->val.f == b->val.f;
 
         case EXPR_SYMBOL:
             return strcmp(a->val.s, b->val.s) == 0;
@@ -346,8 +380,11 @@ bool expr_lt(const Expr* a, const Expr* b) {
         return false;
 
     switch (a->type) {
-        case EXPR_CONST:
+        case EXPR_NUM_INT:
             return a->val.n < b->val.n;
+
+        case EXPR_NUM_FLT:
+            return a->val.f < b->val.f;
 
         case EXPR_SYMBOL:
             return strcmp(a->val.s, b->val.s) < 0;
@@ -368,8 +405,11 @@ bool expr_gt(const Expr* a, const Expr* b) {
         return false;
 
     switch (a->type) {
-        case EXPR_CONST:
+        case EXPR_NUM_INT:
             return a->val.n > b->val.n;
+
+        case EXPR_NUM_FLT:
+            return a->val.f > b->val.f;
 
         case EXPR_SYMBOL:
             return strcmp(a->val.s, b->val.s) > 0;

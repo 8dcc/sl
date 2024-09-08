@@ -14,7 +14,8 @@ typedef Expr* (*PrimitiveFuncPtr)(struct Env*, Expr*);
 
 enum EExprType {
     EXPR_ERR,
-    EXPR_CONST,
+    EXPR_NUM_INT,
+    EXPR_NUM_FLT,
     EXPR_SYMBOL,
     EXPR_PARENT,
     EXPR_PRIM,
@@ -26,7 +27,8 @@ struct Expr {
     /* Type and value of the expression */
     enum EExprType type;
     union {
-        double n;
+        long long n;
+        double f;
         char* s;
         Expr* children;
         PrimitiveFuncPtr prim;
@@ -42,19 +44,24 @@ struct Expr {
 static inline const char* exprtype2str(enum EExprType type) {
     /* clang-format off */
     switch (type) {
-        case EXPR_ERR:    return "Error";
-        case EXPR_CONST:  return "Number";
-        case EXPR_SYMBOL: return "Symbol";
-        case EXPR_PARENT: return "List";
-        case EXPR_PRIM:   return "Primitive";
-        case EXPR_LAMBDA: return "Lambda";
-        case EXPR_MACRO:  return "Macro";
+        case EXPR_ERR:     return "Error";
+        case EXPR_NUM_INT: return "Integer";
+        case EXPR_NUM_FLT: return "Float";
+        case EXPR_SYMBOL:  return "Symbol";
+        case EXPR_PARENT:  return "List";
+        case EXPR_PRIM:    return "Primitive";
+        case EXPR_LAMBDA:  return "Lambda";
+        case EXPR_MACRO:   return "Macro";
     }
     /* clang-format on */
 
     /* Should be unreachable. Compiler warns about unhandled cases in the
      * previous switch, since we are not using `default'. */
     return "???";
+}
+
+static inline bool expr_is_number(const Expr* e) {
+    return e->type == EXPR_NUM_INT || e->type == EXPR_NUM_FLT;
 }
 
 /* Allocate a new empty expression of the specified type */
@@ -77,11 +84,18 @@ void expr_print(const Expr* e);
 void expr_println(const Expr* e);
 void expr_print_debug(const Expr* e);
 
+/* Is the specified expression an empty list? */
+bool expr_is_nil(const Expr* e);
+
 /* Calculate number of elements in a linked list of Expr structures */
 size_t expr_list_len(const Expr* e);
 
-/* Is the specified expression an empty list? */
-bool expr_is_nil(const Expr* e);
+/* Does the specified linked list contain an expression with the specified
+ * type? */
+bool expr_list_contains_type(const Expr* e, enum EExprType type);
+
+/* Does the specified linked list contain only numeric types? */
+bool expr_is_number_list(const Expr* e);
 
 /* Return true if `a' and `b' have the same effective value */
 bool expr_equal(const Expr* a, const Expr* b);

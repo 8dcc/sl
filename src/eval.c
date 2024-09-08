@@ -152,7 +152,8 @@ Expr* eval(Env* env, Expr* e) {
         }
 
         case EXPR_ERR:
-        case EXPR_CONST:
+        case EXPR_NUM_INT:
+        case EXPR_NUM_FLT:
         case EXPR_PRIM:
         case EXPR_LAMBDA:
         case EXPR_MACRO: {

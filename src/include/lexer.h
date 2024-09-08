@@ -6,8 +6,9 @@ enum ETokenTypes {
     TOKEN_EOF,
 
     /* The following make use of Token.val */
-    TOKEN_NUM,    /* Number (double) */
-    TOKEN_SYMBOL, /* Symbol (string) */
+    TOKEN_NUM_INT, /* Number (long long) */
+    TOKEN_NUM_FLT, /* Number (double) */
+    TOKEN_SYMBOL,  /* Symbol (string) */
 
     /* The rest don't make use of Token.val */
     TOKEN_LIST_OPEN,
@@ -20,7 +21,8 @@ enum ETokenTypes {
 typedef struct Token {
     enum ETokenTypes type;
     union {
-        double n;
+        long long n;
+        double f;
         char* s;
     } val;
 } Token;

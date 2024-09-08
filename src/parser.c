@@ -25,13 +25,18 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
 
     /* Expression type and value should be set on each case */
     switch (tokens[0].type) {
-        case TOKEN_NUM: {
-            expr->type  = EXPR_CONST;
+        case TOKEN_NUM_INT: {
+            expr->type  = EXPR_NUM_INT;
             expr->val.n = tokens[0].val.n;
         } break;
 
+        case TOKEN_NUM_FLT: {
+            expr->type  = EXPR_NUM_FLT;
+            expr->val.f = tokens[0].val.f;
+        } break;
+
         case TOKEN_SYMBOL: {
-            expr->type = EXPR_SYMBOL;
+            expr->type  = EXPR_SYMBOL;
             expr->val.s = sl_safe_strdup(tokens[0].val.s);
         } break;
 
