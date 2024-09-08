@@ -462,15 +462,19 @@ Expr* prim_div(Env* env, Expr* e) {
      */
     double total = (e->type == EXPR_NUM_FLT) ? e->val.f : (double)e->val.n;
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
-        if (arg->type == EXPR_NUM_INT) {
-            SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
-            total /= arg->val.n;
-        } else if (arg->type == EXPR_NUM_FLT) {
-            SL_EXPECT(arg->val.f != 0, "Trying to divide by zero.");
-            total /= arg->val.f;
-        } else {
-            ERR("Unhandled numeric type.");
-            abort();
+        switch (arg->type) {
+            case EXPR_NUM_INT:
+                SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
+                total /= arg->val.n;
+                break;
+
+            case EXPR_NUM_FLT:
+                SL_EXPECT(arg->val.f != 0, "Trying to divide by zero.");
+                total /= arg->val.f;
+                break;
+
+            default:
+                SL_FATAL("Unhandled numeric type.");
         }
     }
 
@@ -478,8 +482,6 @@ Expr* prim_div(Env* env, Expr* e) {
     ret->val.f = total;
     return ret;
 }
-
-/* TODO: Add `quotient' and `remainder' primitives for integer division */
 
 Expr* prim_mod(Env* env, Expr* e) {
     SL_UNUSED(env);
@@ -501,24 +503,101 @@ Expr* prim_mod(Env* env, Expr* e) {
      */
     double total = (e->type == EXPR_NUM_FLT) ? e->val.f : (double)e->val.n;
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
-        if (arg->type == EXPR_NUM_INT) {
-            SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
-            total = fmod(total, arg->val.n);
-            if (arg->val.n < 0 ? total > 0 : total < 0)
-                total += arg->val.n;
-        } else if (arg->type == EXPR_NUM_FLT) {
-            SL_EXPECT(arg->val.f != 0, "Trying to divide by zero.");
-            total = fmod(total, arg->val.f);
-            if (arg->val.f < 0 ? total > 0 : total < 0)
-                total += arg->val.f;
-        } else {
-            ERR("Unhandled numeric type.");
-            abort();
+        switch (arg->type) {
+            case EXPR_NUM_INT:
+                SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
+                total = fmod(total, arg->val.n);
+                if (arg->val.n < 0 ? total > 0 : total < 0)
+                    total += arg->val.n;
+                break;
+
+            case EXPR_NUM_FLT:
+                SL_EXPECT(arg->val.f != 0, "Trying to divide by zero.");
+                total = fmod(total, arg->val.f);
+                if (arg->val.f < 0 ? total > 0 : total < 0)
+                    total += arg->val.f;
+                break;
+
+            default:
+                SL_FATAL("Unhandled numeric type.");
         }
     }
 
     Expr* ret  = expr_new(EXPR_NUM_FLT);
     ret->val.f = total;
+    return ret;
+}
+
+Expr* prim_quotient(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Missing arguments.");
+    EXPECT_TYPE(e, EXPR_NUM_INT);
+
+    /*
+     * The `quotient' function is just like `/', but it only operates with
+     * integers.
+     */
+    long long total = e->val.n;
+    for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
+        EXPECT_TYPE(arg, EXPR_NUM_INT);
+        SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
+        total /= arg->val.n;
+    }
+
+    Expr* ret  = expr_new(EXPR_NUM_INT);
+    ret->val.n = total;
+    return ret;
+}
+
+Expr* prim_remainder(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Missing arguments.");
+    EXPECT_TYPE(e, EXPR_NUM_INT);
+
+    /*
+     * The `remainder' function is just like `mod', but it only operates with
+     * integers. The following should be equal to the `dividend':
+     *
+     *   (+ (remainder dividend divisor)
+     *      (* (quotient dividend divisor) divisor))
+     */
+    long long total = e->val.n;
+    for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
+        EXPECT_TYPE(arg, EXPR_NUM_INT);
+        SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
+        total %= arg->val.n;
+    }
+
+    Expr* ret  = expr_new(EXPR_NUM_INT);
+    ret->val.n = total;
+    return ret;
+}
+
+/*----------------------------------------------------------------------------*/
+/* Type-conversion primitives */
+
+Expr* prim_floor(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT(expr_is_number(e), "Argument must be a number.");
+
+    long long result;
+    switch (e->type) {
+        case EXPR_NUM_INT:
+            result = e->val.n;
+            break;
+        case EXPR_NUM_FLT:
+            result = (long long)floor(e->val.f);
+            break;
+        default:
+            SL_FATAL("Unhandled numeric type.");
+    }
+
+    Expr* ret  = expr_new(EXPR_NUM_INT);
+    ret->val.n = result;
     return ret;
 }
 

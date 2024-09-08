@@ -35,6 +35,11 @@ DECLARE_PRIM(sub);
 DECLARE_PRIM(mul);
 DECLARE_PRIM(div);
 DECLARE_PRIM(mod);
+DECLARE_PRIM(quotient);
+DECLARE_PRIM(remainder);
+
+/* Type-conversion primitives */
+DECLARE_PRIM(floor);
 
 /* Bit-wise primitives */
 DECLARE_PRIM(bit_and);
