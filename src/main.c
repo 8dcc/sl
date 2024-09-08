@@ -38,9 +38,12 @@ int main(int argc, char** argv) {
     Env* global_env = env_new();
     env_init_defaults(global_env);
 
+    if (print_prompt)
+        puts("Welcome to the Simple Lisp REPL.");
+
     for (;;) {
         if (print_prompt)
-            printf("sl> ");
+            printf("\nsl> ");
 
         /* Allocate string and read an expression. If `read_expr' returned NULL,
          * it encountered EOF. */
@@ -79,9 +82,6 @@ int main(int argc, char** argv) {
 
         /* Free the evaluated expression */
         expr_free(evaluated);
-
-        if (print_prompt)
-            putchar('\n');
     }
 
     env_free(global_env);
