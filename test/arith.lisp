@@ -1,6 +1,7 @@
 ;;------------------------------------------------------------------------------
 ;; Features tested in this source:
-;;   - Arithmetical primitives: `+', `-', `*', `/', `mod'
+;;   - Arithmetical primitives: `+', `-', `*', `/', `mod', `quotient',
+;;     `remainder'
 ;;   - Bit-wise primitives: `bit-and', `bit-or', `bit-xor', `bit-not', `shr',
 ;;     `shl'
 ;;------------------------------------------------------------------------------
