@@ -89,7 +89,7 @@ For more examples, see the [[file:test/][test]] folder.
 #+begin_src console
 $ ./sl
 sl> (+ 1 2 (- 5 4) (* 3 4) 10)
-26.000000
+26
 
 sl> (define my-symbol 'Testing)
 Testing
@@ -97,7 +97,7 @@ Testing
 sl> (define my-addition +)
 <primitive 0x55d31f51ba21>
 
-sl> (define my-global 10)
+sl> (define my-global 10.0)
 10.000000
 
 sl> (define my-lambda
