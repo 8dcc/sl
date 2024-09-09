@@ -1,6 +1,15 @@
 ;;==============================================================================
 ;; Standard Lisp library for SL.
 ;; https://github.com/8dcc/sl
+;;
+;; TODO:
+;;   - Logical `not'
+;;   - `nth'
+;;   - `member' (return arg0 when car is arg1)
+;;   - `member?' (is arg1 in arg0)
+;;   - `length'
+;;   - `let' (Macro using `lambda')
+;;   - Number equality with `='
 ;;==============================================================================
 
 ;;------------------------------------------------------------------------------
