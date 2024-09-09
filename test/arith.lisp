@@ -37,14 +37,6 @@
 (+ 1 2 3 (- 3 4) (* 3 4))   ; Expected: 17
 (+ 1 2 3 (- 3 4) (* 3 4.0)) ; Expected: 17.0
 
-(+ 6 3)         ; Expected: 9
-(- 6 3)         ; Expected: 3
-(* 6 3)         ; Expected: 18
-(/ 6 3)         ; Expected: 2.0
-(mod 6 5)       ; Expected: 1.0
-(quotient 6 3)  ; Expected: 2
-(remainder 6 5) ; Expected: 1
-
 (test-signed-floats +)          ; Expected: (12.0 7.0 -7.0 -12.0)
 (test-signed-floats -)          ; Expected: (7.0 12.0 -12.0 -7.0)
 (test-signed-floats *)          ; Expected: (23.75 -23.75 -23.75 23.75)
@@ -52,6 +44,9 @@
 (test-signed-floats mod)        ; Expected: (2.00 -0.50 0.50 -2.00)
 (test-signed-floats assert-mod) ; Expected: (tru tru tru tru)
 
+(test-signed-integers +)                ; Expected: (11 7 -7 -11)
+(test-signed-integers -)                ; Expected: (7 11 -11 -7)
+(test-signed-integers *)                ; Expected: (18 -18 -18 18)
 (test-signed-integers quotient)         ; Expected: (4 -4 -4 4)
 (test-signed-integers remainder)        ; Expected: (1 1 -1 -1)
 (test-signed-integers assert-remainder) ; Expected: (tru tru tru tru)
