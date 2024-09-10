@@ -55,17 +55,17 @@
 ;; Conditional macros
 ;;------------------------------------------------------------------------------
 
-;; TODO: Support multiple expressions in clause.
+;; TODO: Support multiple expressions in clause without using begin?
 ;;
-;; (cond (pred1 expr1)   >  (if pred1 expr1
-;;       (pred2 expr2)   >    (if pred2 expr2
-;;       (pred3 expr3))  >      (if pred3 expr3
-;;                       >        nil)))
+;; (cond (pred1 expr1)           >  (if pred1 (begin expr1)
+;;       (pred2 expr2)           >    (if pred2 (begin expr2)
+;;       (pred3 expr3a expr3b))  >      (if pred3 (begin expr3a expr3b)
+;;                               >        nil)))
 (defmacro cond (&rest clauses)
   (defun cond-lst (clauses)
     (if (null? clauses)
         nil
         (list 'if (caar clauses)
-              (cadar clauses)
+              (cons 'begin (cdar clauses))
               (cond-lst (cdr clauses)))))
   (cond-lst clauses))
