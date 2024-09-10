@@ -575,29 +575,49 @@ Expr* prim_remainder(Env* env, Expr* e) {
     return ret;
 }
 
-/*----------------------------------------------------------------------------*/
-/* Type-conversion primitives */
-
 Expr* prim_floor(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     EXPECT_ARG_NUM(e, 1);
     SL_EXPECT(expr_is_number(e), "Argument must be a number.");
 
-    long long result;
+    Expr* ret = expr_new(e->type);
     switch (e->type) {
         case EXPR_NUM_INT:
-            result = e->val.n;
+            ret->val.n = e->val.n;
             break;
         case EXPR_NUM_FLT:
-            result = (long long)floor(e->val.f);
+            ret->val.f = floor(e->val.f);
             break;
         default:
             SL_FATAL("Unhandled numeric type.");
     }
 
+    return ret;
+}
+
+/*----------------------------------------------------------------------------*/
+/* Type-conversion primitives */
+
+Expr* prim_int2flt(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 1);
+    EXPECT_TYPE(e, EXPR_NUM_INT);
+
+    Expr* ret  = expr_new(EXPR_NUM_FLT);
+    ret->val.f = (double)e->val.n;
+    return ret;
+}
+
+Expr* prim_flt2int(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 1);
+    EXPECT_TYPE(e, EXPR_NUM_FLT);
+
     Expr* ret  = expr_new(EXPR_NUM_INT);
-    ret->val.n = result;
+    ret->val.n = (long long)e->val.f;
     return ret;
 }
 

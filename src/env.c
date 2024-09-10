@@ -83,6 +83,8 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "quotient", quotient);
     BIND_PRIM(env, "remainder", remainder);
     BIND_PRIM(env, "floor", floor);
+    BIND_PRIM(env, "int->flt", int2flt);
+    BIND_PRIM(env, "flt->int", flt2int);
     BIND_PRIM(env, "bit-and", bit_and);
     BIND_PRIM(env, "bit-or", bit_or);
     BIND_PRIM(env, "bit-xor", bit_xor);

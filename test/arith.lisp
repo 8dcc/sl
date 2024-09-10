@@ -1,9 +1,10 @@
 ;;------------------------------------------------------------------------------
 ;; Features tested in this source:
 ;;   - Arithmetical primitives: `+', `-', `*', `/', `mod', `quotient',
-;;     `remainder'
+;;     `remainder', `floor'
 ;;   - Bit-wise primitives: `bit-and', `bit-or', `bit-xor', `bit-not', `shr',
 ;;     `shl'
+;;   - Type-conversion primitives: `int->flt', `flt->int'
 ;;------------------------------------------------------------------------------
 
 (define test-signed-integers
@@ -36,6 +37,11 @@
 
 (+ 1 2 3 (- 3 4) (* 3 4))   ; Expected: 17
 (+ 1 2 3 (- 3 4) (* 3 4.0)) ; Expected: 17.0
+
+(flt->int 10.0)
+(int->flt 10)
+(equal? 10.0 (int->flt (flt->int 10.0)))
+(equal? 10 (flt->int (int->flt 10)))
 
 (test-signed-floats +)          ; Expected: (12.0 7.0 -7.0 -12.0)
 (test-signed-floats -)          ; Expected: (7.0 12.0 -12.0 -7.0)

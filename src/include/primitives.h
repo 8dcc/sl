@@ -37,9 +37,11 @@ DECLARE_PRIM(div);
 DECLARE_PRIM(mod);
 DECLARE_PRIM(quotient);
 DECLARE_PRIM(remainder);
+DECLARE_PRIM(floor);
 
 /* Type-conversion primitives */
-DECLARE_PRIM(floor);
+DECLARE_PRIM(int2flt);
+DECLARE_PRIM(flt2int);
 
 /* Bit-wise primitives */
 DECLARE_PRIM(bit_and);
