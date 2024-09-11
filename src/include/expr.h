@@ -64,11 +64,15 @@ static inline bool expr_is_number(const Expr* e) {
     return e->type == EXPR_NUM_INT || e->type == EXPR_NUM_FLT;
 }
 
+/*----------------------------------------------------------------------------*/
+
 /* Allocate a new empty expression of the specified type */
 Expr* expr_new(enum EExprType type);
 
 /* Free expression and adjacent expressions, along with their children */
 void expr_free(Expr* e);
+
+/*----------------------------------------------------------------------------*/
 
 /* Allocate a new expr and copy `e'. Needed to avoid double frees and leaks */
 Expr* expr_clone(const Expr* e);
@@ -77,15 +81,16 @@ Expr* expr_clone(const Expr* e);
 Expr* expr_clone_recur(const Expr* e);
 
 /* Call `expr_clone_recur' on a linked list of expressions, starting at `e' */
-Expr* expr_clone_list(const Expr* e);
+Expr* expr_list_clone(const Expr* e);
+
+/*----------------------------------------------------------------------------*/
 
 /* Print formatted expression */
 void expr_print(const Expr* e);
 void expr_println(const Expr* e);
 void expr_print_debug(const Expr* e);
 
-/* Is the specified expression an empty list? */
-bool expr_is_nil(const Expr* e);
+/*----------------------------------------------------------------------------*/
 
 /* Calculate number of elements in a linked list of Expr structures */
 size_t expr_list_len(const Expr* e);
@@ -94,13 +99,22 @@ size_t expr_list_len(const Expr* e);
  * type? */
 bool expr_list_contains_type(const Expr* e, enum EExprType type);
 
+/* Does the specified linked list ONLY contain expressions with the specified
+ * type? */
+bool expr_list_only_contains_type(const Expr* e, enum EExprType type);
+
 /* Does the specified linked list contain only numeric types? */
-bool expr_is_number_list(const Expr* e);
+bool expr_list_only_contains_numbers(const Expr* e);
+
+/*----------------------------------------------------------------------------*/
+
+/* Is the specified expression an empty list? */
+bool expr_is_nil(const Expr* e);
 
 /* Return true if `a' and `b' have the same effective value */
 bool expr_equal(const Expr* a, const Expr* b);
 
-/* Return true if `a' is less/greater than `b' */
+/* Return true if `a' is lesser/greater than `b' */
 bool expr_lt(const Expr* a, const Expr* b);
 bool expr_gt(const Expr* a, const Expr* b);
 

@@ -258,7 +258,7 @@ Expr* prim_list(Env* env, Expr* e) {
      * (list 'a 'b 'c) ===> (a b c)
      */
     Expr* ret         = expr_new(EXPR_PARENT);
-    ret->val.children = expr_clone_list(e);
+    ret->val.children = expr_list_clone(e);
 
     return ret;
 }
@@ -277,7 +277,7 @@ Expr* prim_cons(Env* env, Expr* e) {
     ret->val.children = expr_clone_recur(e);
 
     if (e->next->val.children != NULL)
-        ret->val.children->next = expr_clone_list(e->next->val.children);
+        ret->val.children->next = expr_list_clone(e->next->val.children);
 
     return ret;
 }
@@ -316,7 +316,7 @@ Expr* prim_cdr(Env* env, Expr* e) {
     if (e->val.children == NULL || e->val.children->next == NULL)
         ret->val.children = NULL;
     else
-        ret->val.children = expr_clone_list(e->val.children->next);
+        ret->val.children = expr_list_clone(e->val.children->next);
 
     return ret;
 }
@@ -347,7 +347,7 @@ Expr* prim_append(Env* env, Expr* e) {
         if (arg->val.children == NULL)
             continue;
 
-        cur_copy->next = expr_clone_list(arg->val.children);
+        cur_copy->next = expr_list_clone(arg->val.children);
         while (cur_copy->next != NULL)
             cur_copy = cur_copy->next;
     }
@@ -363,7 +363,7 @@ Expr* prim_add(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_is_number_list(e), "Expected number-only list.");
+    SL_EXPECT(expr_list_only_contains_numbers(e), "Expected number-only list.");
 
     if (expr_list_contains_type(e, EXPR_NUM_FLT)) {
         double total = 0;
@@ -388,7 +388,7 @@ Expr* prim_sub(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_is_number_list(e), "Expected number-only list.");
+    SL_EXPECT(expr_list_only_contains_numbers(e), "Expected number-only list.");
 
     /*
      * If there is only one argument, negate. Otherwise subtract in order.
@@ -428,7 +428,7 @@ Expr* prim_mul(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_is_number_list(e), "Expected number-only list.");
+    SL_EXPECT(expr_list_only_contains_numbers(e), "Expected number-only list.");
 
     if (expr_list_contains_type(e, EXPR_NUM_FLT)) {
         double total = 1;
@@ -453,7 +453,7 @@ Expr* prim_div(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_is_number_list(e), "Expected number-only list.");
+    SL_EXPECT(expr_list_only_contains_numbers(e), "Expected number-only list.");
 
     /*
      * The `div' primitive always returns a double result. For integer division,

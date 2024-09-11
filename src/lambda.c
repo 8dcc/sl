@@ -65,7 +65,7 @@ LambdaCtx* lambda_ctx_new(const Expr* formals, const Expr* body) {
     ret->formals_num = mandatory;
     ret->formals     = sl_safe_malloc(mandatory * sizeof(char*));
     ret->formal_rest = NULL;
-    ret->body        = expr_clone_list(body);
+    ret->body        = expr_list_clone(body);
 
     /*
      * For each formal argument we counted above, store the symbol as a C string
@@ -93,7 +93,7 @@ LambdaCtx* lambda_ctx_clone(const LambdaCtx* ctx) {
 
     /* Copy the environment and the list of body expressions */
     ret->env  = env_clone(ctx->env);
-    ret->body = expr_clone_list(ctx->body);
+    ret->body = expr_list_clone(ctx->body);
 
     /* Allocate a new string array for the mandatory formals, and copy them */
     ret->formals_num = ctx->formals_num;

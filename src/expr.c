@@ -131,7 +131,7 @@ Expr* expr_clone_recur(const Expr* e) {
     return cloned;
 }
 
-Expr* expr_clone_list(const Expr* e) {
+Expr* expr_list_clone(const Expr* e) {
     Expr dummy_copy;
     dummy_copy.next = NULL;
     Expr* cur_copy  = &dummy_copy;
@@ -282,10 +282,6 @@ void expr_println(const Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
-bool expr_is_nil(const Expr* e) {
-    return e != NULL && e->type == EXPR_PARENT && e->val.children == NULL;
-}
-
 size_t expr_list_len(const Expr* e) {
     size_t result = 0;
 
@@ -303,7 +299,15 @@ bool expr_list_contains_type(const Expr* e, enum EExprType type) {
     return false;
 }
 
-bool expr_is_number_list(const Expr* e) {
+bool expr_list_only_contains_type(const Expr* e, enum EExprType type) {
+    for (; e != NULL; e = e->next)
+        if (e->type != type)
+            return false;
+
+    return true;
+}
+
+bool expr_list_only_contains_numbers(const Expr* e) {
     for (; e != NULL; e = e->next)
         if (!expr_is_number(e))
             return false;
@@ -312,6 +316,10 @@ bool expr_is_number_list(const Expr* e) {
 }
 
 /*----------------------------------------------------------------------------*/
+
+bool expr_is_nil(const Expr* e) {
+    return e != NULL && e->type == EXPR_PARENT && e->val.children == NULL;
+}
 
 bool expr_equal(const Expr* a, const Expr* b) {
     /*
