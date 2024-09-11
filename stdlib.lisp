@@ -35,9 +35,6 @@
 ;; List-related functions
 ;;------------------------------------------------------------------------------
 
-(defun null? (lst)
-  (equal? lst nil))
-
 (defun caar (lst) (car (car lst)))
 (defun cadr (lst) (car (cdr lst)))
 (defun cdar (lst) (cdr (car lst)))
@@ -69,3 +66,30 @@
               (cons 'begin (cdar clauses))
               (cond-lst (cdr clauses)))))
   (cond-lst clauses))
+
+;;------------------------------------------------------------------------------
+;; General predicates
+;;------------------------------------------------------------------------------
+
+(defun null? (&rest args)
+  (apply equal? (cons nil args)))
+
+(defun number? (&rest lst)
+  (if (null? lst)
+      tru
+      (if (or (int? (car lst))
+              (flt? (car lst)))
+          (apply number? (cdr lst))
+          nil)))
+
+(defun func? (&rest lst)
+  (if (null? lst)
+      tru
+      (if (or (primitive? (car lst))
+              (lambda?    (car lst)))
+          (apply func? (cdr lst))
+          nil)))
+
+(defun = (a &rest b)
+  (and (apply number? (cons a b))
+       (apply equal?  (cons a b))))

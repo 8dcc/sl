@@ -85,6 +85,13 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "floor", floor);
     BIND_PRIM(env, "int->flt", int2flt);
     BIND_PRIM(env, "flt->int", flt2int);
+    BIND_PRIM(env, "int?", is_int);
+    BIND_PRIM(env, "flt?", is_flt);
+    BIND_PRIM(env, "symbol?", is_symbol);
+    BIND_PRIM(env, "list?", is_list);
+    BIND_PRIM(env, "primitive?", is_primitive);
+    BIND_PRIM(env, "lambda?", is_lambda);
+    BIND_PRIM(env, "macro?", is_macro);
     BIND_PRIM(env, "bit-and", bit_and);
     BIND_PRIM(env, "bit-or", bit_or);
     BIND_PRIM(env, "bit-xor", bit_xor);

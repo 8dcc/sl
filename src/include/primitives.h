@@ -39,9 +39,16 @@ DECLARE_PRIM(quotient);
 DECLARE_PRIM(remainder);
 DECLARE_PRIM(floor);
 
-/* Type-conversion primitives */
+/* Type-conversion and type-checking primitives */
 DECLARE_PRIM(int2flt);
 DECLARE_PRIM(flt2int);
+DECLARE_PRIM(is_int);
+DECLARE_PRIM(is_flt);
+DECLARE_PRIM(is_symbol);
+DECLARE_PRIM(is_list);
+DECLARE_PRIM(is_primitive);
+DECLARE_PRIM(is_lambda);
+DECLARE_PRIM(is_macro);
 
 /* Bit-wise primitives */
 DECLARE_PRIM(bit_and);

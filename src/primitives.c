@@ -596,7 +596,7 @@ Expr* prim_floor(Env* env, Expr* e) {
 }
 
 /*----------------------------------------------------------------------------*/
-/* Type-conversion primitives */
+/* Type-conversion and type-checking primitives */
 
 Expr* prim_int2flt(Env* env, Expr* e) {
     SL_UNUSED(env);
@@ -618,6 +618,41 @@ Expr* prim_flt2int(Env* env, Expr* e) {
     Expr* ret  = expr_new(EXPR_NUM_INT);
     ret->val.n = (long long)e->val.f;
     return ret;
+}
+
+Expr* prim_is_int(Env* env, Expr* e) {
+    const bool result = expr_list_only_contains_type(e, EXPR_NUM_INT);
+    return (result) ? env_get(env, "tru") : env_get(env, "nil");
+}
+
+Expr* prim_is_flt(Env* env, Expr* e) {
+    const bool result = expr_list_only_contains_type(e, EXPR_NUM_FLT);
+    return (result) ? env_get(env, "tru") : env_get(env, "nil");
+}
+
+Expr* prim_is_symbol(Env* env, Expr* e) {
+    const bool result = expr_list_only_contains_type(e, EXPR_SYMBOL);
+    return (result) ? env_get(env, "tru") : env_get(env, "nil");
+}
+
+Expr* prim_is_list(Env* env, Expr* e) {
+    const bool result = expr_list_only_contains_type(e, EXPR_PARENT);
+    return (result) ? env_get(env, "tru") : env_get(env, "nil");
+}
+
+Expr* prim_is_primitive(Env* env, Expr* e) {
+    const bool result = expr_list_only_contains_type(e, EXPR_PRIM);
+    return (result) ? env_get(env, "tru") : env_get(env, "nil");
+}
+
+Expr* prim_is_lambda(Env* env, Expr* e) {
+    const bool result = expr_list_only_contains_type(e, EXPR_LAMBDA);
+    return (result) ? env_get(env, "tru") : env_get(env, "nil");
+}
+
+Expr* prim_is_macro(Env* env, Expr* e) {
+    const bool result = expr_list_only_contains_type(e, EXPR_MACRO);
+    return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }
 
 /*----------------------------------------------------------------------------*/
