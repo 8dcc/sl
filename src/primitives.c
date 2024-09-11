@@ -226,7 +226,6 @@ Expr* prim_apply(Env* env, Expr* e) {
 }
 
 Expr* prim_macroexpand(Env* env, Expr* e) {
-    SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     EXPECT_ARG_NUM(e, 1);
     EXPECT_TYPE(e, EXPR_PARENT);
@@ -711,7 +710,6 @@ Expr* prim_shl(Env* env, Expr* e) {
 /* Logical primitives */
 
 Expr* prim_equal(Env* env, Expr* e) {
-    SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(expr_list_len(e) >= 2, "Expected at least 2 arguments.");
 
@@ -729,7 +727,6 @@ Expr* prim_equal(Env* env, Expr* e) {
 }
 
 Expr* prim_lt(Env* env, Expr* e) {
-    SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(expr_list_len(e) >= 2, "Expected at least 2 arguments.");
 
@@ -747,7 +744,6 @@ Expr* prim_lt(Env* env, Expr* e) {
 }
 
 Expr* prim_gt(Env* env, Expr* e) {
-    SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(expr_list_len(e) >= 2, "Expected at least 2 arguments.");
 
