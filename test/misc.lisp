@@ -39,3 +39,7 @@ unbound-error-var  ; Expected: Unbound symbol: unbound-error-var
 ;;  (cond ((equal? 1 2) 123)
 ;;        ((equal? 5 6) 333)
 ;;        (tru          777))
+
+(set-random-seed 420)
+(random 1337)
+(random 10.0)

@@ -21,6 +21,8 @@ DECLARE_PRIM(and);
 DECLARE_PRIM(eval);
 DECLARE_PRIM(apply);
 DECLARE_PRIM(macroexpand);
+DECLARE_PRIM(random);
+DECLARE_PRIM(set_random_seed);
 
 /* List-related primitives */
 DECLARE_PRIM(list);

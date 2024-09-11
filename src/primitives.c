@@ -255,6 +255,45 @@ Expr* prim_macroexpand(Env* env, Expr* e) {
     return expanded;
 }
 
+Expr* prim_random(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT(expr_is_number(e), "Expected numeric argument.");
+
+    /*
+     * We return the same numeric type we received.
+     *
+     * For more information on the value ranges, see:
+     * https://c-faq.com/lib/randrange.html
+     */
+    Expr* ret = expr_new(e->type);
+    switch (e->type) {
+        case EXPR_NUM_INT:
+            ret->val.n = rand() / (RAND_MAX / e->val.n + 1);
+            break;
+
+        case EXPR_NUM_FLT:
+            ret->val.f = (double)rand() / ((double)RAND_MAX + 1) * e->val.f;
+            break;
+
+        default:
+            SL_FATAL("Unhandled numeric type.");
+    }
+
+    return ret;
+}
+
+Expr* prim_set_random_seed(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 1);
+    EXPECT_TYPE(e, EXPR_NUM_INT);
+
+    srand(e->val.n);
+    return env_get(env, "tru");
+}
+
 /*----------------------------------------------------------------------------*/
 /* List-related primitives */
 
@@ -587,7 +626,7 @@ Expr* prim_floor(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT(expr_is_number(e), "Argument must be a number.");
+    SL_EXPECT(expr_is_number(e), "Expected numeric argument.");
 
     Expr* ret = expr_new(e->type);
     switch (e->type) {
