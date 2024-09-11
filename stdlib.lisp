@@ -3,13 +3,11 @@
 ;; https://github.com/8dcc/sl
 ;;
 ;; TODO:
-;;   - Logical `not'
 ;;   - `nth'
 ;;   - `member' (return arg0 when car is arg1)
 ;;   - `member?' (is arg1 in arg0)
 ;;   - `length'
 ;;   - `let' (Macro using `lambda')
-;;   - Number equality with `='
 ;;==============================================================================
 
 ;;------------------------------------------------------------------------------
@@ -70,6 +68,11 @@
 ;;------------------------------------------------------------------------------
 ;; General predicates
 ;;------------------------------------------------------------------------------
+
+(defun not (predicate)
+  (if (equal? predicate nil)
+      tru
+      nil))
 
 (defun null? (&rest args)
   (apply equal? (cons nil args)))
