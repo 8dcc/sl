@@ -147,6 +147,8 @@ Expr* prim_begin(Env* env, Expr* e) {
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
         expr_free(last_evaluated);
         last_evaluated = eval(env, cur);
+        if (last_evaluated == NULL)
+            return NULL;
     }
 
     return last_evaluated;
@@ -164,6 +166,8 @@ Expr* prim_if(Env* env, Expr* e) {
      * argument); otherwise, evaluate the "consequent" (second argument).
      */
     Expr* evaluated_predicate = eval(env, e);
+    if (evaluated_predicate == NULL)
+        return NULL;
     Expr* result = expr_is_nil(evaluated_predicate) ? e->next->next : e->next;
     expr_free(evaluated_predicate);
     return eval(env, result);
@@ -182,6 +186,8 @@ Expr* prim_or(Env* env, Expr* e) {
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
         expr_free(result);
         result = eval(env, cur);
+        if (result == NULL)
+            return NULL;
         if (!expr_is_nil(result))
             break;
     }
@@ -200,6 +206,8 @@ Expr* prim_and(Env* env, Expr* e) {
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
         expr_free(result);
         result = eval(env, cur);
+        if (result == NULL)
+            return NULL;
         if (expr_is_nil(result))
             break;
     }

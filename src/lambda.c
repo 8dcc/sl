@@ -198,6 +198,8 @@ Expr* lambda_call(Env* env, Expr* func, Expr* args) {
     for (Expr* cur = func->val.lambda->body; cur != NULL; cur = cur->next) {
         expr_free(last_evaluated);
         last_evaluated = eval(func->val.lambda->env, cur);
+        if (last_evaluated == NULL)
+            return NULL;
     }
 
     return last_evaluated;
@@ -246,6 +248,8 @@ Expr* macro_expand(Env* env, Expr* func, Expr* args) {
     for (Expr* cur = func->val.lambda->body; cur != NULL; cur = cur->next) {
         expr_free(last_evaluated);
         last_evaluated = eval(func->val.lambda->env, cur);
+        if (last_evaluated == NULL)
+            return NULL;
     }
 
     return last_evaluated;
