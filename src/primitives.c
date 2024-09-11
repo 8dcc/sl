@@ -494,6 +494,7 @@ Expr* prim_mod(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
+    SL_EXPECT(expr_list_only_contains_numbers(e), "Expected number-only list.");
 
     /*
      * The `mod' operation allows floating-point and negative inputs.
