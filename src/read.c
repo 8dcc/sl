@@ -18,6 +18,28 @@ static bool is_comment_end(int c) {
     return c == '\n';
 }
 
+/*
+ * Did the character at `str[pos]' just open/close a string with a double-quote?
+ * Checks if it was escaped:
+ *
+ *   (...")     -> true
+ *   (...\\\")  -> false (odd '\')
+ *   (...\\\\") -> true (even '\')
+ */
+static bool just_toggled_string_state(const char* str, int pos) {
+    if (str[pos] != '\"')
+        return false;
+    pos--;
+
+    /* Every consecutive backslash from the end, toggle the variable to store if
+     * the number is odd or even. */
+    bool odd_backslashes = true;
+    for (; pos >= 0 && str[pos] == '\\'; pos--)
+        odd_backslashes = !odd_backslashes;
+
+    return odd_backslashes;
+}
+
 /* Return the first non-comment character from `fp' */
 static int get_next_non_comment(FILE* fp) {
     int c = fgetc(fp);
@@ -47,6 +69,9 @@ char* read_expr(FILE* fp) {
     /* If true, we found a symbol/constant with nesting_level at 0 */
     bool isolated_symbol = false;
 
+    /* If true, we are inside a user string in the form "..." */
+    bool inside_string = false;
+
     size_t result_sz = READ_BUFSZ;
     char* result     = sl_safe_malloc(result_sz);
     size_t i         = 0;
@@ -65,12 +90,25 @@ char* read_expr(FILE* fp) {
 
         result[i++] = c;
 
+        /*
+         * First, check if we are opening/closing a string. That static function
+         * will check for escaped double-quotes.
+         */
+        if (just_toggled_string_state(result, i - 1))
+            inside_string = !inside_string;
+
+        /*
+         * If we are inside a string, we don't want to check anything else until
+         * we close it.
+         */
+        if (inside_string)
+            continue;
+
         if (c == '(') {
             nesting_level++;
         } else if (c == ')') {
             /*
              * If we are still in level 0, we should have opened an expression.
-             * TODO: If we add strings, we should check if ')' is inside one.
              *
              * Otherwise, if we closed all the expressions that we opened, we
              * are done.

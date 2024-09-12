@@ -3,7 +3,7 @@
 ;;   - Macro definitions
 ;;   - Macro expansion
 ;;   - Macro calls
-;;   - Usage of `defmacro' and `defun' macros.
+;;   - Usage of `defmacro' and `defun' macros
 ;;------------------------------------------------------------------------------
 
 ;; TODO: Move important macros to stdlib, import from here.

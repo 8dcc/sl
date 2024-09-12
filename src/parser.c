@@ -35,6 +35,11 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
             expr->val.f = tokens[0].val.f;
         } break;
 
+        case TOKEN_STRING: {
+            expr->type  = EXPR_STRING;
+            expr->val.s = sl_safe_strdup(tokens[0].val.s);
+        } break;
+
         case TOKEN_SYMBOL: {
             expr->type  = EXPR_SYMBOL;
             expr->val.s = sl_safe_strdup(tokens[0].val.s);

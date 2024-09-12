@@ -9,6 +9,7 @@ enum ETokenTypes {
     TOKEN_NUM_INT, /* Number (long long) */
     TOKEN_NUM_FLT, /* Number (double) */
     TOKEN_SYMBOL,  /* Symbol (string) */
+    TOKEN_STRING,  /* String (string) */
 
     /* The rest don't make use of Token.val */
     TOKEN_LIST_OPEN,

@@ -10,7 +10,75 @@
 
 #define ANY_BASE 0 /* For strtoll() */
 
-#define TOKEN_BUFSZ 100
+#define TOKEN_BUFSZ  100
+#define STRING_BUFSZ 100
+
+static inline char escaped2char(char escaped) {
+    switch (escaped) {
+        case 'a':
+            return '\a';
+        case 'b':
+            return '\b';
+        case 'e':
+            return '\e';
+        case 'f':
+            return '\f';
+        case 'n':
+            return '\n';
+        case 'r':
+            return '\r';
+        case 't':
+            return '\n';
+        case 'v':
+            return '\v';
+        case '\\':
+            return '\\';
+        case '\"':
+            return '\"';
+        default:
+            ERR("The specified escape sequence (\\%c) is not currently "
+                "supported.",
+                escaped);
+            return escaped;
+    }
+}
+
+/*
+ * Read the user input and store it in an allocated string, parsing the
+ * supported escape sequences. Returns the number of parsed characters from the
+ * input, including the final double quote.
+ */
+static size_t parse_user_string(const char* input, char** dst) {
+    SL_ASSERT(input[0] == '\"', "Did not receive a string.");
+
+    size_t result_pos = 0;
+    size_t result_sz  = STRING_BUFSZ;
+    char* result      = sl_safe_malloc(result_sz);
+
+    size_t input_pos;
+    for (input_pos = 1; input[input_pos] != '\"'; input_pos++, result_pos++) {
+        SL_ASSERT(input[input_pos] != '\0',
+                  "Unexpected end of input when parsing string.");
+
+        if (result_pos >= result_sz - 1) {
+            result_sz += TOKEN_BUFSZ;
+            sl_safe_realloc(result, result_sz);
+        }
+
+        /* Parse escape sequences */
+        if (input[input_pos] == '\\') {
+            input_pos++;
+            result[result_pos] = escaped2char(input[input_pos]);
+            continue;
+        }
+
+        result[result_pos] = input[input_pos];
+    }
+
+    result[result_pos] = '\0';
+    *dst               = result;
+    return input_pos + 1;
+}
 
 /*
  * Set the value and type of the token based on the input. Only checks for
@@ -57,7 +125,7 @@ static Token get_token(char** input_ptr) {
 
     Token result;
 
-    /* Check for simple tokens */
+    /* Check for simple tokens and string openings */
     switch (*input) {
         case '(':
             result.type = TOKEN_LIST_OPEN;
@@ -77,6 +145,11 @@ static Token get_token(char** input_ptr) {
         case '\0':
             result.type = TOKEN_EOF;
             input       = NULL;
+            goto done;
+
+        case '\"':
+            result.type = TOKEN_STRING;
+            input += parse_user_string(input, &result.val.s);
             goto done;
 
         default:
@@ -129,7 +202,7 @@ Token* tokenize(char* input) {
 
 void tokens_free(Token* arr) {
     for (int i = 0; arr[i].type != TOKEN_EOF; i++)
-        if (arr[i].type == TOKEN_SYMBOL)
+        if (arr[i].type == TOKEN_SYMBOL || arr[i].type == TOKEN_STRING)
             free(arr[i].val.s);
 
     free(arr);
@@ -154,6 +227,11 @@ void tokens_print(Token* arr) {
 
             case TOKEN_SYMBOL:
                 printf("\"%s\", ", arr->val.s);
+                break;
+
+            case TOKEN_STRING:
+                print_escaped_str(arr->val.s);
+                printf(", ");
                 break;
 
             case TOKEN_LIST_OPEN:

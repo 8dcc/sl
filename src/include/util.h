@@ -57,6 +57,10 @@ sl_lbl_on_err:                  \
 /* Print error message to stderr, along with the function name */
 void err_msg(const char* func, const char* fmt, ...);
 
+/* Print a string with values corresponding to escape sequences. The printed
+ * string should evaluate to the input. */
+void print_escaped_str(const char* s);
+
 /* Allocate `sz' bytes using `malloc' or `calloc', ensuring a valid pointer is
  * returned. */
 void* sl_safe_malloc(size_t sz);

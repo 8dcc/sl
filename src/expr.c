@@ -37,6 +37,7 @@ void expr_free(Expr* e) {
             break;
 
         case EXPR_SYMBOL:
+        case EXPR_STRING:
             free(e->val.s);
             break;
 
@@ -71,16 +72,17 @@ Expr* expr_clone(const Expr* e) {
     Expr* ret = expr_new(e->type);
 
     switch (e->type) {
-        case EXPR_SYMBOL:
-            ret->val.s = sl_safe_strdup(e->val.s);
-            break;
-
         case EXPR_NUM_INT:
             ret->val.n = e->val.n;
             break;
 
         case EXPR_NUM_FLT:
             ret->val.f = e->val.f;
+            break;
+
+        case EXPR_SYMBOL:
+        case EXPR_STRING:
+            ret->val.s = sl_safe_strdup(e->val.s);
             break;
 
         case EXPR_PARENT:
@@ -172,6 +174,12 @@ void expr_print_debug(const Expr* e) {
             printf("[SYM] \"%s\"\n", e->val.s);
         } break;
 
+        case EXPR_STRING: {
+            printf("[STR] ");
+            print_escaped_str(e->val.s);
+            putchar('\n');
+        } break;
+
         case EXPR_PARENT: {
             printf("[LST]");
 
@@ -248,6 +256,10 @@ void expr_print(const Expr* e) {
 
         case EXPR_SYMBOL:
             printf("%s", e->val.s);
+            break;
+
+        case EXPR_STRING:
+            print_escaped_str(e->val.s);
             break;
 
         case EXPR_PARENT:
@@ -340,6 +352,7 @@ bool expr_equal(const Expr* a, const Expr* b) {
             return a->val.f == b->val.f;
 
         case EXPR_SYMBOL:
+        case EXPR_STRING:
             return strcmp(a->val.s, b->val.s) == 0;
 
         case EXPR_PARENT: {
@@ -395,6 +408,7 @@ bool expr_lt(const Expr* a, const Expr* b) {
             return a->val.f < b->val.f;
 
         case EXPR_SYMBOL:
+        case EXPR_STRING:
             return strcmp(a->val.s, b->val.s) < 0;
 
         case EXPR_PARENT:
@@ -420,6 +434,7 @@ bool expr_gt(const Expr* a, const Expr* b) {
             return a->val.f > b->val.f;
 
         case EXPR_SYMBOL:
+        case EXPR_STRING:
             return strcmp(a->val.s, b->val.s) > 0;
 
         case EXPR_PARENT:

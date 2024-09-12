@@ -17,6 +17,7 @@ enum EExprType {
     EXPR_NUM_INT,
     EXPR_NUM_FLT,
     EXPR_SYMBOL,
+    EXPR_STRING,
     EXPR_PARENT,
     EXPR_PRIM,
     EXPR_LAMBDA,
@@ -48,6 +49,7 @@ static inline const char* exprtype2str(enum EExprType type) {
         case EXPR_NUM_INT: return "Integer";
         case EXPR_NUM_FLT: return "Float";
         case EXPR_SYMBOL:  return "Symbol";
+        case EXPR_STRING:  return "Symbol";
         case EXPR_PARENT:  return "List";
         case EXPR_PRIM:    return "Primitive";
         case EXPR_LAMBDA:  return "Lambda";

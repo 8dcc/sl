@@ -18,6 +18,48 @@ void err_msg(const char* func, const char* fmt, ...) {
     va_end(va);
 }
 
+void print_escaped_str(const char* s) {
+    putchar('\"');
+    for (; *s != '\0'; s++) {
+        switch (*s) {
+            case '\a':
+                printf("\\a");
+                break;
+            case '\b':
+                printf("\\b");
+                break;
+            case '\e':
+                printf("\\e");
+                break;
+            case '\f':
+                printf("\\f");
+                break;
+            case '\n':
+                printf("\\n");
+                break;
+            case '\r':
+                printf("\\r");
+                break;
+            case '\t':
+                printf("\\n");
+                break;
+            case '\v':
+                printf("\\v");
+                break;
+            case '\\':
+                printf("\\\\");
+                break;
+            case '\"':
+                printf("\\\"");
+                break;
+            default:
+                putchar(*s);
+                break;
+        }
+    }
+    putchar('\"');
+}
+
 void* sl_safe_malloc(size_t size) {
     void* result = malloc(size);
     SL_ASSERT(result != NULL, "Failed to allocate %zu bytes: %s (%d).", size,
