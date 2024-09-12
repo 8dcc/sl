@@ -220,9 +220,9 @@ void expr_print_debug(const Expr* e) {
         expr_print_debug(e->next);
 }
 
-static void print_sexpr(const Expr* e) {
+static void print_list(const Expr* e) {
     putchar('(');
-    for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
+    for (const Expr* cur = e; cur != NULL; cur = cur->next) {
         expr_print(cur);
 
         if (cur->next != NULL)
@@ -254,7 +254,7 @@ void expr_print(const Expr* e) {
             if (expr_is_nil(e))
                 printf("nil");
             else
-                print_sexpr(e);
+                print_list(e->val.children);
             break;
 
         case EXPR_PRIM:
