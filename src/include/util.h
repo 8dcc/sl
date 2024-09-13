@@ -54,20 +54,45 @@ sl_lbl_on_err:                  \
 
 /*----------------------------------------------------------------------------*/
 
-/* Print error message to stderr, along with the function name */
+/*
+ * Print error message to stderr, along with the function name.
+ */
 void err_msg(const char* func, const char* fmt, ...);
 
-/* Print a string with values corresponding to escape sequences. The printed
- * string should evaluate to the input. */
-void print_escaped_str(const char* s);
-
-/* Allocate `sz' bytes using `malloc' or `calloc', ensuring a valid pointer is
- * returned. */
+/*
+ * Allocate `sz' bytes using `malloc' or `calloc', ensuring a valid pointer is
+ * returned.
+ */
 void* sl_safe_malloc(size_t sz);
 void* sl_safe_calloc(size_t nmemb, size_t size);
 
-/* Allocate a new string big enough to hold `s', and copy it. Ensures a valid
- * pointer is returned. */
+/*
+ * Allocate a new string big enough to hold `s', and copy it. Ensures a valid
+ * pointer is returned.
+ */
 char* sl_safe_strdup(const char* s);
+
+/*
+ * Return the actual value of an escape sequence character. If the character is
+ * not part of a supported escape sequence, an error message is printed to
+ * `stderr' and the character is returned unchanged.
+ *
+ * For example, 'n' -> 0xA (\n).
+ */
+char escaped2byte(char escaped);
+
+/*
+ * Return a two-character escape sequence that represents the specified byte. If
+ * the input is not the value of a supported escape sequence, NULL is returned.
+ *
+ * For example, 0xA -> "\n" (that is, '\\' and 'n').
+ */
+const char* byte2escaped(char byte);
+
+/*
+ * Print a string with values corresponding to escape sequences. The printed
+ * string should evaluate to the input.
+ */
+void print_escaped_str(const char* s);
 
 #endif /* UTIL_H_ */

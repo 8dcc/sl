@@ -13,36 +13,6 @@
 #define TOKEN_BUFSZ  100
 #define STRING_BUFSZ 100
 
-static inline char escaped2char(char escaped) {
-    switch (escaped) {
-        case 'a':
-            return '\a';
-        case 'b':
-            return '\b';
-        case 'e':
-            return '\e';
-        case 'f':
-            return '\f';
-        case 'n':
-            return '\n';
-        case 'r':
-            return '\r';
-        case 't':
-            return '\n';
-        case 'v':
-            return '\v';
-        case '\\':
-            return '\\';
-        case '\"':
-            return '\"';
-        default:
-            ERR("The specified escape sequence (\\%c) is not currently "
-                "supported.",
-                escaped);
-            return escaped;
-    }
-}
-
 /*
  * Read the user input and store it in an allocated string, parsing the
  * supported escape sequences. Returns the number of parsed characters from the
@@ -68,7 +38,7 @@ static size_t parse_user_string(const char* input, char** dst) {
         /* Parse escape sequences */
         if (input[input_pos] == '\\') {
             input_pos++;
-            result[result_pos] = escaped2char(input[input_pos]);
+            result[result_pos] = escaped2byte(input[input_pos]);
             continue;
         }
 

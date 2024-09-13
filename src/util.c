@@ -18,48 +18,6 @@ void err_msg(const char* func, const char* fmt, ...) {
     va_end(va);
 }
 
-void print_escaped_str(const char* s) {
-    putchar('\"');
-    for (; *s != '\0'; s++) {
-        switch (*s) {
-            case '\a':
-                printf("\\a");
-                break;
-            case '\b':
-                printf("\\b");
-                break;
-            case '\e':
-                printf("\\e");
-                break;
-            case '\f':
-                printf("\\f");
-                break;
-            case '\n':
-                printf("\\n");
-                break;
-            case '\r':
-                printf("\\r");
-                break;
-            case '\t':
-                printf("\\n");
-                break;
-            case '\v':
-                printf("\\v");
-                break;
-            case '\\':
-                printf("\\\\");
-                break;
-            case '\"':
-                printf("\\\"");
-                break;
-            default:
-                putchar(*s);
-                break;
-        }
-    }
-    putchar('\"');
-}
-
 void* sl_safe_malloc(size_t size) {
     void* result = malloc(size);
     SL_ASSERT(result != NULL, "Failed to allocate %zu bytes: %s (%d).", size,
@@ -80,4 +38,56 @@ char* sl_safe_strdup(const char* s) {
     SL_ASSERT(result != NULL, "Failed to copy string: %s (%d).",
               strerror(errno), errno);
     return result;
+}
+
+/* clang-format off */
+char escaped2byte(char escaped) {
+    switch (escaped) {
+        case 'a':  return '\a';
+        case 'b':  return '\b';
+        case 'e':  return '\e';
+        case 'f':  return '\f';
+        case 'n':  return '\n';
+        case 'r':  return '\r';
+        case 't':  return '\n';
+        case 'v':  return '\v';
+        case '\\': return '\\';
+        case '\"': return '\"';
+        default:
+            ERR("The specified escape sequence (\\%c) is not currently "
+                "supported.",
+                escaped);
+            return escaped;
+    }
+}
+
+const char* byte2escaped(char byte) {
+    switch (byte) {
+        case '\a': return "\\a";
+        case '\b': return "\\b";
+        case '\e': return "\\e";
+        case '\f': return "\\f";
+        case '\n': return "\\n";
+        case '\r': return "\\r";
+        case '\t': return "\\n";
+        case '\v': return "\\v";
+        case '\\': return "\\\\";
+        case '\"': return "\\\"";
+        default:   return NULL;
+    }
+}
+/* clang-format on */
+
+void print_escaped_str(const char* s) {
+    SL_ASSERT(s != NULL, "Got NULL string.");
+
+    putchar('\"');
+    for (; *s != '\0'; s++) {
+        const char* escape_sequence = byte2escaped(*s);
+        if (escape_sequence != NULL)
+            printf("%s", escape_sequence);
+        else
+            printf("%c", *s);
+    }
+    putchar('\"');
 }
