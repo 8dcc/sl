@@ -413,6 +413,15 @@ Expr* prim_concat(Env* env, Expr* e) {
     SL_EXPECT(expr_list_only_contains_type(e, EXPR_STRING),
               "Unexpected non-string argument.");
 
+    /*
+     * Calculate the sum of the string lengths, allocate the destination buffer
+     * and  concatenate each string using `stpcpy'.
+     *
+     * Since `stpcpy' returns a pointer to the null-terminator, we can store it
+     * and keep calling the function repeatedly instead of calculating the
+     * string length each iteration, which is probably what `strcat' does
+     * internally.
+     */
     size_t total_len = 0;
     for (Expr* arg = e; arg != NULL; arg = arg->next)
         total_len += strlen(arg->val.s);
