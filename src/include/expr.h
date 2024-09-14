@@ -57,9 +57,7 @@ static inline const char* exprtype2str(enum EExprType type) {
     }
     /* clang-format on */
 
-    /* Should be unreachable. Compiler warns about unhandled cases in the
-     * previous switch, since we are not using `default'. */
-    return "???";
+    __builtin_unreachable();
 }
 
 static inline bool expr_is_number(const Expr* e) {
