@@ -410,7 +410,8 @@ Expr* prim_add(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_only_contains_numbers(e), "Expected number-only list.");
+    SL_EXPECT(expr_list_only_contains_numbers(e),
+              "Unexpected non-numerical argument.");
 
     if (expr_list_contains_type(e, EXPR_NUM_FLT)) {
         double total = 0;
@@ -435,7 +436,8 @@ Expr* prim_sub(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_only_contains_numbers(e), "Expected number-only list.");
+    SL_EXPECT(expr_list_only_contains_numbers(e),
+              "Unexpected non-numerical argument.");
 
     /*
      * If there is only one argument, negate. Otherwise subtract in order.
@@ -475,7 +477,8 @@ Expr* prim_mul(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_only_contains_numbers(e), "Expected number-only list.");
+    SL_EXPECT(expr_list_only_contains_numbers(e),
+              "Unexpected non-numerical argument.");
 
     if (expr_list_contains_type(e, EXPR_NUM_FLT)) {
         double total = 1;
@@ -500,7 +503,8 @@ Expr* prim_div(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_only_contains_numbers(e), "Expected number-only list.");
+    SL_EXPECT(expr_list_only_contains_numbers(e),
+              "Unexpected non-numerical argument.");
 
     /*
      * The `div' primitive always returns a double result. For integer division,
@@ -533,7 +537,8 @@ Expr* prim_mod(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_only_contains_numbers(e), "Expected number-only list.");
+    SL_EXPECT(expr_list_only_contains_numbers(e),
+              "Unexpected non-numerical argument.");
 
     /*
      * The `mod' operation allows floating-point and negative inputs.
