@@ -77,6 +77,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "car", car);
     BIND_PRIM(env, "cdr", cdr);
     BIND_PRIM(env, "append", append);
+    BIND_PRIM(env, "concat", concat);
     BIND_PRIM(env, "+", add);
     BIND_PRIM(env, "-", sub);
     BIND_PRIM(env, "*", mul);

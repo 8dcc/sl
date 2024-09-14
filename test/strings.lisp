@@ -4,12 +4,14 @@
 ;;   - String predicates: `equal?', `<', `>'
 ;;------------------------------------------------------------------------------
 
-"Hello, world!" ; Expected: "Hello, world!"
-""              ; Expected: ""
+"Hello, world!"
+""
 
 "Multi-line
 strings
 supported." ; Expected: "Multi-line\nstrings\nsupported."
+
+(concat "Concatenating" " multiple " "strings...")
 
 (equal?
  "All printed strings

@@ -404,6 +404,30 @@ Expr* prim_append(Env* env, Expr* e) {
 }
 
 /*----------------------------------------------------------------------------*/
+/* String-related primitives */
+
+Expr* prim_concat(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Missing arguments.");
+    SL_EXPECT(expr_list_only_contains_type(e, EXPR_STRING),
+              "Unexpected non-string argument.");
+
+    size_t total_len = 0;
+    for (Expr* arg = e; arg != NULL; arg = arg->next)
+        total_len += strlen(arg->val.s);
+
+    Expr* ret  = expr_new(EXPR_STRING);
+    ret->val.s = sl_safe_malloc(total_len + 1);
+
+    char* last_copied = ret->val.s;
+    for (Expr* arg = e; arg != NULL; arg = arg->next)
+        last_copied = stpcpy(last_copied, arg->val.s);
+
+    return ret;
+}
+
+/*----------------------------------------------------------------------------*/
 /* Arithmetic primitives */
 
 Expr* prim_add(Env* env, Expr* e) {

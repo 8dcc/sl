@@ -31,6 +31,9 @@ DECLARE_PRIM(car);
 DECLARE_PRIM(cdr);
 DECLARE_PRIM(append);
 
+/* String-related primitives */
+DECLARE_PRIM(concat);
+
 /* Arithmetic primitives */
 DECLARE_PRIM(add);
 DECLARE_PRIM(sub);
