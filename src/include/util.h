@@ -1,6 +1,7 @@
 #ifndef UTIL_H_
 #define UTIL_H_ 1
 
+#include <stdio.h>  /* fprintf() */
 #include <stdlib.h> /* exit() */
 
 #define LENGTH(ARR) ((int)(sizeof(ARR) / sizeof((ARR)[0])))
