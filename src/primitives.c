@@ -436,6 +436,57 @@ Expr* prim_concat(Env* env, Expr* e) {
     return ret;
 }
 
+Expr* prim_substring(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+
+    const size_t arg_num = expr_list_len(e);
+    SL_EXPECT(arg_num >= 1 || arg_num <= 3,
+              "Expected between 1 and 3 arguments.");
+
+    EXPECT_TYPE(e, EXPR_STRING);
+    const long long str_len = (long long)strlen(e->val.s);
+    long long start_idx     = 0;
+    long long end_idx       = str_len;
+
+    /* Second argument, start index */
+    if (arg_num >= 2) {
+        EXPECT_TYPE(e->next, EXPR_NUM_INT);
+        start_idx = e->next->val.n;
+        if (start_idx < 0)
+            start_idx += str_len;
+    }
+
+    /* Third argument, end index */
+    if (arg_num >= 3) {
+        EXPECT_TYPE(e->next->next, EXPR_NUM_INT);
+        end_idx = e->next->next->val.n;
+        if (end_idx < 0)
+            end_idx += str_len;
+    }
+
+    /*
+     * The substring includes the character at the start index but excludes the
+     * character at the end index. The first character is at index zero.
+     * Negative numbers can be used to count from the end of the string, so the
+     * last character is at index -1.
+     *
+     * If the start or end indexes are not within bounds, they are clamped.
+     */
+    end_idx   = CLAMP(end_idx, 0, str_len);
+    start_idx = CLAMP(start_idx, 0, end_idx);
+
+    Expr* ret  = expr_new(EXPR_STRING);
+    ret->val.s = sl_safe_malloc(end_idx - start_idx + 1);
+
+    long long dst_i, src_i;
+    for (dst_i = 0, src_i = start_idx; src_i < end_idx; dst_i++, src_i++)
+        ret->val.s[dst_i] = e->val.s[src_i];
+    ret->val.s[dst_i] = '\0';
+
+    return ret;
+}
+
 /*----------------------------------------------------------------------------*/
 /* Arithmetic primitives */
 

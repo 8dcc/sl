@@ -33,6 +33,7 @@ DECLARE_PRIM(append);
 
 /* String-related primitives */
 DECLARE_PRIM(concat);
+DECLARE_PRIM(substring);
 
 /* Arithmetic primitives */
 DECLARE_PRIM(add);

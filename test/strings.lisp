@@ -18,6 +18,12 @@ supported." ; Expected: "Multi-line\nstrings\nsupported."
 must be valid inputs."                         ; Initial string
  "All printed strings\nmust be valid inputs.") ; Printed after evaluating
 
+(substring "--Testing substrings--")
+(substring "--Testing substrings--" 2 20)
+(substring "--Testing substrings--" 2 -2)
+(substring "--Testing substrings--" 10)
+(substring "--Testing substrings--" -12)
+
 (< "abc" "abz") ; Expected: tru
 (< "abc" "abc") ; Expected: nil
 (> "abz" "abc") ; Expected: tru
