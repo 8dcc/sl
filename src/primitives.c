@@ -721,6 +721,11 @@ Expr* prim_is_symbol(Env* env, Expr* e) {
     return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }
 
+Expr* prim_is_string(Env* env, Expr* e) {
+    const bool result = expr_list_only_contains_type(e, EXPR_STRING);
+    return (result) ? env_get(env, "tru") : env_get(env, "nil");
+}
+
 Expr* prim_is_list(Env* env, Expr* e) {
     const bool result = expr_list_only_contains_type(e, EXPR_PARENT);
     return (result) ? env_get(env, "tru") : env_get(env, "nil");

@@ -91,6 +91,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "int?", is_int);
     BIND_PRIM(env, "flt?", is_flt);
     BIND_PRIM(env, "symbol?", is_symbol);
+    BIND_PRIM(env, "string?", is_string);
     BIND_PRIM(env, "list?", is_list);
     BIND_PRIM(env, "primitive?", is_primitive);
     BIND_PRIM(env, "lambda?", is_lambda);
