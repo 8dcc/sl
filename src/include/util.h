@@ -6,6 +6,10 @@
 
 #define LENGTH(ARR) ((int)(sizeof(ARR) / sizeof((ARR)[0])))
 
+#define MIN(A, B)        ((A) < (B) ? (A) : (B))
+#define MAX(A, B)        ((A) > (B) ? (A) : (B))
+#define CLAMP(N, LO, HI) (MIN(MAX((LO), (N)), (HI)))
+
 /* Wrapper for err_msg() */
 #define ERR(...) err_msg(__func__, __VA_ARGS__)
 
