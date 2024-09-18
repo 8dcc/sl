@@ -1,8 +1,10 @@
 #ifndef UTIL_H_
 #define UTIL_H_ 1
 
+#include <stdbool.h>
 #include <stdio.h>  /* fprintf() */
 #include <stdlib.h> /* exit() */
+#include <regex.h>  /* regmatch_t */
 
 #define LENGTH(ARR) ((int)(sizeof(ARR) / sizeof((ARR)[0])))
 
@@ -99,5 +101,17 @@ const char* byte2escaped(char byte);
  * string should evaluate to the input.
  */
 void print_escaped_str(const char* s);
+
+/*
+ * Find all matches of `pat' in `str', writing the number of sub-expression
+ * matches in `nmatch' and writing an array of `nmatch + 1' elements in
+ * `pmatch'. See regexec(3) for more information.
+ *
+ * The function returns true if the pattern compilation succedeed and there was
+ * a match. If (and only if) true is returned, the caller is responsible for
+ * freeing `pmatch'.
+ */
+bool sl_regex_matches(const char* pat, const char* str, bool ignore_case,
+                      size_t* nmatch, regmatch_t** pmatch);
 
 #endif /* UTIL_H_ */

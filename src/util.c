@@ -1,9 +1,11 @@
 
 #include <errno.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <regex.h>
 
 #include "include/util.h"
 
@@ -90,4 +92,51 @@ void print_escaped_str(const char* s) {
             printf("%c", *s);
     }
     putchar('\"');
+}
+
+bool sl_regex_matches(const char* pat, const char* str, bool ignore_case,
+                      size_t* nmatch, regmatch_t** pmatch) {
+    /*
+     * TODO: Don't use POSIX regex syntax.
+     * For example:
+     *
+     *   "([[:alpha:]]{2,3}) ([[:space:][:digit:]]+)"
+     *
+     * Instead of:
+     *
+     *   "([a-z]{2,3}) ([\s\d+])"
+     *
+     * Even though "[[:CLASS:]]" is supported in a lot of RE flavors.
+     *
+     * TODO: If the syntax changes, update comments in `prim_string_matches'.
+     */
+    static regex_t r;
+
+    int cflags = REG_EXTENDED;
+    if (ignore_case)
+        cflags |= REG_ICASE;
+
+    if (regcomp(&r, pat, cflags) != REG_NOERROR) {
+        ERR("Failed to compile pattern \"%s\"\n", pat);
+        return false;
+    }
+
+    /*
+     * The size of the match array is the number of sub-expressions plus one
+     * extra item for the entire match, which will be at index 0.
+     */
+    *nmatch = r.re_nsub + 1;
+    *pmatch = malloc(*nmatch * sizeof(regmatch_t*));
+
+    const int code = regexec(&r, str, *nmatch, *pmatch, 0);
+    regfree(&r);
+
+    if (code != REG_NOERROR) {
+        free(*pmatch);
+        *nmatch = 0;
+        *pmatch = NULL;
+        return false;
+    }
+
+    return true;
 }

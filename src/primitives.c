@@ -487,6 +487,72 @@ Expr* prim_substring(Env* env, Expr* e) {
     return ret;
 }
 
+Expr* prim_string_matches(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+
+    const size_t arg_num = expr_list_len(e);
+    SL_EXPECT(arg_num >= 2 || arg_num <= 3, "Expected 2 or 3 arguments.");
+
+    EXPECT_TYPE(e, EXPR_STRING);
+    const char* pattern = e->val.s;
+
+    EXPECT_TYPE(e->next, EXPR_STRING);
+    const char* string = e->next->val.s;
+
+    const bool ignore_case = (arg_num >= 3 && !expr_is_nil(e->next->next));
+
+    /*
+     * Argument syntax: (regexp string &optional ignore-case)
+     *
+     * The `string-matches' function returns a list of matches. The first match
+     * corresponds to the entire regular expression, and the rest correspond to
+     * each parenthesized sub-expression.  Only the matches are included in the
+     * returned list, so `nil' means that no match was found for the entire
+     * expression.
+     *
+     * Each item in the returned list is a list of two integers corresponding to
+     * the start and end indexes of that match inside `string'.
+     *
+     * It uses Extended Regular Expression (ERE) syntax. See:
+     *   https://www.gnu.org/software/sed/manual/html_node/ERE-syntax.html
+     *   https://www.gnu.org/software/sed/manual/html_node/BRE-vs-ERE.html
+     *   https://www.gnu.org/software/sed/manual/html_node/Character-Classes-and-Bracket-Expressions.html
+     */
+    Expr* ret = expr_new(EXPR_PARENT);
+
+    size_t nmatch;
+    regmatch_t* pmatch;
+    if (!sl_regex_matches(pattern, string, ignore_case, &nmatch, &pmatch)) {
+        ret->val.children = NULL;
+        return ret;
+    }
+
+    Expr dummy_copy;
+    dummy_copy.next = NULL;
+    Expr* cur_copy  = &dummy_copy;
+
+    for (size_t i = 0; i < nmatch; i++) {
+        if (pmatch[i].rm_so == -1 || pmatch[i].rm_eo == -1)
+            break;
+
+        /* (cons start-offset end-offset) */
+        Expr* match_pair                      = expr_new(EXPR_PARENT);
+        match_pair->val.children              = expr_new(EXPR_NUM_INT);
+        match_pair->val.children->val.n       = pmatch[i].rm_so;
+        match_pair->val.children->next        = expr_new(EXPR_NUM_INT);
+        match_pair->val.children->next->val.n = pmatch[i].rm_eo;
+
+        cur_copy->next = match_pair;
+        cur_copy       = cur_copy->next;
+    }
+
+    ret->val.children = dummy_copy.next;
+
+    free(pmatch);
+    return ret;
+}
+
 /*----------------------------------------------------------------------------*/
 /* Arithmetic primitives */
 

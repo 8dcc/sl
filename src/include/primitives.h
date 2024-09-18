@@ -34,6 +34,7 @@ DECLARE_PRIM(append);
 /* String-related primitives */
 DECLARE_PRIM(concat);
 DECLARE_PRIM(substring);
+DECLARE_PRIM(string_matches);
 
 /* Arithmetic primitives */
 DECLARE_PRIM(add);
