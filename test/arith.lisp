@@ -21,6 +21,12 @@
           (f -9.5  2.5)
           (f -9.5 -2.5))))
 
+(define assert-type-conversion
+  (lambda (val func inverse)
+    (list val
+          (func val)
+          (inverse (func val)))))
+
 (define assert-mod
   (lambda (dividend divisor)
     (equal? dividend
@@ -38,10 +44,12 @@
 (+ 1 2 3 (- 3 4) (* 3 4))   ; Expected: 17
 (+ 1 2 3 (- 3 4) (* 3 4.0)) ; Expected: 17.0
 
-(flt->int 10.0)
-(int->flt 10)
-(equal? 10.0 (int->flt (flt->int 10.0)))
-(equal? 10 (flt->int (int->flt 10)))
+(assert-type-conversion 10     int->flt flt->int)
+(assert-type-conversion 10.0   flt->int int->flt)
+(assert-type-conversion 10     int->str str->int)
+(assert-type-conversion 10.0   flt->str str->flt)
+(assert-type-conversion "10"   str->int int->str)
+(assert-type-conversion "10.0" str->flt flt->str)
 
 (test-signed-floats +)          ; Expected: (12.0 7.0 -7.0 -12.0)
 (test-signed-floats -)          ; Expected: (7.0 12.0 -12.0 -7.0)

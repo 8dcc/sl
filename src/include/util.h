@@ -6,24 +6,37 @@
 #include <stdlib.h> /* exit() */
 #include <regex.h>  /* regmatch_t */
 
+/*----------------------------------------------------------------------------*/
+
+/* See strtoll(3) */
+#define STRTOLL_ANY_BASE 0
+
+/*----------------------------------------------------------------------------*/
+
 #define LENGTH(ARR) ((int)(sizeof(ARR) / sizeof((ARR)[0])))
 
 #define MIN(A, B)        ((A) < (B) ? (A) : (B))
 #define MAX(A, B)        ((A) > (B) ? (A) : (B))
 #define CLAMP(N, LO, HI) (MIN(MAX((LO), (N)), (HI)))
 
-/* Wrapper for err_msg() */
+/*
+ * Wrapper for err_msg().
+ */
 #define ERR(...) err_msg(__func__, __VA_ARGS__)
 
-/* Set the instruction(s) to be executed when SL_EXPECT() fails */
+/*
+ * Set the instruction(s) to be executed when SL_EXPECT() fails.
+ */
 #define SL_ON_ERR(INSTRUCTIONS) \
     if (0) {                    \
 sl_lbl_on_err:                  \
         INSTRUCTIONS;           \
     }
 
-/* If COND is not true, show error and jump to instruction declared by
- * SL_ON_ERR() */
+/*
+ * If COND is not true, show error and jump to instruction declared by
+ * SL_ON_ERR().
+ */
 #define SL_EXPECT(COND, ...)                                         \
     do {                                                             \
         if (!(COND)) {                                               \
@@ -32,7 +45,9 @@ sl_lbl_on_err:                  \
         }                                                            \
     } while (0)
 
-/* Show error message and exit */
+/*
+ * Show error message and exit.
+ */
 #define SL_FATAL(...)                \
     do {                             \
         fprintf(stderr, "[Fatal] "); \
@@ -40,7 +55,9 @@ sl_lbl_on_err:                  \
         exit(1);                     \
     } while (0)
 
-/* If COND is not true, show error and exit */
+/*
+ * If COND is not true, show error and exit.
+ */
 #define SL_ASSERT(COND, ...)       \
     do {                           \
         if (!(COND)) {             \
@@ -48,9 +65,14 @@ sl_lbl_on_err:                  \
         }                          \
     } while (0)
 
-/* Avoid -Wunused-parameter */
+/*
+ * Avoid -Wunused-parameter
+ */
 #define SL_UNUSED(VAR) (void)VAR
 
+/*
+ * Use a macro to avoid assignment.
+ */
 #define sl_safe_realloc(PTR, SZ)              \
     do {                                      \
         PTR = realloc(PTR, SZ);               \

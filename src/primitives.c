@@ -799,7 +799,7 @@ Expr* prim_floor(Env* env, Expr* e) {
 }
 
 /*----------------------------------------------------------------------------*/
-/* Type-conversion and type-checking primitives */
+/* Type-conversion primitives */
 
 Expr* prim_int2flt(Env* env, Expr* e) {
     SL_UNUSED(env);
@@ -822,6 +822,71 @@ Expr* prim_flt2int(Env* env, Expr* e) {
     ret->val.n = (long long)e->val.f;
     return ret;
 }
+
+Expr* prim_int2str(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 1);
+    EXPECT_TYPE(e, EXPR_NUM_INT);
+
+    Expr* ret = expr_new(EXPR_STRING);
+
+    /*
+     * A call to `snprintf' with (NULL, 0, ...) as arguments can be used to get
+     * the number of bytes to be written. We still have to add one for the
+     * null-terminator.
+     */
+    const int arr_sz = snprintf(NULL, 0, "%lld", e->val.n);
+    SL_EXPECT(arr_sz >= 0,
+              "Failed to get the target string length for integer: %lld",
+              e->val.n);
+
+    ret->val.s = sl_safe_malloc(arr_sz + 1);
+    snprintf(ret->val.s, arr_sz + 1, "%lld", e->val.n);
+    return ret;
+}
+
+Expr* prim_flt2str(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 1);
+    EXPECT_TYPE(e, EXPR_NUM_FLT);
+
+    Expr* ret = expr_new(EXPR_STRING);
+
+    const int arr_sz = snprintf(NULL, 0, "%f", e->val.f);
+    SL_EXPECT(arr_sz >= 0,
+              "Failed to get the target string length for float: %f", e->val.f);
+
+    ret->val.s = sl_safe_malloc(arr_sz + 1);
+    snprintf(ret->val.s, arr_sz + 1, "%f", e->val.f);
+    return ret;
+}
+
+Expr* prim_str2int(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 1);
+    EXPECT_TYPE(e, EXPR_STRING);
+
+    Expr* ret  = expr_new(EXPR_NUM_INT);
+    ret->val.n = strtoll(e->val.s, NULL, STRTOLL_ANY_BASE);
+    return ret;
+}
+
+Expr* prim_str2flt(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    EXPECT_ARG_NUM(e, 1);
+    EXPECT_TYPE(e, EXPR_STRING);
+
+    Expr* ret  = expr_new(EXPR_NUM_FLT);
+    ret->val.f = strtod(e->val.s, NULL);
+    return ret;
+}
+
+/*----------------------------------------------------------------------------*/
+/* Type-checking primitives */
 
 Expr* prim_is_int(Env* env, Expr* e) {
     const bool result = expr_list_only_contains_type(e, EXPR_NUM_INT);

@@ -90,6 +90,10 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "floor", floor);
     BIND_PRIM(env, "int->flt", int2flt);
     BIND_PRIM(env, "flt->int", flt2int);
+    BIND_PRIM(env, "int->str", int2str);
+    BIND_PRIM(env, "flt->str", flt2str);
+    BIND_PRIM(env, "str->int", str2int);
+    BIND_PRIM(env, "str->flt", str2flt);
     BIND_PRIM(env, "int?", is_int);
     BIND_PRIM(env, "flt?", is_flt);
     BIND_PRIM(env, "symbol?", is_symbol);

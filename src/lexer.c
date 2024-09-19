@@ -8,8 +8,6 @@
 #include "include/util.h"
 #include "include/lexer.h"
 
-#define ANY_BASE 0 /* For strtoll() */
-
 #define TOKEN_BUFSZ  100
 #define STRING_BUFSZ 100
 
@@ -58,7 +56,7 @@ static void set_value_from_str(Token* dst, char* str) {
     char* endptr;
 
     /* Try to fully convert the string into a `long long' using `strtoll' */
-    long long int_num = strtoll(str, &endptr, ANY_BASE);
+    long long int_num = strtoll(str, &endptr, STRTOLL_ANY_BASE);
     if (endptr != NULL && str != endptr && *endptr == '\0') {
         dst->type  = TOKEN_NUM_INT;
         dst->val.n = int_num;
