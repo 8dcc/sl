@@ -437,9 +437,7 @@ Expr* prim_format(Env* env, Expr* e) {
         }
         fmt++;
 
-        /*
-         * Make sure the user supplied enough arguments for this format.
-         */
+        /* Make sure the user supplied enough arguments. */
         if (cur_arg == NULL) {
             ERR("Not enough arguments for the specified format.");
             free(dst);
@@ -539,9 +537,7 @@ Expr* prim_format(Env* env, Expr* e) {
                          "specifier.");
         }
 
-        /*
-         * Move to the next argument for the next format specifier.
-         */
+        /* Move to the next argument, for the next format specifier. */
         cur_arg = cur_arg->next;
     }
 
