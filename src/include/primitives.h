@@ -32,6 +32,7 @@ DECLARE_PRIM(cdr);
 DECLARE_PRIM(append);
 
 /* String-related primitives */
+DECLARE_PRIM(format);
 DECLARE_PRIM(concat);
 DECLARE_PRIM(substring);
 DECLARE_PRIM(string_matches);

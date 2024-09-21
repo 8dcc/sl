@@ -405,6 +405,159 @@ Expr* prim_append(Env* env, Expr* e) {
 /*----------------------------------------------------------------------------*/
 /* String-related primitives */
 
+#define FORMAT_BUFSZ 100
+
+Expr* prim_format(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(e != NULL, "Missing arguments.");
+    EXPECT_TYPE(e, EXPR_STRING);
+
+    const char* fmt     = e->val.s;
+    const Expr* cur_arg = e->next;
+
+    size_t dst_pos = 0;
+    size_t dst_sz  = FORMAT_BUFSZ;
+    char* dst      = sl_safe_malloc(FORMAT_BUFSZ);
+
+    while (*fmt != '\0') {
+        if (dst_pos >= dst_sz - 1) {
+            dst_sz += FORMAT_BUFSZ;
+            sl_safe_realloc(dst, dst_sz);
+        }
+
+        /*
+         * Check if the current character is '%', used to escape format
+         * specifiers. If it isn't, just insert the character literally. If it
+         * is, skip it and proceed with the conversion.
+         */
+        if (*fmt != '%') {
+            dst[dst_pos++] = *fmt++;
+            continue;
+        }
+        fmt++;
+
+        /*
+         * Make sure the user supplied enough arguments for this format.
+         */
+        if (cur_arg == NULL) {
+            ERR("Not enough arguments for the specified format.");
+            free(dst);
+            return NULL;
+        }
+
+        /*
+         * Depending on the format specifier, store the C format string and the
+         * expression type of the value.
+         */
+        const char* c_format     = NULL;
+        enum EExprType expr_type = EXPR_ERR;
+        switch (*fmt) {
+            case 's':
+                c_format  = "%s";
+                expr_type = EXPR_STRING;
+                break;
+
+            case 'd':
+                c_format  = "%lld";
+                expr_type = EXPR_NUM_INT;
+                break;
+
+            case 'f':
+                c_format  = "%f";
+                expr_type = EXPR_NUM_FLT;
+                break;
+
+            case '%':
+                dst[dst_pos++] = *fmt++;
+                continue;
+
+            case '\0':
+                goto done;
+
+            default:
+                ERR("Invalid format specifier: '%c' (0x%02x).", *fmt, *fmt);
+                dst[dst_pos++] = *fmt++;
+                continue;
+        }
+        fmt++;
+
+        /*
+         * Make sure the current format specifier is valid for the current
+         * argument.
+         */
+        if (expr_type != cur_arg->type) {
+            ERR("Format specifier expected argument of type '%s', got '%s'.",
+                exprtype2str(expr_type), exprtype2str(cur_arg->type));
+            free(dst);
+            return NULL;
+        }
+
+        /*
+         * Write the actual value to the destination string, using the C format
+         * string and the expression type.
+         */
+        switch (expr_type) {
+            case EXPR_STRING: {
+                const size_t str_len = strlen(cur_arg->val.s);
+                if (dst_pos + str_len >= dst_sz - 1) {
+                    dst_sz += str_len + FORMAT_BUFSZ;
+                    sl_safe_realloc(dst, dst_sz);
+                }
+
+                const int written = snprintf(&dst[dst_pos], str_len + 1,
+                                             c_format, cur_arg->val.s);
+                dst_pos += written;
+            } break;
+
+            case EXPR_NUM_INT: {
+                const int str_len = snprintf(NULL, 0, c_format, cur_arg->val.n);
+                if (dst_pos + str_len >= dst_sz - 1) {
+                    dst_sz += str_len + FORMAT_BUFSZ;
+                    sl_safe_realloc(dst, dst_sz);
+                }
+
+                const int written = snprintf(&dst[dst_pos], str_len + 1,
+                                             c_format, cur_arg->val.n);
+                dst_pos += written;
+            } break;
+
+            case EXPR_NUM_FLT: {
+                const int str_len = snprintf(NULL, 0, c_format, cur_arg->val.f);
+                if (dst_pos + str_len >= dst_sz - 1) {
+                    dst_sz += str_len + FORMAT_BUFSZ;
+                    sl_safe_realloc(dst, dst_sz);
+                }
+
+                const int written = snprintf(&dst[dst_pos], str_len + 1,
+                                             c_format, cur_arg->val.f);
+                dst_pos += written;
+            } break;
+
+            default:
+                SL_FATAL("Unexpected expression type after processing format "
+                         "specifier.");
+        }
+
+        /*
+         * Move to the next argument for the next format specifier.
+         */
+        cur_arg = cur_arg->next;
+    }
+
+done:
+    dst[dst_pos] = '\0';
+
+    /*
+     * NOTE: We could warn the user if `cur_arg != NULL', since that means he
+     * specified to many arguments for this format.
+     */
+
+    Expr* ret  = expr_new(EXPR_STRING);
+    ret->val.s = dst;
+    return ret;
+}
+
 Expr* prim_concat(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);

@@ -23,6 +23,10 @@ must be valid inputs."                         ; Initial string
 (> "abz" "abc") ; Expected: tru
 (> "abc" "abc") ; Expected: nil
 
+(format "%%s: %s %s %s" "Testing" "format" "specifiers!")
+(format "%%d: %d %d %d" 1 2 3)
+(format "%%f: %f %f %f" 1.0 2.0 3.0)
+
 (concat "Concatenating" " multiple " "strings...")
 
 (substring "--Testing substrings--")
