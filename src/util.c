@@ -20,6 +20,8 @@ void err_msg(const char* func, const char* fmt, ...) {
     va_end(va);
 }
 
+/*----------------------------------------------------------------------------*/
+
 void* sl_safe_malloc(size_t size) {
     void* result = malloc(size);
     SL_ASSERT(result != NULL, "Failed to allocate %zu bytes: %s (%d).", size,
@@ -41,6 +43,8 @@ char* sl_safe_strdup(const char* s) {
               strerror(errno), errno);
     return result;
 }
+
+/*----------------------------------------------------------------------------*/
 
 /* clang-format off */
 char escaped2byte(char escaped) {
@@ -94,6 +98,8 @@ void print_escaped_str(const char* s) {
     putchar('\"');
 }
 
+/*----------------------------------------------------------------------------*/
+
 bool sl_regex_matches(const char* pat, const char* str, bool ignore_case,
                       size_t* nmatch, regmatch_t** pmatch) {
     /*
@@ -139,4 +145,37 @@ bool sl_regex_matches(const char* pat, const char* str, bool ignore_case,
     }
 
     return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+size_t int2str(long long x, char** dst) {
+    /*
+     * A call to `snprintf' with (NULL, 0, ...) as arguments can be used to get
+     * the number of bytes to be written. We still have to add one for the
+     * null-terminator.
+     */
+    const int size = snprintf(NULL, 0, "%lld", x);
+    if (size < 0) {
+        ERR("Failed to get the target string length for integer: %lld", x);
+        *dst = NULL;
+        return 0;
+    }
+
+    *dst = sl_safe_malloc(size + 1);
+    snprintf(*dst, size + 1, "%lld", x);
+    return size;
+}
+
+size_t flt2str(double x, char** dst) {
+    const int size = snprintf(NULL, 0, "%f", x);
+    if (size < 0) {
+        ERR("Failed to get the target string length for float: %f", x);
+        *dst = NULL;
+        return 0;
+    }
+
+    *dst = sl_safe_malloc(size + 1);
+    snprintf(*dst, size + 1, "%f", x);
+    return size;
 }

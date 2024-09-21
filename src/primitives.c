@@ -285,7 +285,6 @@ Expr* prim_random(Env* env, Expr* e) {
 }
 
 Expr* prim_set_random_seed(Env* env, Expr* e) {
-    SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     EXPECT_ARG_NUM(e, 1);
     EXPECT_TYPE(e, EXPR_NUM_INT);
@@ -829,20 +828,12 @@ Expr* prim_int2str(Env* env, Expr* e) {
     EXPECT_ARG_NUM(e, 1);
     EXPECT_TYPE(e, EXPR_NUM_INT);
 
-    Expr* ret = expr_new(EXPR_STRING);
+    char* s;
+    if (int2str(e->val.n, &s) == 0)
+        return NULL;
 
-    /*
-     * A call to `snprintf' with (NULL, 0, ...) as arguments can be used to get
-     * the number of bytes to be written. We still have to add one for the
-     * null-terminator.
-     */
-    const int arr_sz = snprintf(NULL, 0, "%lld", e->val.n);
-    SL_EXPECT(arr_sz >= 0,
-              "Failed to get the target string length for integer: %lld",
-              e->val.n);
-
-    ret->val.s = sl_safe_malloc(arr_sz + 1);
-    snprintf(ret->val.s, arr_sz + 1, "%lld", e->val.n);
+    Expr* ret  = expr_new(EXPR_STRING);
+    ret->val.s = s;
     return ret;
 }
 
@@ -852,14 +843,12 @@ Expr* prim_flt2str(Env* env, Expr* e) {
     EXPECT_ARG_NUM(e, 1);
     EXPECT_TYPE(e, EXPR_NUM_FLT);
 
-    Expr* ret = expr_new(EXPR_STRING);
+    char* s;
+    if (flt2str(e->val.f, &s) == 0)
+        return NULL;
 
-    const int arr_sz = snprintf(NULL, 0, "%f", e->val.f);
-    SL_EXPECT(arr_sz >= 0,
-              "Failed to get the target string length for float: %f", e->val.f);
-
-    ret->val.s = sl_safe_malloc(arr_sz + 1);
-    snprintf(ret->val.s, arr_sz + 1, "%f", e->val.f);
+    Expr* ret  = expr_new(EXPR_STRING);
+    ret->val.s = s;
     return ret;
 }
 

@@ -21,6 +21,8 @@
 
 /*
  * Wrapper for err_msg().
+ *
+ * TODO: Rename to SL_ERR?
  */
 #define ERR(...) err_msg(__func__, __VA_ARGS__)
 
@@ -135,5 +137,24 @@ void print_escaped_str(const char* s);
  */
 bool sl_regex_matches(const char* pat, const char* str, bool ignore_case,
                       size_t* nmatch, regmatch_t** pmatch);
+
+/*
+ * Allocate a string in `*dst' big enough to store the representation of the
+ * integer `x', and convert it. The allocated string must be freed by the
+ * caller.
+ *
+ * Returns the size of the allocated string. On failure, `*dst' is set to NULL
+ * and zero is returned.
+ */
+size_t int2str(long long x, char** dst);
+
+/*
+ * Allocate a string in `*dst' big enough to store the representation of the
+ * float `x', and convert it. The allocated string must be freed by the caller.
+ *
+ * Returns the size of the allocated string. On failure, `*dst' is set to NULL
+ * and zero is returned.
+ */
+size_t flt2str(double x, char** dst);
 
 #endif /* UTIL_H_ */
