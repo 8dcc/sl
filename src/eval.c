@@ -49,7 +49,7 @@ static Expr* eval_list(Env* env, Expr* list) {
 
         /* Failed to evaluate an item. Free what we had evaluated and stop. */
         if (cur_copy == NULL) {
-            expr_free(dummy_copy.next);
+            expr_list_free(dummy_copy.next);
             return NULL;
         }
     }
@@ -124,7 +124,7 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     /* The evaluations of `func' and `args' returned clones */
     expr_free(func);
     if (should_eval_args)
-        expr_free(args);
+        expr_list_free(args);
 
 #ifdef SL_DEBUG_TRACE
     trace_nesting--;

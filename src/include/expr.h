@@ -85,6 +85,11 @@ Expr* expr_new(enum EExprType type);
  */
 void expr_free(Expr* e);
 
+/*
+ * Free a linked list of `Expr' structures.
+ */
+void expr_list_free(Expr* e);
+
 /*----------------------------------------------------------------------------*/
 
 /*

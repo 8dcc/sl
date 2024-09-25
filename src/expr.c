@@ -22,18 +22,13 @@ void expr_free(Expr* e) {
         return;
 
     /*
-     * If the expression has an adjacent one, free that one first. Then, check
-     * if the value of the current expression was allocated, and free it.
-     * Finally, free the `Expr' structure itself, usually allocated in
+     * First, check if the value of the current expression was allocated, and
+     * free it.  Then, free the `Expr' structure itself, usually allocated in
      * `expr_new'.
      */
-    if (e->next != NULL)
-        expr_free(e->next);
-
     switch (e->type) {
         case EXPR_PARENT:
-            if (e->val.children != NULL)
-                expr_free(e->val.children);
+            expr_list_free(e->val.children);
             break;
 
         case EXPR_SYMBOL:
@@ -54,6 +49,14 @@ void expr_free(Expr* e) {
     }
 
     free(e);
+}
+
+void expr_list_free(Expr* e) {
+    while (e != NULL) {
+        Expr* next = e->next;
+        expr_free(e);
+        e = next;
+    }
 }
 
 /*----------------------------------------------------------------------------*/

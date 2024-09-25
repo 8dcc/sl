@@ -111,7 +111,7 @@ LambdaCtx* lambda_ctx_clone(const LambdaCtx* ctx) {
 void lambda_ctx_free(LambdaCtx* ctx) {
     /* First, free the environment and the body of the lambda */
     env_free(ctx->env);
-    expr_free(ctx->body);
+    expr_list_free(ctx->body);
 
     /* Free each formal argument string, and the array itself */
     for (size_t i = 0; i < ctx->formals_num; i++)
