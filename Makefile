@@ -3,9 +3,8 @@ CC=gcc
 CFLAGS=-std=gnu99 -Wall -Wextra -ggdb3
 LDLIBS=-lm
 
-# TODO: Use addsuffix and SRCS
-OBJ_FILES=main.c.o expr.c.o env.c.o lambda.c.o util.c.o read.c.o lexer.c.o parser.c.o eval.c.o prim_special.c.o prim_general.c.o prim_type.c.o prim_list.c.o prim_string.c.o prim_arith.c.o prim_bitwise.c.o prim_logic.c.o
-OBJS=$(addprefix obj/, $(OBJ_FILES))
+SRCS=main.c expr.c env.c lambda.c util.c read.c lexer.c parser.c eval.c prim_special.c prim_general.c prim_type.c prim_list.c prim_string.c prim_arith.c prim_bitwise.c prim_logic.c
+OBJS=$(addprefix obj/, $(addsuffix .o, $(SRCS)))
 
 BIN=sl
 INSTALL_DIR=/usr/local/bin
