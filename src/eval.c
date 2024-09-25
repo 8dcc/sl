@@ -11,10 +11,11 @@
 #include "include/eval.h"
 #include "include/primitives.h"
 
-/*----------------------------------------------------------------------------*/
-/* NOTE: Make sure we only allocate when we are sure the expression will be
+/*
+ * NOTE: Make sure we only allocate when we are sure the expression will be
  * valid, or we would need to free our allocations before returning NULL in case
- * of errors (e.g. when asserts fail) */
+ * of errors (e.g. when asserts fail)
+ */
 
 /* Evaluate each sub-expression as an argument for a procedure */
 static Expr* eval_args(Env* env, Expr* list) {
@@ -99,6 +100,18 @@ Expr* eval(Env* env, Expr* e) {
             if (expr_is_nil(e))
                 return expr_clone(e);
 
+#ifdef SL_DEBUG_TRACE
+            static size_t trace_nesting = 0;
+
+            for (size_t i = 0; i < trace_nesting; i++)
+                printf("  ");
+            printf("%zu: ", trace_nesting % 10);
+            expr_print(e);
+            putchar('\n');
+
+            trace_nesting++;
+#endif
+
             /*
              * The `car' represents the function, and `cdr' represents the
              * arguments. Note that, since `e' is not `nil', `e->val.children'
@@ -152,6 +165,16 @@ Expr* eval(Env* env, Expr* e) {
             expr_free(func);
             if (should_eval_args)
                 expr_free(args);
+
+#ifdef SL_DEBUG_TRACE
+            trace_nesting--;
+
+            for (size_t i = 0; i < trace_nesting; i++)
+                printf("  ");
+            printf("%zu: ", trace_nesting % 10);
+            expr_print(applied);
+            putchar('\n');
+#endif
 
             return applied;
         }
