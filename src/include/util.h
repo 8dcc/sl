@@ -27,6 +27,26 @@
 #define ERR(...) err_msg(__func__, __VA_ARGS__)
 
 /*
+ * Show error message and exit.
+ */
+#define SL_FATAL(...)                \
+    do {                             \
+        fprintf(stderr, "[Fatal] "); \
+        ERR(__VA_ARGS__);            \
+        exit(1);                     \
+    } while (0)
+
+/*
+ * If COND is not true, show error and exit.
+ */
+#define SL_ASSERT(COND, ...)       \
+    do {                           \
+        if (!(COND)) {             \
+            SL_FATAL(__VA_ARGS__); \
+        }                          \
+    } while (0)
+
+/*
  * Set the instruction(s) to be executed when SL_EXPECT() fails.
  */
 #define SL_ON_ERR(INSTRUCTIONS) \
@@ -48,24 +68,24 @@ sl_lbl_on_err:                  \
     } while (0)
 
 /*
- * Show error message and exit.
+ * Check if the specified linked list of `Expr' structures has a specific
+ * length using `SL_EXPECT'.
+ *
+ * TODO: This header is probably not the right place for this macro.
  */
-#define SL_FATAL(...)                \
-    do {                             \
-        fprintf(stderr, "[Fatal] "); \
-        ERR(__VA_ARGS__);            \
-        exit(1);                     \
-    } while (0)
+#define SL_EXPECT_ARG_NUM(EXPR_LIST, NUM)                    \
+    SL_EXPECT(expr_list_len(EXPR_LIST) == (NUM),             \
+              "Expected exactly %d arguments, got %d.", NUM, \
+              expr_list_len(EXPR_LIST))
 
 /*
- * If COND is not true, show error and exit.
+ * Check if the specified expression matches the expected type using
+ * `SL_EXPECT'.
  */
-#define SL_ASSERT(COND, ...)       \
-    do {                           \
-        if (!(COND)) {             \
-            SL_FATAL(__VA_ARGS__); \
-        }                          \
-    } while (0)
+#define SL_EXPECT_TYPE(EXPR, TYPE)                           \
+    SL_EXPECT((EXPR)->type == (TYPE),                        \
+              "Expected expression of type '%s', got '%s'.", \
+              exprtype2str(TYPE), exprtype2str((EXPR)->type))
 
 /*
  * Avoid -Wunused-parameter

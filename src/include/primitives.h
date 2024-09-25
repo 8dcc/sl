@@ -7,7 +7,7 @@ struct Expr; /* expr.h */
 
 #define DECLARE_PRIM(NAME) struct Expr* prim_##NAME(struct Env*, struct Expr*)
 
-/* Special Form primitives */
+/* Special Form (prim_special.c) */
 DECLARE_PRIM(quote);
 DECLARE_PRIM(define);
 DECLARE_PRIM(lambda);
@@ -17,37 +17,14 @@ DECLARE_PRIM(if);
 DECLARE_PRIM(or);
 DECLARE_PRIM(and);
 
-/* General primitives */
+/* General (prim_general.c) */
 DECLARE_PRIM(eval);
 DECLARE_PRIM(apply);
 DECLARE_PRIM(macroexpand);
 DECLARE_PRIM(random);
 DECLARE_PRIM(set_random_seed);
 
-/* List-related primitives */
-DECLARE_PRIM(list);
-DECLARE_PRIM(cons);
-DECLARE_PRIM(car);
-DECLARE_PRIM(cdr);
-DECLARE_PRIM(append);
-
-/* String-related primitives */
-DECLARE_PRIM(format);
-DECLARE_PRIM(concat);
-DECLARE_PRIM(substring);
-DECLARE_PRIM(string_matches);
-
-/* Arithmetic primitives */
-DECLARE_PRIM(add);
-DECLARE_PRIM(sub);
-DECLARE_PRIM(mul);
-DECLARE_PRIM(div);
-DECLARE_PRIM(mod);
-DECLARE_PRIM(quotient);
-DECLARE_PRIM(remainder);
-DECLARE_PRIM(floor);
-
-/* Type-conversion primitives */
+/* Type-conversion (prim_type.c) */
 DECLARE_PRIM(int2flt);
 DECLARE_PRIM(flt2int);
 DECLARE_PRIM(int2str);
@@ -55,7 +32,7 @@ DECLARE_PRIM(flt2str);
 DECLARE_PRIM(str2int);
 DECLARE_PRIM(str2flt);
 
-/* Type-checking primitives */
+/* Type-checking (prim_type.c) */
 DECLARE_PRIM(is_int);
 DECLARE_PRIM(is_flt);
 DECLARE_PRIM(is_symbol);
@@ -65,7 +42,30 @@ DECLARE_PRIM(is_primitive);
 DECLARE_PRIM(is_lambda);
 DECLARE_PRIM(is_macro);
 
-/* Bit-wise primitives */
+/* List-related (prim_list.c) */
+DECLARE_PRIM(list);
+DECLARE_PRIM(cons);
+DECLARE_PRIM(car);
+DECLARE_PRIM(cdr);
+DECLARE_PRIM(append);
+
+/* String-related (prim_string.c) */
+DECLARE_PRIM(format);
+DECLARE_PRIM(concat);
+DECLARE_PRIM(substring);
+DECLARE_PRIM(string_matches);
+
+/* Arithmetic (prim_arith.c) */
+DECLARE_PRIM(add);
+DECLARE_PRIM(sub);
+DECLARE_PRIM(mul);
+DECLARE_PRIM(div);
+DECLARE_PRIM(mod);
+DECLARE_PRIM(quotient);
+DECLARE_PRIM(remainder);
+DECLARE_PRIM(floor);
+
+/* Bit-wise (prim_bitwise.c) */
 DECLARE_PRIM(bit_and);
 DECLARE_PRIM(bit_or);
 DECLARE_PRIM(bit_xor);
@@ -73,7 +73,7 @@ DECLARE_PRIM(bit_not);
 DECLARE_PRIM(shr);
 DECLARE_PRIM(shl);
 
-/* Logical primitives */
+/* Logical (prim_logic.c) */
 DECLARE_PRIM(equal);
 DECLARE_PRIM(lt);
 DECLARE_PRIM(gt);
