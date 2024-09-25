@@ -17,9 +17,25 @@
  * of errors (e.g. when asserts fail)
  */
 
-/* Evaluate each sub-expression as an argument for a procedure */
-static Expr* eval_args(Env* env, Expr* list) {
-    /* The first item will be stored in dummy_copy.next */
+/* Does this expression match the form "(NAME ...)"? */
+static bool is_special_form(const Expr* e, const char* name) {
+    /*
+     * (define is-quote (e)
+     *   (and (not (null? e))
+     *        (equal? (car e) 'quote)))
+     */
+    return e != NULL && e->type == EXPR_PARENT && e->val.children != NULL &&
+           e->val.children->type == EXPR_SYMBOL &&
+           e->val.children->val.s != NULL &&
+           !strcmp(e->val.children->val.s, name);
+}
+
+/*
+ * Evaluate each expression in a linked list by calling `eval', and return
+ * another linked list with the results.
+ */
+static Expr* eval_list(Env* env, Expr* list) {
+    /* The first item will be stored in `dummy_copy.next' */
     Expr dummy_copy;
     dummy_copy.next = NULL;
     Expr* cur_copy  = &dummy_copy;
@@ -41,17 +57,86 @@ static Expr* eval_args(Env* env, Expr* list) {
     return dummy_copy.next;
 }
 
-/* Does this expression match the form (NAME ...)? */
-static bool is_special_form(const Expr* e, const char* name) {
+/*
+ * Evaluate a list expression as a function call, applying the (evaluated) `car'
+ * to the `cdr'. This function is responsible for evaluating the arguments
+ * (using `eval_list') before applying the function, if necessary.
+ */
+static Expr* eval_function_call(Env* env, Expr* e) {
+    /* Caller should have checked if `e' is `nil' */
+    SL_ASSERT(e->val.children != NULL, "Received empty list.");
+
+#ifdef SL_DEBUG_TRACE
+    static size_t trace_nesting = 0;
+
+    for (size_t i = 0; i < trace_nesting; i++)
+        printf("  ");
+    printf("%zu: ", trace_nesting % 10);
+    expr_print(e);
+    putchar('\n');
+
+    trace_nesting++;
+#endif
+
+    /* The `car' represents the function, and `cdr' represents the arguments */
+    Expr* car = e->val.children;
+    Expr* cdr = e->val.children->next;
+
     /*
-     * (define is-quote (e)
-     *   (and (not (null e))
-     *        (equal (car e) 'quote)))
+     * Evaluate the expression representing the function. If the evaluation
+     * fails, stop. Note that both the evaluated function and the evaluated list
+     * of arguments is returned as an allocated clone, so we must free them when
+     * we are done.
      */
-    return e != NULL && e->type == EXPR_PARENT && e->val.children != NULL &&
-           e->val.children->type == EXPR_SYMBOL &&
-           e->val.children->val.s != NULL &&
-           !strcmp(e->val.children->val.s, name);
+    Expr* func = eval(env, car);
+    if (func == NULL)
+        return NULL;
+
+    /*
+     * Normally, we should evaluate each of the arguments before applying the
+     * function. However, we will skip this step if the function is a macro
+     * because their arguments are not evaluated.  We will use this boolean when
+     * evaluating and freeing.
+     */
+    const bool should_eval_args = (cdr != NULL && func->type != EXPR_MACRO);
+
+    /*
+     * If the arguments should be evaluated, evaluate them. If one of them
+     * didn't evaluate correctly, an error message was printed so we just have
+     * to stop.
+     *
+     * Otherwise, the arguments remain un-evaluated, but should not be freed.
+     */
+    Expr* args;
+    if (should_eval_args) {
+        args = eval_list(env, cdr);
+        if (args == NULL) {
+            expr_free(func);
+            return NULL;
+        }
+    } else {
+        args = cdr;
+    }
+
+    /* Apply the evaluated function to the evaluated argument list */
+    Expr* applied = apply(env, func, args);
+
+    /* The evaluations of `func' and `args' returned clones */
+    expr_free(func);
+    if (should_eval_args)
+        expr_free(args);
+
+#ifdef SL_DEBUG_TRACE
+    trace_nesting--;
+
+    for (size_t i = 0; i < trace_nesting; i++)
+        printf("  ");
+    printf("%zu: ", trace_nesting % 10);
+    expr_print(applied);
+    putchar('\n');
+#endif
+
+    return applied;
 }
 
 Expr* eval(Env* env, Expr* e) {
@@ -97,89 +182,16 @@ Expr* eval(Env* env, Expr* e) {
 
     switch (e->type) {
         case EXPR_PARENT: {
+            /* `nil' evaluates to itself */
             if (expr_is_nil(e))
                 return expr_clone(e);
 
-#ifdef SL_DEBUG_TRACE
-            static size_t trace_nesting = 0;
-
-            for (size_t i = 0; i < trace_nesting; i++)
-                printf("  ");
-            printf("%zu: ", trace_nesting % 10);
-            expr_print(e);
-            putchar('\n');
-
-            trace_nesting++;
-#endif
-
-            /*
-             * The `car' represents the function, and `cdr' represents the
-             * arguments. Note that, since `e' is not `nil', `e->val.children'
-             * is guaranteed to be non-null.
-             */
-            Expr* car = e->val.children;
-            Expr* cdr = e->val.children->next;
-
-            /*
-             * Evaluate the expression representing the function. If the
-             * evaluation fails, stop. Note that both the evaluated function and
-             * the evaluated list of arguments is returned as an allocated
-             * clone, so we must free them when we are done.
-             */
-            Expr* func = eval(env, car);
-            if (func == NULL)
-                return NULL;
-
-            /*
-             * Normally, we should evaluate each of the arguments before
-             * applying the function. However, we will skip this step if the
-             * function is a macro because their arguments are not evaluated.
-             * We will use this boolean when evaluating and freeing.
-             */
-            const bool should_eval_args =
-              (cdr != NULL && func->type != EXPR_MACRO);
-
-            /*
-             * If the arguments should be evaluated, evaluate them. If one of
-             * them didn't evaluate correctly, an error message was printed so
-             * we just have to stop.
-             *
-             * Otherwise, the arguments remain un-evaluated, but should not be
-             * freed.
-             */
-            Expr* args;
-            if (should_eval_args) {
-                args = eval_args(env, cdr);
-                if (args == NULL) {
-                    expr_free(func);
-                    return NULL;
-                }
-            } else {
-                args = cdr;
-            }
-
-            /* Apply the evaluated function to the evaluated argument list */
-            Expr* applied = apply(env, func, args);
-
-            /* The evaluations of `func' and `args' returned clones */
-            expr_free(func);
-            if (should_eval_args)
-                expr_free(args);
-
-#ifdef SL_DEBUG_TRACE
-            trace_nesting--;
-
-            for (size_t i = 0; i < trace_nesting; i++)
-                printf("  ");
-            printf("%zu: ", trace_nesting % 10);
-            expr_print(applied);
-            putchar('\n');
-#endif
-
-            return applied;
+            /* Evaluate the list as a function call */
+            return eval_function_call(env, e);
         }
 
         case EXPR_SYMBOL: {
+            /* Symbols evaluate to the bound value in the current environment */
             Expr* val = env_get(env, e->val.s);
             SL_EXPECT(val != NULL, "Unbound symbol: %s", e->val.s);
             return val;
@@ -197,8 +209,7 @@ Expr* eval(Env* env, Expr* e) {
         }
     }
 
-    ERR("Reached unexpected point, didn't return from switch.");
-    return NULL;
+    SL_FATAL("Reached unexpected point, didn't return from switch.");
 }
 
 /*----------------------------------------------------------------------------*/
