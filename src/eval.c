@@ -118,6 +118,8 @@ Expr* eval(Env* env, Expr* e) {
 
             /* Macro arguments are not evaluated immediately */
             if (func->type == EXPR_MACRO) {
+                /* TODO: Perhaps we should call `apply' from here, and let it
+                 * deal with macros. */
                 Expr* applied = macro_call(env, func, args);
                 expr_free(func);
                 return applied;
@@ -172,29 +174,51 @@ Expr* eval(Env* env, Expr* e) {
 /*----------------------------------------------------------------------------*/
 
 Expr* apply(Env* env, Expr* func, Expr* args) {
-    SL_ON_ERR(return NULL);
-    SL_EXPECT(env != NULL, "Invalid environment.");
-    SL_EXPECT(func != NULL, "Invalid function.");
+    SL_ASSERT(env != NULL, "Received invalid environment.");
+    SL_ASSERT(func != NULL, "Received invalid function.");
+
+    /*
+     * Some important notes about the implementation of `apply':
+     *   - It expects a valid environment and a valid function (that is, a
+     *     primitive or a lambda).
+     *   - The arguments, are expected to be evaluated by the caller whenever
+     *     necessary. The arguments are passed to the function unchanged.
+     *   - The `args' pointer can be NULL, since some functions expect no
+     *     arguments. Again, the pointer is passed as-is.
+     *   - Special forms are handled separately in `eval', so they can't be
+     *     applied using this function.
+     */
+    Expr* result;
 
     switch (func->type) {
         case EXPR_PRIM: {
             /* Get primitive C function from the expression */
             PrimitiveFuncPtr primitive = func->val.prim;
-            SL_ASSERT(primitive != NULL, "Invalid function pointer.");
+            SL_ASSERT(primitive != NULL, "Received invalid function pointer.");
 
-            /* Call primitive C function with the evaluated arguments we got
-             * from `eval'. */
-            return primitive(env, args);
-        }
+            /*
+             * Call primitive C function with the evaluated arguments we got
+             * from `eval'.
+             */
+            result = primitive(env, args);
+        } break;
 
         case EXPR_LAMBDA: {
-            return lambda_call(env, func, args);
-        }
+            /*
+             * Call the lambda using the function defined in `lambda.c'. A call
+             * to a lambda is pretty straight-forward. Essentially you just have
+             * to bind the value of each argument to its formal, and then
+             * evaluate the body of the lambda.
+             */
+            result = lambda_call(env, func, args);
+        } break;
 
         default: {
             ERR("Expected 'Primitive' or 'Lambda', got '%s'.",
                 exprtype2str(func->type));
-            return NULL;
-        }
+            result = NULL;
+        } break;
     }
+
+    return result;
 }

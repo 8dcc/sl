@@ -165,8 +165,10 @@ Expr* lambda_call(Env* env, Expr* func, Expr* args) {
               "Invalid number of arguments. Expected %d, got %d.",
               func->val.lambda->formals_num, arg_num);
 
-    /* In the lambda's environment, bind each mandatory formal argument to its
-     * corresponding argument value. */
+    /*
+     * In the lambda's environment, bind each mandatory formal argument to its
+     * corresponding argument value.
+     */
     Expr* cur_arg = args;
     for (size_t i = 0; i < func->val.lambda->formals_num && cur_arg != NULL;
          i++) {
@@ -186,14 +188,18 @@ Expr* lambda_call(Env* env, Expr* func, Expr* args) {
         expr_free(rest_list);
     }
 
-    /* Set the environment used when calling the lambda as the parent
+    /*
+     * Set the environment used when calling the lambda as the parent
      * environment of the lambda itself. It's important that we set this now,
-     * and not when defining the lambda. */
+     * and not when defining the lambda.
+     */
     func->val.lambda->env->parent = env;
 
-    /* Evaluate each expression in the body of the lambda, using its environment
+    /*
+     * Evaluate each expression in the body of the lambda, using its environment
      * with the bound the formal arguments. Return the last evaluated
-     * expression. */
+     * expression.
+     */
     Expr* last_evaluated = NULL;
     for (Expr* cur = func->val.lambda->body; cur != NULL; cur = cur->next) {
         expr_free(last_evaluated);
@@ -219,8 +225,10 @@ Expr* macro_expand(Env* env, Expr* func, Expr* args) {
               "Invalid number of arguments. Expected %d, got %d.",
               func->val.lambda->formals_num, arg_num);
 
-    /* In the macro's environment, bind each mandatory formal argument to its
-     * corresponding argument value. */
+    /*
+     * In the macro's environment, bind each mandatory formal argument to its
+     * corresponding argument value.
+     */
     Expr* cur_arg = args;
     for (size_t i = 0; i < func->val.lambda->formals_num && cur_arg != NULL;
          i++) {
