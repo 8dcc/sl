@@ -123,7 +123,7 @@ bool sl_regex_matches(const char* pat, const char* str, bool ignore_case,
         cflags |= REG_ICASE;
 
     if (regcomp(&r, pat, cflags) != REG_NOERROR) {
-        ERR("Failed to compile pattern \"%s\"\n", pat);
+        ERR("Failed to compile pattern \"%s\"", pat);
         return false;
     }
 
