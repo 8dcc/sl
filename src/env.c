@@ -149,9 +149,8 @@ void env_free(Env* env) {
 /*----------------------------------------------------------------------------*/
 
 /*
- * TODO: Add `env_*' function and primitive for binding a symbol to a value in
- * the global environment. Check how "define" works in Scheme and add a
- * def-global/def-local primitive as an alternative.
+ * TODO: Add `env_bind_global' function and `define-global' primitive for
+ * binding a symbol to a value in the global environment.
  */
 
 void env_bind(Env* env, const char* sym, const Expr* val) {
@@ -186,14 +185,18 @@ Expr* env_get(Env* env, const char* sym) {
     SL_ASSERT(env != NULL, "Invalid environment.");
     SL_ASSERT(sym != NULL, "Symbol is empty.");
 
-    /* Iterate the symbol list until we find the one we are looking for, then
-     * return a copy of the value. */
+    /*
+     * Iterate the symbol list until we find the one we are looking for, then
+     * return a copy of the value.
+     */
     for (size_t i = 0; i < env->size; i++)
         if (!strcmp(env->symbols[i], sym))
             return expr_clone_recur(env->values[i]);
 
-    /* We didn't find a value associated to that symbol. If there is a parent
-     * environment, search in there. */
+    /*
+     * We didn't find a value associated to that symbol. If there is a parent
+     * environment, search in there.
+     */
     return (env->parent == NULL) ? NULL : env_get(env->parent, sym);
 }
 
