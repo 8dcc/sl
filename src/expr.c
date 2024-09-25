@@ -138,8 +138,8 @@ Expr* expr_list_clone(const Expr* e) {
     dummy_copy.next = NULL;
     Expr* cur_copy  = &dummy_copy;
 
-    for (const Expr* cur = e; cur != NULL; cur = cur->next) {
-        cur_copy->next = expr_clone_recur(cur);
+    for (; e != NULL; e = e->next) {
+        cur_copy->next = expr_clone_recur(e);
         cur_copy       = cur_copy->next;
     }
 
@@ -230,10 +230,10 @@ void expr_print_debug(const Expr* e) {
 
 static void print_list(const Expr* e) {
     putchar('(');
-    for (const Expr* cur = e; cur != NULL; cur = cur->next) {
-        expr_print(cur);
+    for (; e != NULL; e = e->next) {
+        expr_print(e);
 
-        if (cur->next != NULL)
+        if (e->next != NULL)
             putchar(' ');
     }
     putchar(')');
