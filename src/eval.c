@@ -99,52 +99,59 @@ Expr* eval(Env* env, Expr* e) {
             if (expr_is_nil(e))
                 return expr_clone(e);
 
-            /* The evaluated car of the expression will be the function */
-            Expr* func = e->val.children;
+            /*
+             * The `car' represents the function, and `cdr' represents the
+             * arguments. Note that, since `e' is not `nil', `e->val.children'
+             * is guaranteed to be non-null.
+             */
+            Expr* car = e->val.children;
+            Expr* cdr = e->val.children->next;
 
             /*
-             * Store the original function arguments in a variable before
-             * evaluating the function itself. Note that the cdr of the function
-             * call is the argument list, if any.
+             * Evaluate the expression representing the function. If the
+             * evaluation fails, stop. Note that both the evaluated function and
+             * the evaluated list of arguments is returned as an allocated
+             * clone, so we must free them when we are done.
              */
-            Expr* args = func->next;
-
-            /* Evaluate the function expression */
-            func = eval(env, func);
-
-            /* Could not eval function symbol, stop */
+            Expr* func = eval(env, car);
             if (func == NULL)
                 return NULL;
 
-            /* Macro arguments are not evaluated immediately */
-            if (func->type == EXPR_MACRO) {
-                /* TODO: Perhaps we should call `apply' from here, and let it
-                 * deal with macros. */
-                Expr* applied = macro_call(env, func, args);
-                expr_free(func);
-                return applied;
-            }
+            /*
+             * Normally, we should evaluate each of the arguments before
+             * applying the function. However, we will skip this step if the
+             * function is a macro because their arguments are not evaluated.
+             * We will use this boolean when evaluating and freeing.
+             */
+            const bool should_eval_args =
+              (cdr != NULL && func->type != EXPR_MACRO);
 
             /*
-             * Evaluate each the argument before applying them to the function.
-             * If one of them didn't evaluate correctly, it printed an error
-             * message so we just have to stop. Also note that the returned list
-             * is allocated, so we will have to free it after calling `apply'.
+             * If the arguments should be evaluated, evaluate them. If one of
+             * them didn't evaluate correctly, an error message was printed so
+             * we just have to stop.
+             *
+             * Otherwise, the arguments remain un-evaluated, but should not be
+             * freed.
              */
-            if (args != NULL) {
-                args = eval_args(env, args);
+            Expr* args;
+            if (should_eval_args) {
+                args = eval_args(env, cdr);
                 if (args == NULL) {
                     expr_free(func);
                     return NULL;
                 }
+            } else {
+                args = cdr;
             }
 
             /* Apply the evaluated function to the evaluated argument list */
             Expr* applied = apply(env, func, args);
 
-            /* The last evaluations of `func' and `args' returned clones */
+            /* The evaluations of `func' and `args' returned clones */
             expr_free(func);
-            expr_free(args);
+            if (should_eval_args)
+                expr_free(args);
 
             return applied;
         }
@@ -176,11 +183,12 @@ Expr* eval(Env* env, Expr* e) {
 Expr* apply(Env* env, Expr* func, Expr* args) {
     SL_ASSERT(env != NULL, "Received invalid environment.");
     SL_ASSERT(func != NULL, "Received invalid function.");
+    SL_ASSERT(expr_is_applicable(func), "Received non-applicable function.");
 
     /*
      * Some important notes about the implementation of `apply':
-     *   - It expects a valid environment and a valid function (that is, a
-     *     primitive or a lambda).
+     *   - It expects a valid environment and a valid applicable function (see
+     *     the `expr_is_applicable' function in "expr.h").
      *   - The arguments, are expected to be evaluated by the caller whenever
      *     necessary. The arguments are passed to the function unchanged.
      *   - The `args' pointer can be NULL, since some functions expect no
@@ -205,12 +213,22 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
 
         case EXPR_LAMBDA: {
             /*
-             * Call the lambda using the function defined in `lambda.c'. A call
+             * Call the lambda using the function defined in "lambda.c". A call
              * to a lambda is pretty straight-forward. Essentially you just have
              * to bind the value of each argument to its formal, and then
              * evaluate the body of the lambda.
              */
             result = lambda_call(env, func, args);
+        } break;
+
+        case EXPR_MACRO: {
+            /*
+             * Call the macro using the function defined in "lambda.c". A macro
+             * receives some un-evaluated arguments and returns a list
+             * representing an expression. When calling a macro, it is expanded
+             * and the returned list is evaluated as an expression.
+             */
+            result = macro_call(env, func, args);
         } break;
 
         default: {

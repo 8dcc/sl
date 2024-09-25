@@ -64,12 +64,18 @@ static inline bool expr_is_number(const Expr* e) {
     return e->type == EXPR_NUM_INT || e->type == EXPR_NUM_FLT;
 }
 
+static inline bool expr_is_applicable(const Expr* e) {
+    return e->type == EXPR_PRIM || e->type == EXPR_LAMBDA ||
+           e->type == EXPR_MACRO;
+}
+
 /*----------------------------------------------------------------------------*/
 
 /* Allocate a new empty expression of the specified type */
 Expr* expr_new(enum EExprType type);
 
 /* Free expression and adjacent expressions, along with their children */
+/* TODO: Make separate expr_list_free() function? */
 void expr_free(Expr* e);
 
 /*----------------------------------------------------------------------------*/

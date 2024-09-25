@@ -15,8 +15,8 @@ Expr* prim_eval(Env* env, Expr* e) {
 Expr* prim_apply(Env* env, Expr* e) {
     SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 2);
-    SL_EXPECT(e->type == EXPR_PRIM || e->type == EXPR_LAMBDA,
-              "Expected a function as the first argument, got '%s'.",
+    SL_EXPECT(expr_is_applicable(e),
+              "Expected a function or macro as the first argument, got '%s'.",
               exprtype2str(e->type));
     SL_EXPECT_TYPE(e->next, EXPR_PARENT);
 
