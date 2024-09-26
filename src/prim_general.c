@@ -28,20 +28,27 @@ Expr* prim_macroexpand(Env* env, Expr* e) {
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_PARENT);
 
-    /* This is similar to how `eval' handles EXPR_PARENT expressions. */
-    Expr* func = e->val.children;
-    SL_EXPECT(func != NULL, "The macro call must have at least one element.");
+    /*
+     * Similar to how function calls are evaluated in the `eval_function_call'
+     * static function in "eval.c", but the arguments are never evaluated.
+     *
+     * Note that we expect a quoted expression, so neither the arguments nor the
+     * macro should have been evaluated.
+     */
+    Expr* car = e->val.children;
+    SL_EXPECT(car != NULL,
+              "The supplied list must have at least one element: The macro.");
 
-    /* Save unevaluated args before evaluating the function */
-    Expr* args = func->next;
-
-    func = eval(env, func);
+    /* If `eval' returns NULL, we don't have to print our own errors */
+    Expr* func = eval(env, car);
     if (func == NULL)
         return NULL;
+    SL_EXPECT_TYPE(func, EXPR_MACRO);
 
+    Expr* args     = e->val.children->next;
     Expr* expanded = macro_expand(env, func, args);
-    expr_free(func);
 
+    expr_free(func);
     return expanded;
 }
 

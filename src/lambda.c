@@ -149,6 +149,9 @@ void lambda_ctx_print_args(const LambdaCtx* ctx) {
 }
 
 /*----------------------------------------------------------------------------*/
+/*
+ * TODO: Abstract `lambda_call' and `macro_expand'.
+ */
 
 Expr* lambda_call(Env* env, Expr* func, Expr* args) {
     SL_ON_ERR(return NULL);

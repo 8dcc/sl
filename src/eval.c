@@ -63,9 +63,6 @@ static Expr* eval_list(Env* env, Expr* list) {
  * (using `eval_list') before applying the function, if necessary.
  */
 static Expr* eval_function_call(Env* env, Expr* e) {
-    /* Caller should have checked if `e' is `nil' */
-    SL_ASSERT(e->val.children != NULL, "Received empty list.");
-
 #ifdef SL_DEBUG_TRACE
     static size_t trace_nesting = 0;
 
@@ -77,6 +74,9 @@ static Expr* eval_function_call(Env* env, Expr* e) {
 
     trace_nesting++;
 #endif
+
+    /* Caller should have checked if `e' is `nil' */
+    SL_ASSERT(e->val.children != NULL, "Received empty list.");
 
     /* The `car' represents the function, and `cdr' represents the arguments */
     Expr* car = e->val.children;
