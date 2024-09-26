@@ -1,0 +1,275 @@
+#+TITLE: SL documentation
+#+AUTHOR: 8dcc
+#+OPTIONS: toc:2
+#+STARTUP: nofold
+
+#+TOC: headlines 2
+
+Documentation for [[https://github.com/8dcc/sl][8dcc/sl]].
+
+* Constants
+
+These constants are defined by default in the global environment.
+
+*** =nil=
+
+Represents the empty list, but is also used to denote /false/ in procedures
+returning predicates.
+
+#+begin_src lisp
+> nil
+nil
+
+> '()
+nil
+
+> ()  ; Special case, not treated as function call
+nil
+
+> (eval nil)
+nil
+
+> (cons 1 (cons 2 nil))
+(1 2)
+#+end_src
+
+*** =tru=
+
+Symbol that evaluates to itself, used for representing explicit truth in
+procedures returning predicates. There is no need for this symbol, since any
+non-nil expression represents truth, but it's convenient.
+
+#+begin_src lisp
+> tru
+tru
+
+> (eval tru)
+tru
+#+end_src
+
+* Primitive procedures
+
+This section explains the different primitive procedures in SL. Primitive
+procedures are implemented in C.
+
+** Special forms
+
+These primitives are /special forms/, meaning that they don't follow normal
+evaluation rules. What this normally means is that they receive their arguments
+un-evaluated, and they operate on them and evaluate them manually whenever
+needed.
+
+They are handled separately in [[file:src/eval.c][eval.c]], so even though they are bound to a symbol
+in the global environment, overwriting the symbol with =define= has no effect.
+
+The actual C primitives are defined in [[file:src/prim_special.c][prim_special.c]].
+
+For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/sicp.pdf#subsection.4.1.1][SICP Chapter 4.1.1]].
+
+*** =quote=
+
+Return the argument, effectively delaying its evaluation.
+
+Expects exactly one argument, of any type.
+
+Example:
+
+#+begin_src lisp
+> (quote x)
+x
+
+> 'x
+x
+
+> (quote (+ 1 2))
+(+ 1 2)
+#+end_src
+
+Note that ='expr= is just syntactic sugar for =(quote expr)=. This is handled in
+[[file:src/parser.c][parser.c]].
+
+*** =define=
+
+Bind symbol(s) in the current environment.
+
+Expects an even number of arguments. Odd arguments must be symbols, even
+arguments can have any type.
+
+Evaluates even arguments, and binds them to the previous one. Returns the last
+(evaluated) bound expression.
+
+#+begin_src lisp
+> n
+Unbound symbol: n
+
+> (define n 123)
+123
+
+> n
+123
+
+> (define n 1
+          a 2
+          b 3)
+3
+
+> n
+1
+#+end_src
+
+As mentioned, it works on the /current/ environment.
+
+#+begin_src lisp
+> (define n 123)
+123
+
+> (define f
+    (lambda ()
+      (define n 999)
+      (list "Finished:" n)))
+<lambda>
+
+> (f)
+("Finished:" 999)
+
+> n
+123
+#+end_src
+
+It is a special form since the odd arguments (symbols) are not evaluated. This
+way, they don't have to be quoted by the caller.
+
+*** =lambda=
+
+Return a new anonymous procedure.
+
+The =lambda= primitive expects a list of formal arguments (which must be symbols)
+and one or more expressions (of any type) for the body.
+
+Expressions of type /Lambda/ evaluate to themselves. When calling a lambda, each
+argument is evaluated and bound to its formal symbol, and each expression in the
+body of the function is evaluated in order, returning the last one.
+
+#+begin_src lisp
+> (lambda (x)
+    (* x 3))
+<lambda>
+
+> ((lambda (x) (* x 3)) 5)
+15
+
+> (define f
+    (lambda (x)
+      (+ x 5)))
+<lambda>
+
+> (f 3)
+8
+#+end_src
+
+A keyword symbol =&rest= followed by a single symbol /S/, can be used in the formal
+argument list to indicate that the caller can provide extra non-mandatory
+arguments, and they will be stored in a *list* bound to the symbol /S/ when making
+the call. If no extra arguments are provided when making the call, /S/ is bound to
+the empty list =nil=.
+
+#+begin_src lisp
+> (define f
+    (lambda (a b &rest other)
+      (list a b other)))
+<lambda>
+
+> (f 1 2 3 4 5)
+(1 2 (3 4 5))
+#+end_src
+
+
+*** =macro=
+
+Return a new anonymous macro.
+
+The =macro= primitive expects a list of formal arguments (which must be symbols)
+and one or more expressions (of any type) for the body.
+
+Expressions of type /Macro/ evaluate to themselves. Calling a macro, however, is
+different than calling a lambda. The arguments of a macro are *not* evaluated
+before calling it, so it can operate on the un-evaluated expressions
+directly.
+
+Macros don't directly return their values, but they return Lisp expressions that
+will be used to compute the actual value. First, the macro arguments are bound,
+and the macro is called just like a lambda, returning a Lisp expression. This is
+called the /macro expansion/ (see [[*=macroexpand=][​=macroexpand=​]]). Once the macro is expanded, the
+resulting expression is evaluated.
+
+#+begin_src lisp
+> (macro (name) (list 'define name 123))
+<macro>
+
+> (define my-macro
+    (macro (name) (list 'define name 123)))
+<macro>
+
+> (my-macro some-name)
+123
+
+> some-name
+123
+#+end_src
+
+In the previous example, notice how we don't have to quote =some-name= when
+calling =my-macro=. This is because, since macro arguments are not evaluated, the
+/symbol/ =some-name= is passed to the macro, not the value bound to it. The macro is
+expanded to the list =(define some-name 123)=, and then it's evaluated.
+
+For more information on how macros behave in this Lisp, see [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Macros.html][Emacs Lisp manual]].
+
+*** =begin=
+
+Evaluate each argument in order, and return the last result.
+
+Expects any number of arguments of any type.
+
+This primitive is a special form for various reasons. When making a normal
+procedure call, the arguments are not required to be evaluated in order, when
+calling =begin=, they are. The fact that it has to evaluate the expressions is
+helpful when combined with something like [[*=apply=][​=apply=​]] and a quoted expression.
+
+#+begin_src lisp
+;; Arguments not evaluated because it's a special form.
+> (begin
+   (define n 123)
+   (+ 1 2))
+3
+
+> n
+123
+
+;; Arguments not evaluated because the list is quoted.
+> (apply begin
+         '((define n 456)
+           (+ 1 2)))
+3
+
+> n
+456
+#+end_src
+
+*** =if=
+
+Return evaluated /consequent/ or /alternative/ depending on whether or not /predicate/
+evaluated to non-nil.
+
+TODO
+
+** General primitives
+
+TODO
+
+*** =apply=
+
+TODO
+
+*** =macroexpand=
+
+TODO
