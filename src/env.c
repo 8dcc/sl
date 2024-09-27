@@ -78,7 +78,6 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "cdr", cdr);
     BIND_PRIM(env, "append", append);
     BIND_PRIM(env, "format", format);
-    BIND_PRIM(env, "concat", concat);
     BIND_PRIM(env, "substring", substring);
     BIND_PRIM(env, "string-matches", string_matches);
     BIND_PRIM(env, "+", add);

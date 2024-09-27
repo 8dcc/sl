@@ -38,6 +38,8 @@
 
 /*
  * If COND is not true, show error and exit.
+ *
+ * TODO: Remove VA_ARGS, just show cond failed and quit
  */
 #define SL_ASSERT(COND, ...)       \
     do {                           \

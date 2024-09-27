@@ -51,7 +51,6 @@ DECLARE_PRIM(append);
 
 /* String-related (prim_string.c) */
 DECLARE_PRIM(format);
-DECLARE_PRIM(concat);
 DECLARE_PRIM(substring);
 DECLARE_PRIM(string_matches);
 

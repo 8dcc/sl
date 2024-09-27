@@ -1,10 +1,68 @@
 
 #include <stddef.h>
+#include <string.h>
 
 #include "include/env.h"
 #include "include/expr.h"
 #include "include/util.h"
 #include "include/primitives.h"
+
+/* Used by `prim_append' when receiving list arguments */
+static Expr* list_append(Expr* e) {
+    SL_ASSERT(e != NULL, "Invalid pointer.");
+
+    Expr dummy_copy;
+    dummy_copy.next = NULL;
+    Expr* cur_copy  = &dummy_copy;
+
+    for (Expr* arg = e; arg != NULL; arg = arg->next) {
+        SL_ASSERT(arg->type == EXPR_PARENT, "Invalid type.");
+
+        if (arg->val.children == NULL)
+            continue;
+
+        cur_copy->next = expr_list_clone(arg->val.children);
+        while (cur_copy->next != NULL)
+            cur_copy = cur_copy->next;
+    }
+
+    Expr* ret         = expr_new(EXPR_PARENT);
+    ret->val.children = dummy_copy.next;
+    return ret;
+}
+
+/* Used by `prim_append' when receiving string arguments */
+static Expr* string_append(Expr* e) {
+    SL_ASSERT(e != NULL, "Invalid pointer.");
+
+    /*
+     * Calculate the sum of the string lengths, allocate the destination buffer
+     * and  concatenate each string using `stpcpy'.
+     *
+     * Since `stpcpy' returns a pointer to the null-terminator, we can store it
+     * and keep calling the function repeatedly instead of calculating the
+     * string length each iteration, which is probably what `strcat' does
+     * internally.
+     */
+    size_t total_len = 0;
+    for (Expr* arg = e; arg != NULL; arg = arg->next) {
+        SL_ASSERT(arg->type == EXPR_STRING, "Invalid type.");
+        SL_ASSERT(arg->val.s != NULL, "Invalid pointer.");
+
+        total_len += strlen(arg->val.s);
+    }
+
+    Expr* ret  = expr_new(EXPR_STRING);
+    ret->val.s = sl_safe_malloc(total_len + 1);
+
+    char* last_copied = ret->val.s;
+    for (Expr* arg = e; arg != NULL; arg = arg->next)
+        last_copied = stpcpy(last_copied, arg->val.s);
+
+    return ret;
+}
+
+/*----------------------------------------------------------------------------*/
 
 Expr* prim_list(Env* env, Expr* e) {
     SL_UNUSED(env);
@@ -80,34 +138,41 @@ Expr* prim_cdr(Env* env, Expr* e) {
 Expr* prim_append(Env* env, Expr* e) {
     SL_UNUSED(env);
 
-    /*
-     * (append)                   ===> nil
-     * (append nil)               ===> nil
-     * (append '(a b) ... '(y z)) ===> (a b ... y z)
-     */
-    Expr* ret = expr_new(EXPR_PARENT);
     if (e == NULL) {
+        /* (append) ===> nil */
+        Expr* ret         = expr_new(EXPR_PARENT);
         ret->val.children = NULL;
         return ret;
     }
 
-    SL_ON_ERR(return ret);
-
-    Expr dummy_copy;
-    dummy_copy.next = NULL;
-    Expr* cur_copy  = &dummy_copy;
-
-    for (Expr* arg = e; arg != NULL; arg = arg->next) {
-        SL_EXPECT_TYPE(arg, EXPR_PARENT);
-
-        if (arg->val.children == NULL)
-            continue;
-
-        cur_copy->next = expr_list_clone(arg->val.children);
-        while (cur_copy->next != NULL)
-            cur_copy = cur_copy->next;
+    if (!expr_list_is_homogeneous(e)) {
+        ERR("Expected arguments of the same type.");
+        return NULL;
     }
 
-    ret->val.children = dummy_copy.next;
+    Expr* ret;
+    switch (e->type) {
+        case EXPR_PARENT:
+            /*
+             * (append nil)               ===> nil
+             * (append '(a b) ... '(y z)) ===> (a b ... y z)
+             */
+            ret = list_append(e);
+            break;
+
+        case EXPR_STRING:
+            /*
+             * (append "")              ===> ""
+             * (append "abc" ... "xyz") ===> "abc...xyz"
+             */
+            ret = string_append(e);
+            break;
+
+        default:
+            ERR("Invalid argument of type '%s'.", exprtype2str(e->type));
+            ret = NULL;
+            break;
+    }
+
     return ret;
 }

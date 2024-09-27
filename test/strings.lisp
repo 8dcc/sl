@@ -2,12 +2,11 @@
 ;; Features tested in this source:
 ;;   - String evaluation (single-line and multi-line)
 ;;   - String predicates: `equal?', `<', `>'
-;;   - String creation: `concat', `substring'
+;;   - String creation: `format', `append', `substring'
 ;;   - String matching: `string-matches'
 ;;------------------------------------------------------------------------------
 
 "Hello, world!"
-""
 
 "Multi-line
 strings
@@ -27,7 +26,8 @@ must be valid inputs."                         ; Initial string
 (format "%%d: %d %d %d" 1 2 3)
 (format "%%f: %f %f %f" 1.0 2.0 3.0)
 
-(concat "Concatenating" " multiple " "strings...")
+(append "" "")
+(append "Concatenating" " multiple " "strings...")
 
 (substring "--Testing substrings--")
 (substring "--Testing substrings--" 2 20)
