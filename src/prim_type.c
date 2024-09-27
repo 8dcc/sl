@@ -88,41 +88,41 @@ Expr* prim_str2flt(Env* env, Expr* e) {
 /* Type-checking primitives */
 
 Expr* prim_is_int(Env* env, Expr* e) {
-    const bool result = expr_list_only_contains_type(e, EXPR_NUM_INT);
+    const bool result = expr_list_has_only_type(e, EXPR_NUM_INT);
     return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }
 
 Expr* prim_is_flt(Env* env, Expr* e) {
-    const bool result = expr_list_only_contains_type(e, EXPR_NUM_FLT);
+    const bool result = expr_list_has_only_type(e, EXPR_NUM_FLT);
     return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }
 
 Expr* prim_is_symbol(Env* env, Expr* e) {
-    const bool result = expr_list_only_contains_type(e, EXPR_SYMBOL);
+    const bool result = expr_list_has_only_type(e, EXPR_SYMBOL);
     return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }
 
 Expr* prim_is_string(Env* env, Expr* e) {
-    const bool result = expr_list_only_contains_type(e, EXPR_STRING);
+    const bool result = expr_list_has_only_type(e, EXPR_STRING);
     return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }
 
 Expr* prim_is_list(Env* env, Expr* e) {
-    const bool result = expr_list_only_contains_type(e, EXPR_PARENT);
+    const bool result = expr_list_has_only_type(e, EXPR_PARENT);
     return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }
 
 Expr* prim_is_primitive(Env* env, Expr* e) {
-    const bool result = expr_list_only_contains_type(e, EXPR_PRIM);
+    const bool result = expr_list_has_only_type(e, EXPR_PRIM);
     return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }
 
 Expr* prim_is_lambda(Env* env, Expr* e) {
-    const bool result = expr_list_only_contains_type(e, EXPR_LAMBDA);
+    const bool result = expr_list_has_only_type(e, EXPR_LAMBDA);
     return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }
 
 Expr* prim_is_macro(Env* env, Expr* e) {
-    const bool result = expr_list_only_contains_type(e, EXPR_MACRO);
+    const bool result = expr_list_has_only_type(e, EXPR_MACRO);
     return (result) ? env_get(env, "tru") : env_get(env, "nil");
 }

@@ -11,10 +11,10 @@ Expr* prim_add(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_only_contains_numbers(e),
+    SL_EXPECT(expr_list_has_only_numbers(e),
               "Unexpected non-numerical argument.");
 
-    if (expr_list_contains_type(e, EXPR_NUM_FLT)) {
+    if (expr_list_has_type(e, EXPR_NUM_FLT)) {
         double total = 0;
         for (Expr* arg = e; arg != NULL; arg = arg->next)
             total += (arg->type == EXPR_NUM_FLT) ? arg->val.f : arg->val.n;
@@ -37,7 +37,7 @@ Expr* prim_sub(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_only_contains_numbers(e),
+    SL_EXPECT(expr_list_has_only_numbers(e),
               "Unexpected non-numerical argument.");
 
     /*
@@ -47,7 +47,7 @@ Expr* prim_sub(Env* env, Expr* e) {
      *   (- 9 5 1)   ===> 3
      *   (- 9 5.0 1) ===> 3.0
      */
-    if (expr_list_contains_type(e, EXPR_NUM_FLT)) {
+    if (expr_list_has_type(e, EXPR_NUM_FLT)) {
         double total = (e->type == EXPR_NUM_FLT) ? e->val.f : (double)e->val.n;
         if (e->next == NULL) {
             total = -total;
@@ -78,10 +78,10 @@ Expr* prim_mul(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_only_contains_numbers(e),
+    SL_EXPECT(expr_list_has_only_numbers(e),
               "Unexpected non-numerical argument.");
 
-    if (expr_list_contains_type(e, EXPR_NUM_FLT)) {
+    if (expr_list_has_type(e, EXPR_NUM_FLT)) {
         double total = 1;
         for (Expr* arg = e; arg != NULL; arg = arg->next)
             total *= (arg->type == EXPR_NUM_FLT) ? arg->val.f : arg->val.n;
@@ -104,7 +104,7 @@ Expr* prim_div(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_only_contains_numbers(e),
+    SL_EXPECT(expr_list_has_only_numbers(e),
               "Unexpected non-numerical argument.");
 
     /*
@@ -138,7 +138,7 @@ Expr* prim_mod(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_only_contains_numbers(e),
+    SL_EXPECT(expr_list_has_only_numbers(e),
               "Unexpected non-numerical argument.");
 
     /*

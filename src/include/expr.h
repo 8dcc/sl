@@ -135,19 +135,19 @@ size_t expr_list_len(const Expr* e);
  * Does the specified linked list contain an expression with the specified
  * type?
  */
-bool expr_list_contains_type(const Expr* e, enum EExprType type);
+bool expr_list_has_type(const Expr* e, enum EExprType type);
 
 /*
  * Does the specified linked list contain ONLY expressions with the specified
  * type?
  */
-bool expr_list_only_contains_type(const Expr* e, enum EExprType type);
+bool expr_list_has_only_type(const Expr* e, enum EExprType type);
 
 /*
  * Does the specified linked list contain ONLY expressions with numeric types?
  * Uses `expr_is_number'.
  */
-bool expr_list_only_contains_numbers(const Expr* e);
+bool expr_list_has_only_numbers(const Expr* e);
 
 /*----------------------------------------------------------------------------*/
 

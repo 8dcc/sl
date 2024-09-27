@@ -162,7 +162,7 @@ Expr* prim_concat(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_only_contains_type(e, EXPR_STRING),
+    SL_EXPECT(expr_list_has_only_type(e, EXPR_STRING),
               "Unexpected non-string argument.");
 
     /*
