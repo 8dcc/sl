@@ -20,32 +20,29 @@
 #define CLAMP(N, LO, HI) (MIN(MAX((LO), (N)), (HI)))
 
 /*
- * Wrapper for err_msg().
+ * Wrapper for `err_msg'.
  *
  * TODO: Rename to SL_ERR?
  */
 #define ERR(...) err_msg(__func__, __VA_ARGS__)
 
 /*
- * Show error message and exit.
+ * Show error message with `fatal_msg' and exit.
  */
-#define SL_FATAL(...)                \
-    do {                             \
-        fprintf(stderr, "[Fatal] "); \
-        ERR(__VA_ARGS__);            \
-        exit(1);                     \
+#define SL_FATAL(...)                                         \
+    do {                                                      \
+        fatal_msg(__FILE__, __LINE__, __func__, __VA_ARGS__); \
+        exit(1);                                              \
     } while (0)
 
 /*
- * If COND is not true, show error and exit.
- *
- * TODO: Remove VA_ARGS, just show cond failed and quit
+ * If COND is zero, show error message and exit.
  */
-#define SL_ASSERT(COND, ...)       \
-    do {                           \
-        if (!(COND)) {             \
-            SL_FATAL(__VA_ARGS__); \
-        }                          \
+#define SL_ASSERT(COND)                                  \
+    do {                                                 \
+        if ((COND) == 0) {                               \
+            SL_FATAL("Assertion `%s' failed.\n", #COND); \
+        }                                                \
     } while (0)
 
 /*
@@ -108,9 +105,12 @@ sl_lbl_on_err:                  \
 /*----------------------------------------------------------------------------*/
 
 /*
- * Print error message to stderr, along with the function name.
+ * Print different error messages to stderr, along with some context
+ * information.
  */
 void err_msg(const char* func, const char* fmt, ...);
+void fatal_msg(const char* file, int line, const char* func, const char* fmt,
+               ...);
 
 /*
  * Allocate `sz' bytes using `malloc' or `calloc', ensuring a valid pointer is

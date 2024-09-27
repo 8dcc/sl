@@ -20,27 +20,46 @@ void err_msg(const char* func, const char* fmt, ...) {
     va_end(va);
 }
 
+void fatal_msg(const char* file, int line, const char* func, const char* fmt,
+               ...) {
+    va_list va;
+    va_start(va, fmt);
+
+    fprintf(stderr, "%s:%d: %s: Fatal: ", file, line, func);
+    vfprintf(stderr, fmt, va);
+    fputc('\n', stderr);
+
+    va_end(va);
+}
+
 /*----------------------------------------------------------------------------*/
 
 void* sl_safe_malloc(size_t size) {
     void* result = malloc(size);
-    SL_ASSERT(result != NULL, "Failed to allocate %zu bytes: %s (%d).", size,
-              strerror(errno), errno);
+    if (result == NULL) {
+        ERR("Failed to allocate %zu bytes: %s (%d).", size, strerror(errno),
+            errno);
+        exit(1);
+    }
     return result;
 }
 
 void* sl_safe_calloc(size_t nmemb, size_t size) {
     void* result = calloc(nmemb, size);
-    SL_ASSERT(result != NULL,
-              "Failed to allocate %zu elements of %zu bytes each: %s (%d).",
-              nmemb, size, strerror(errno), errno);
+    if (result == NULL) {
+        ERR("Failed to allocate %zu elements of %zu bytes each: %s (%d).",
+            nmemb, size, strerror(errno), errno);
+        exit(1);
+    }
     return result;
 }
 
 char* sl_safe_strdup(const char* s) {
     char* result = strdup(s);
-    SL_ASSERT(result != NULL, "Failed to copy string: %s (%d).",
-              strerror(errno), errno);
+    if (result == NULL) {
+        ERR("Failed to copy string: %s (%d).", strerror(errno), errno);
+        exit(1);
+    }
     return result;
 }
 
@@ -85,7 +104,7 @@ const char* byte2escaped(char byte) {
 /* clang-format on */
 
 void print_escaped_str(const char* s) {
-    SL_ASSERT(s != NULL, "Got NULL string.");
+    SL_ASSERT(s != NULL);
 
     putchar('\"');
     for (; *s != '\0'; s++) {

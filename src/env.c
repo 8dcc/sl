@@ -153,8 +153,8 @@ void env_free(Env* env) {
  */
 
 void env_bind(Env* env, const char* sym, const Expr* val) {
-    SL_ASSERT(env != NULL, "Invalid environment.");
-    SL_ASSERT(sym != NULL, "Symbol is empty.");
+    SL_ASSERT(env != NULL);
+    SL_ASSERT(sym != NULL);
 
     /*
      * Before creating a new item in the environment, traverse the existing
@@ -181,8 +181,8 @@ void env_bind(Env* env, const char* sym, const Expr* val) {
 }
 
 Expr* env_get(Env* env, const char* sym) {
-    SL_ASSERT(env != NULL, "Invalid environment.");
-    SL_ASSERT(sym != NULL, "Symbol is empty.");
+    SL_ASSERT(env != NULL);
+    SL_ASSERT(sym != NULL);
 
     /*
      * Iterate the symbol list until we find the one we are looking for, then

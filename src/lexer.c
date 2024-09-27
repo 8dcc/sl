@@ -17,7 +17,7 @@
  * input, including the final double quote.
  */
 static size_t parse_user_string(const char* input, char** dst) {
-    SL_ASSERT(input[0] == '\"', "Did not receive a string.");
+    SL_ASSERT(input[0] == '\"');
 
     size_t result_pos = 0;
     size_t result_sz  = STRING_BUFSZ;
@@ -25,8 +25,11 @@ static size_t parse_user_string(const char* input, char** dst) {
 
     size_t input_pos;
     for (input_pos = 1; input[input_pos] != '\"'; input_pos++, result_pos++) {
-        SL_ASSERT(input[input_pos] != '\0',
-                  "Unexpected end of input when parsing string.");
+        if (input[input_pos] == '\0') {
+            ERR("Null bytes are not currently supported in strings. Stopping "
+                "early.");
+            break;
+        }
 
         if (result_pos >= result_sz - 1) {
             result_sz += TOKEN_BUFSZ;

@@ -10,8 +10,8 @@
 #include "include/parser.h"
 
 static Expr* parse_recur(const Token* tokens, size_t* parsed) {
-    SL_ASSERT(tokens != NULL, "Got invalid Tokens pointer.");
-    SL_ASSERT(tokens[0].type != TOKEN_LIST_CLOSE, "Got invalid Token type.");
+    SL_ASSERT(tokens != NULL);
+    SL_ASSERT(tokens[0].type != TOKEN_LIST_CLOSE);
 
     if (tokens[0].type == TOKEN_EOF)
         return NULL;
@@ -55,7 +55,7 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
             Expr* cur_child = &dummy;
             while (tokens[*parsed].type != TOKEN_LIST_CLOSE &&
                    tokens[*parsed].type != TOKEN_EOF) {
-                SL_ASSERT(cur_child != NULL, "Unexpected NULL child.");
+                SL_ASSERT(cur_child != NULL);
 
                 /* Parse the current children recursively, storing the parsed
                  * Tokens in that call. */
@@ -64,12 +64,9 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
                   parse_recur(&tokens[*parsed], &parsed_in_call);
                 cur_child = cur_child->next;
 
-                SL_ASSERT(parsed_in_call > 0,
-                          "When iterating a list, no tokens were parsed after "
-                          "a recursive call.");
-
                 /* Add the number of Tokens parsed in the previous call to the
                  * number of parsed in the current one. */
+                SL_ASSERT(parsed_in_call > 0);
                 *parsed += parsed_in_call;
             }
 
@@ -93,11 +90,9 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
             expr->val.children->next =
               parse_recur(&tokens[*parsed], &parsed_in_call);
 
-            SL_ASSERT(parsed_in_call > 0, "When parsing a quoted expression, "
-                                          "no tokens were parsed.");
-
             /* Add the number of Tokens parsed in the previous call to the
              * number of parsed in the current one. */
+            SL_ASSERT(parsed_in_call > 0);
             *parsed += parsed_in_call;
         } break;
 

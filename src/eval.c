@@ -76,7 +76,7 @@ static Expr* eval_function_call(Env* env, Expr* e) {
 #endif
 
     /* Caller should have checked if `e' is `nil' */
-    SL_ASSERT(e->val.children != NULL, "Received empty list.");
+    SL_ASSERT(e->val.children != NULL);
 
     /* The `car' represents the function, and `cdr' represents the arguments */
     Expr* car = e->val.children;
@@ -215,9 +215,9 @@ Expr* eval(Env* env, Expr* e) {
 /*----------------------------------------------------------------------------*/
 
 Expr* apply(Env* env, Expr* func, Expr* args) {
-    SL_ASSERT(env != NULL, "Received invalid environment.");
-    SL_ASSERT(func != NULL, "Received invalid function.");
-    SL_ASSERT(expr_is_applicable(func), "Received non-applicable function.");
+    SL_ASSERT(env != NULL);
+    SL_ASSERT(func != NULL);
+    SL_ASSERT(expr_is_applicable(func));
 
     /*
      * Some important notes about the implementation of `apply':
@@ -236,7 +236,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
         case EXPR_PRIM: {
             /* Get primitive C function from the expression */
             PrimitiveFuncPtr primitive = func->val.prim;
-            SL_ASSERT(primitive != NULL, "Received invalid function pointer.");
+            SL_ASSERT(primitive != NULL);
 
             /*
              * Call primitive C function with the evaluated arguments we got

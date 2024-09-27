@@ -9,14 +9,14 @@
 
 /* Used by `prim_append' when receiving list arguments */
 static Expr* list_append(Expr* e) {
-    SL_ASSERT(e != NULL, "Invalid pointer.");
+    SL_ASSERT(e != NULL);
 
     Expr dummy_copy;
     dummy_copy.next = NULL;
     Expr* cur_copy  = &dummy_copy;
 
     for (Expr* arg = e; arg != NULL; arg = arg->next) {
-        SL_ASSERT(arg->type == EXPR_PARENT, "Invalid type.");
+        SL_ASSERT(arg->type == EXPR_PARENT);
 
         if (arg->val.children == NULL)
             continue;
@@ -33,7 +33,7 @@ static Expr* list_append(Expr* e) {
 
 /* Used by `prim_append' when receiving string arguments */
 static Expr* string_append(Expr* e) {
-    SL_ASSERT(e != NULL, "Invalid pointer.");
+    SL_ASSERT(e != NULL);
 
     /*
      * Calculate the sum of the string lengths, allocate the destination buffer
@@ -46,8 +46,8 @@ static Expr* string_append(Expr* e) {
      */
     size_t total_len = 0;
     for (Expr* arg = e; arg != NULL; arg = arg->next) {
-        SL_ASSERT(arg->type == EXPR_STRING, "Invalid type.");
-        SL_ASSERT(arg->val.s != NULL, "Invalid pointer.");
+        SL_ASSERT(arg->type == EXPR_STRING);
+        SL_ASSERT(arg->val.s != NULL);
 
         total_len += strlen(arg->val.s);
     }

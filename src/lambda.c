@@ -39,8 +39,7 @@ static bool count_formals(const Expr* list, size_t* mandatory, bool* has_rest) {
 /*----------------------------------------------------------------------------*/
 
 LambdaCtx* lambda_ctx_new(const Expr* formals, const Expr* body) {
-    SL_ASSERT(formals->type == EXPR_PARENT,
-              "Expected list of formal arguments.");
+    SL_ASSERT(formals->type == EXPR_PARENT);
 
     /* Count and validate the formal arguments */
     size_t mandatory;
@@ -155,9 +154,7 @@ void lambda_ctx_print_args(const LambdaCtx* ctx) {
 
 Expr* lambda_call(Env* env, Expr* func, Expr* args) {
     SL_ON_ERR(return NULL);
-    SL_ASSERT(func->type == EXPR_LAMBDA,
-              "Expected expression of type 'Lambda', got '%s'.",
-              exprtype2str(func->type));
+    SL_ASSERT(func->type == EXPR_LAMBDA);
 
     /* Count the number of arguments that we received */
     const size_t arg_num = expr_list_len(args);
@@ -218,9 +215,7 @@ Expr* lambda_call(Env* env, Expr* func, Expr* args) {
 
 Expr* macro_expand(Env* env, Expr* func, Expr* args) {
     SL_ON_ERR(return NULL);
-    SL_ASSERT(func->type == EXPR_MACRO,
-              "Expected expression of type 'Macro', got '%s'.",
-              exprtype2str(func->type));
+    SL_ASSERT(func->type == EXPR_MACRO);
 
     const size_t arg_num = expr_list_len(args);
     SL_EXPECT(func->val.lambda->formal_rest != NULL ||
