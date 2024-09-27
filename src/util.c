@@ -14,7 +14,7 @@
 #define COL_NORM_RED    "\e[0;31m"
 #define COL_BOLD_CYAN   "\e[1;36m"
 
-void err_msg(const char* func, const char* fmt, ...) {
+void print_wrn(const char* func, const char* fmt, ...) {
     va_list va;
     va_start(va, fmt);
 
@@ -33,17 +33,17 @@ void err_msg(const char* func, const char* fmt, ...) {
     va_end(va);
 }
 
-void fatal_msg(const char* file, int line, const char* func, const char* fmt,
+void print_err(const char* file, int line, const char* func, const char* fmt,
                ...) {
     va_list va;
     va_start(va, fmt);
 
 #ifdef SL_NO_COLOR
-    fprintf(stderr, "%s:%d: %s: Fatal: ", file, line, func);
+    fprintf(stderr, "%s:%d: %s: ", file, line, func);
     vfprintf(stderr, fmt, va);
 #else
-    fprintf(stderr, "%s:%d: %s%s%s: %s", file, line, COL_BOLD_CYAN,
-            func, COL_RESET, COL_NORM_RED);
+    fprintf(stderr, "%s:%d: %s%s%s: %s", file, line, COL_BOLD_CYAN, func,
+            COL_RESET, COL_NORM_RED);
     vfprintf(stderr, fmt, va);
     fprintf(stderr, "%s", COL_RESET);
 #endif
@@ -57,30 +57,24 @@ void fatal_msg(const char* file, int line, const char* func, const char* fmt,
 
 void* sl_safe_malloc(size_t size) {
     void* result = malloc(size);
-    if (result == NULL) {
-        ERR("Failed to allocate %zu bytes: %s (%d).", size, strerror(errno),
-            errno);
-        exit(1);
-    }
+    if (result == NULL)
+        SL_FATAL("Failed to allocate %zu bytes: %s (%d).", size,
+                 strerror(errno), errno);
     return result;
 }
 
 void* sl_safe_calloc(size_t nmemb, size_t size) {
     void* result = calloc(nmemb, size);
-    if (result == NULL) {
-        ERR("Failed to allocate %zu elements of %zu bytes each: %s (%d).",
-            nmemb, size, strerror(errno), errno);
-        exit(1);
-    }
+    if (result == NULL)
+        SL_FATAL("Failed to allocate %zu elements of %zu bytes each: %s (%d).",
+                 nmemb, size, strerror(errno), errno);
     return result;
 }
 
 char* sl_safe_strdup(const char* s) {
     char* result = strdup(s);
-    if (result == NULL) {
-        ERR("Failed to copy string: %s (%d).", strerror(errno), errno);
-        exit(1);
-    }
+    if (result == NULL)
+        SL_FATAL("Failed to copy string: %s (%d).", strerror(errno), errno);
     return result;
 }
 
@@ -100,9 +94,9 @@ char escaped2byte(char escaped) {
         case '\\': return '\\';
         case '\"': return '\"';
         default:
-            ERR("The specified escape sequence (\\%c) is not currently "
-                "supported.",
-                escaped);
+            SL_WRN("The specified escape sequence (\\%c) is not currently "
+                   "supported.",
+                   escaped);
             return escaped;
     }
 }
@@ -163,7 +157,7 @@ bool sl_regex_matches(const char* pat, const char* str, bool ignore_case,
         cflags |= REG_ICASE;
 
     if (regcomp(&r, pat, cflags) != REG_NOERROR) {
-        ERR("Failed to compile pattern \"%s\"", pat);
+        SL_WRN("Failed to compile pattern \"%s\"", pat);
         return false;
     }
 
@@ -197,7 +191,7 @@ size_t int2str(long long x, char** dst) {
      */
     const int size = snprintf(NULL, 0, "%lld", x);
     if (size < 0) {
-        ERR("Failed to get the target string length for integer: %lld", x);
+        SL_WRN("Failed to get the target string length for integer: %lld", x);
         *dst = NULL;
         return 0;
     }
@@ -210,7 +204,7 @@ size_t int2str(long long x, char** dst) {
 size_t flt2str(double x, char** dst) {
     const int size = snprintf(NULL, 0, "%f", x);
     if (size < 0) {
-        ERR("Failed to get the target string length for float: %f", x);
+        SL_WRN("Failed to get the target string length for float: %f", x);
         *dst = NULL;
         return 0;
     }

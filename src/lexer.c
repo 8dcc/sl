@@ -26,8 +26,8 @@ static size_t parse_user_string(const char* input, char** dst) {
     size_t input_pos;
     for (input_pos = 1; input[input_pos] != '\"'; input_pos++, result_pos++) {
         if (input[input_pos] == '\0') {
-            ERR("Null bytes are not currently supported in strings. Stopping "
-                "early.");
+            SL_WRN("Null bytes are not currently supported in strings. "
+                   "Stopping early.");
             break;
         }
 

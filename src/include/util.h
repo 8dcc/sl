@@ -20,18 +20,16 @@
 #define CLAMP(N, LO, HI) (MIN(MAX((LO), (N)), (HI)))
 
 /*
- * Wrapper for `err_msg'.
- *
- * TODO: Rename to SL_ERR?
+ * Wrapper for `print_wrn'.
  */
-#define ERR(...) err_msg(__func__, __VA_ARGS__)
+#define SL_WRN(...) print_wrn(__func__, __VA_ARGS__)
 
 /*
- * Show error message with `fatal_msg' and exit.
+ * Show error message with `print_err' and exit.
  */
 #define SL_FATAL(...)                                         \
     do {                                                      \
-        fatal_msg(__FILE__, __LINE__, __func__, __VA_ARGS__); \
+        print_err(__FILE__, __LINE__, __func__, __VA_ARGS__); \
         exit(1);                                              \
     } while (0)
 
@@ -55,13 +53,13 @@ sl_lbl_on_err:                  \
     }
 
 /*
- * If COND is not true, show error and jump to instruction declared by
+ * If COND is not true, show warning and jump to instruction declared by
  * SL_ON_ERR().
  */
 #define SL_EXPECT(COND, ...)                                         \
     do {                                                             \
-        if (!(COND)) {                                               \
-            ERR(__VA_ARGS__);                                        \
+        if ((COND) == 0) {                                           \
+            SL_WRN(__VA_ARGS__);                                     \
             goto sl_lbl_on_err; /* Make sure you call SL_ON_ERR() */ \
         }                                                            \
     } while (0)
@@ -108,8 +106,8 @@ sl_lbl_on_err:                  \
  * Print different error messages to stderr, along with some context
  * information.
  */
-void err_msg(const char* func, const char* fmt, ...);
-void fatal_msg(const char* file, int line, const char* func, const char* fmt,
+void print_wrn(const char* func, const char* fmt, ...);
+void print_err(const char* file, int line, const char* func, const char* fmt,
                ...);
 
 /*

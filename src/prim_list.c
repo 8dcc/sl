@@ -146,7 +146,7 @@ Expr* prim_append(Env* env, Expr* e) {
     }
 
     if (!expr_list_is_homogeneous(e)) {
-        ERR("Expected arguments of the same type.");
+        SL_WRN("Expected arguments of the same type.");
         return NULL;
     }
 
@@ -169,7 +169,7 @@ Expr* prim_append(Env* env, Expr* e) {
             break;
 
         default:
-            ERR("Invalid argument of type '%s'.", exprtype2str(e->type));
+            SL_WRN("Invalid argument of type '%s'.", exprtype2str(e->type));
             ret = NULL;
             break;
     }
