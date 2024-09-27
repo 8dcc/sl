@@ -11,7 +11,7 @@ Documentation for [[https://github.com/8dcc/sl][8dcc/sl]].
 
 These constants are defined by default in the global environment.
 
-*** =nil=
+** =nil=
 
 Represents the empty list, but is also used to denote /false/ in procedures
 returning predicates.
@@ -33,7 +33,7 @@ nil
 (1 2)
 #+end_src
 
-*** =tru=
+** =tru=
 
 Symbol that evaluates to itself, used for representing explicit truth in
 procedures returning predicates. There is no need for this symbol, since any
@@ -59,10 +59,11 @@ evaluation rules. What this normally means is that they receive their arguments
 un-evaluated, and they operate on them and evaluate them manually whenever
 needed.
 
-They are handled separately in [[file:src/eval.c][eval.c]], so even though they are bound to a symbol
-in the global environment, overwriting the symbol with =define= has no effect.
+They are handled separately in [[file:src/eval.c]], so even though they are bound to
+a symbol in the global environment, overwriting the symbol with =define= has no
+effect.
 
-The actual C primitives are defined in [[file:src/prim_special.c][prim_special.c]].
+The actual C primitives are defined in [[file:src/prim_special.c]].
 
 For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/sicp.pdf#subsection.4.1.1][SICP Chapter 4.1.1]].
 
@@ -86,7 +87,7 @@ x
 #+end_src
 
 Note that ='expr= is just syntactic sugar for =(quote expr)=. This is handled in
-[[file:src/parser.c][parser.c]].
+[[file:src/parser.c]].
 
 *** =define=
 
@@ -183,7 +184,6 @@ the empty list =nil=.
 (1 2 (3 4 5))
 #+end_src
 
-
 *** =macro=
 
 Return a new anonymous macro.
@@ -199,7 +199,7 @@ directly.
 Macros don't directly return their values, but they return Lisp expressions that
 will be used to compute the actual value. First, the macro arguments are bound,
 and the macro is called just like a lambda, returning a Lisp expression. This is
-called the /macro expansion/ (see [[*=macroexpand=][​=macroexpand=​]]). Once the macro is expanded, the
+called the /macro expansion/ (see [[*=macroexpand=]]). Once the macro is expanded, the
 resulting expression is evaluated.
 
 #+begin_src lisp
@@ -222,7 +222,8 @@ calling =my-macro=. This is because, since macro arguments are not evaluated, th
 /symbol/ =some-name= is passed to the macro, not the value bound to it. The macro is
 expanded to the list =(define some-name 123)=, and then it's evaluated.
 
-For more information on how macros behave in this Lisp, see [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Macros.html][Emacs Lisp manual]].
+For more information on how macros behave in this Lisp, see the [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Macros.html][Emacs Lisp
+manual]].
 
 *** =begin=
 
@@ -233,7 +234,7 @@ Expects any number of arguments of any type.
 This primitive is a special form for various reasons. When making a normal
 procedure call, the arguments are not required to be evaluated in order, when
 calling =begin=, they are. The fact that it has to evaluate the expressions is
-helpful when combined with something like [[*=apply=][​=apply=​]] and a quoted expression.
+helpful when combined with something like [[*=apply=]] and a quoted expression.
 
 #+begin_src lisp
 ;; Arguments not evaluated because it's a special form.
