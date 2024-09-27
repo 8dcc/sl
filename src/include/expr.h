@@ -42,35 +42,6 @@ struct Expr {
 
 /*----------------------------------------------------------------------------*/
 
-static inline const char* exprtype2str(enum EExprType type) {
-    /* clang-format off */
-    switch (type) {
-        case EXPR_ERR:     return "Error";
-        case EXPR_NUM_INT: return "Integer";
-        case EXPR_NUM_FLT: return "Float";
-        case EXPR_SYMBOL:  return "Symbol";
-        case EXPR_STRING:  return "String";
-        case EXPR_PARENT:  return "List";
-        case EXPR_PRIM:    return "Primitive";
-        case EXPR_LAMBDA:  return "Lambda";
-        case EXPR_MACRO:   return "Macro";
-    }
-    /* clang-format on */
-
-    __builtin_unreachable();
-}
-
-static inline bool expr_is_number(const Expr* e) {
-    return e->type == EXPR_NUM_INT || e->type == EXPR_NUM_FLT;
-}
-
-static inline bool expr_is_applicable(const Expr* e) {
-    return e->type == EXPR_PRIM || e->type == EXPR_LAMBDA ||
-           e->type == EXPR_MACRO;
-}
-
-/*----------------------------------------------------------------------------*/
-
 /*
  * Allocate a new empty expression of the specified type. The returned pointer
  * should be freed by the caller using `expr_free'.
@@ -132,20 +103,22 @@ void expr_print_debug(const Expr* e);
 size_t expr_list_len(const Expr* e);
 
 /*
- * Does the specified linked list contain an expression with the specified
- * type?
+ * Is the specified linked list homogeneous? In other words, do all elements
+ * share the same type?
+ */
+bool expr_list_is_homogeneous(const Expr* e);
+
+/*
+ * Does the specified linked list contain at least one expression with the
+ * specified type?
  */
 bool expr_list_has_type(const Expr* e, enum EExprType type);
 
 /*
- * Does the specified linked list contain ONLY expressions with the specified
- * type?
- */
-bool expr_list_has_only_type(const Expr* e, enum EExprType type);
-
-/*
  * Does the specified linked list contain ONLY expressions with numeric types?
- * Uses `expr_is_number'.
+ *
+ * Uses the `expr_is_number' inline function.
+ * See also the `expr_list_has_only_type' inline function bellow.
  */
 bool expr_list_has_only_numbers(const Expr* e);
 
@@ -167,5 +140,60 @@ bool expr_equal(const Expr* a, const Expr* b);
  */
 bool expr_lt(const Expr* a, const Expr* b);
 bool expr_gt(const Expr* a, const Expr* b);
+
+/*----------------------------------------------------------------------------*/
+
+/*
+ * Return a string literal representing the specified expression type.
+ */
+static inline const char* exprtype2str(enum EExprType type) {
+    /* clang-format off */
+    switch (type) {
+        case EXPR_ERR:     return "Error";
+        case EXPR_NUM_INT: return "Integer";
+        case EXPR_NUM_FLT: return "Float";
+        case EXPR_SYMBOL:  return "Symbol";
+        case EXPR_STRING:  return "String";
+        case EXPR_PARENT:  return "List";
+        case EXPR_PRIM:    return "Primitive";
+        case EXPR_LAMBDA:  return "Lambda";
+        case EXPR_MACRO:   return "Macro";
+    }
+    /* clang-format on */
+
+    __builtin_unreachable();
+}
+
+/*
+ * Check if the specified expression type is a number: Integer or float.
+ */
+static inline bool exprtype_is_number(enum EExprType type) {
+    return type == EXPR_NUM_INT || type == EXPR_NUM_FLT;
+}
+
+/*
+ * Check if the specified expression is a number. Wrapper for
+ * `exprtype_is_number'.
+ */
+static inline bool expr_is_number(const Expr* e) {
+    return exprtype_is_number(e->type);
+}
+
+/*
+ * Check if the specified expression can be applied (i.e. called): Primitive,
+ * lambda or macro.
+ */
+static inline bool expr_is_applicable(const Expr* e) {
+    return e->type == EXPR_PRIM || e->type == EXPR_LAMBDA ||
+           e->type == EXPR_MACRO;
+}
+
+/*
+ * Does the specified linked list contain ONLY expressions with the specified
+ * type?
+ */
+static inline bool expr_list_has_only_type(const Expr* e, enum EExprType type) {
+    return expr_list_is_homogeneous(e) && e->type == type;
+}
 
 #endif /* EXPR_H_ */

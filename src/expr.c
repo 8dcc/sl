@@ -306,6 +306,18 @@ size_t expr_list_len(const Expr* e) {
     return result;
 }
 
+bool expr_list_is_homogeneous(const Expr* e) {
+    if (e == NULL)
+        return false;
+
+    const enum EExprType first_type = e->type;
+    for (e = e->next; e != NULL; e = e->next)
+        if (e->type != first_type)
+            return false;
+
+    return true;
+}
+
 bool expr_list_has_type(const Expr* e, enum EExprType type) {
     for (; e != NULL; e = e->next)
         if (e->type == type)
@@ -314,15 +326,10 @@ bool expr_list_has_type(const Expr* e, enum EExprType type) {
     return false;
 }
 
-bool expr_list_has_only_type(const Expr* e, enum EExprType type) {
-    for (; e != NULL; e = e->next)
-        if (e->type != type)
-            return false;
-
-    return true;
-}
-
 bool expr_list_has_only_numbers(const Expr* e) {
+    if (e == NULL)
+        return false;
+
     for (; e != NULL; e = e->next)
         if (!expr_is_number(e))
             return false;
