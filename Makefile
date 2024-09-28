@@ -11,7 +11,7 @@ INSTALL_DIR=/usr/local/bin
 
 #-------------------------------------------------------------------------------
 
-.PHONY: all clean install
+.PHONY: all clean install doc
 
 all: $(BIN)
 
@@ -22,6 +22,9 @@ clean:
 install: $(BIN)
 	mkdir -p $(INSTALL_DIR)
 	install -m 755 $^ $(INSTALL_DIR)
+
+doc:
+	make --directory=doc clean all
 
 #-------------------------------------------------------------------------------
 

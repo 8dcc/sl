@@ -1,9 +1,17 @@
 # Binary
 sl
 
-# Doxygen documentation
-/doc/html/
-/doc/latex/
+# Documentation
+*.aux
+*.fn
+*.fns
+*.vr
+*.vrs
+*.ky
+*.log
+*.toc
+*.html
+*.pdf
 
 # Prerequisites
 *.d
