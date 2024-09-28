@@ -63,6 +63,8 @@ static Expr* eval_list(Env* env, Expr* list) {
  * (using `eval_list') before applying the function, if necessary.
  */
 static Expr* eval_function_call(Env* env, Expr* e) {
+    SL_ON_ERR(return NULL);
+
 #ifdef SL_DEBUG_TRACE
     static size_t trace_nesting = 0;
 
@@ -91,6 +93,8 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* func = eval(env, car);
     if (func == NULL)
         return NULL;
+    SL_EXPECT(expr_is_applicable(func), "Expected function or macro, got '%s'.",
+              exprtype2str(func->type));
 
     /*
      * Normally, we should evaluate each of the arguments before applying the
