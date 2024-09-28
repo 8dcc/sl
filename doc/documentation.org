@@ -1,3 +1,4 @@
+# -*- fill-column: 72; -*-
 #+TITLE: SL documentation
 #+AUTHOR: 8dcc
 #+OPTIONS: toc:2
@@ -14,14 +15,14 @@ Documentation for [[https://github.com/8dcc/sl][8dcc/sl]].
 These constants are defined by default in the global environment.
 
 #+begin_comment
-TODO: Org fails to export variables named "nil", so we need to add quotes until
-it's fixed.
+TODO: Org fails to export variables named "nil", so we need to add
+quotes until it's fixed.
 #+end_comment
 
 - Variable: `nil' ::
 
-  Represents the empty list, but is also used to denote /false/ in procedures
-  returning predicates.
+  Represents the empty list, but is also used to denote /false/ in
+  procedures returning predicates.
 
   #+begin_src lisp
   > nil
@@ -42,9 +43,9 @@ it's fixed.
 
 - Variable: `tru' ::
 
-  Symbol that evaluates to itself, used for representing explicit truth in
-  procedures returning predicates. There is no need for this symbol, since any
-  non-nil expression represents truth, but it's convenient.
+  Symbol that evaluates to itself, used for representing explicit truth
+  in procedures returning predicates. There is no need for this symbol,
+  since any non-nil expression represents truth, but it's convenient.
 
   #+begin_src lisp
   > tru
@@ -56,19 +57,19 @@ it's fixed.
 
 * Primitive Procedures
 
-This section explains the different primitive procedures in SL. Primitive
-procedures are implemented in C.
+This section explains the different primitive procedures in
+SL. Primitive procedures are implemented in C.
 
 ** Special Forms
 
-These primitives are /special forms/, meaning that they don't follow normal
-evaluation rules. What this normally means is that they receive their arguments
-un-evaluated, and they operate on them and evaluate them manually whenever
-needed.
+These primitives are /special forms/, meaning that they don't follow
+normal evaluation rules. What this normally means is that they receive
+their arguments un-evaluated, and they operate on them and evaluate them
+manually whenever needed.
 
-They are handled separately in [[file:eval.c]], so even though they are bound to a
-symbol in the global environment, overwriting the symbol with =define= has no
-effect.
+They are handled separately in [[file:eval.c]], so even though they are
+bound to a symbol in the global environment, overwriting the symbol with
+=define= has no effect.
 
 The actual C primitives are defined in [[file:prim_special.c]].
 
@@ -89,18 +90,18 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   (+ 1 2)
   #+end_src
 
-  Note that ='expr= is just syntactic sugar for =(quote expr)=. This is handled
-  in [[file:parser.c]].
+  Note that ='expr= is just syntactic sugar for =(quote expr)=. This is
+  handled in [[file:parser.c]].
 
 - Special Form: define symbol expr ... ::
 
   Bind symbol(s) in the current environment.
 
-  Expects an even number of arguments. Odd arguments must be symbols, even
-  arguments can have any type.
+  Expects an even number of arguments. Odd arguments must be symbols,
+  even arguments can have any type.
 
-  Evaluates even arguments, and binds them to the previous one. Returns the last
-  (evaluated) bound expression.
+  Evaluates even arguments, and binds them to the previous one. Returns
+  the last (evaluated) bound expression.
 
   #+begin_src lisp
   > n
@@ -140,8 +141,8 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   123
   #+end_src
 
-  It is a special form since the odd arguments (symbols) are not evaluated. This
-  way, they don't have to be quoted by the caller.
+  It is a special form since the odd arguments (symbols) are not
+  evaluated. This way, they don't have to be quoted by the caller.
 
 - Special Form: lambda formals body... ::
 
@@ -150,9 +151,10 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   The =lambda= primitive expects a list of formal arguments (which must be
   symbols) and one or more expressions (of any type) for the body.
 
-  Expressions of type /Lambda/ evaluate to themselves. When calling a lambda, each
-  argument is evaluated and bound to its formal symbol, and each expression in
-  the body of the function is evaluated in order, returning the last one.
+  Expressions of type /Lambda/ evaluate to themselves. When calling a
+  lambda, each argument is evaluated and bound to its formal symbol, and
+  each expression in the body of the function is evaluated in order,
+  returning the last one.
 
   #+begin_src lisp
   > (lambda (x)
@@ -171,11 +173,11 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   8
   #+end_src
 
-  A keyword symbol =&rest= followed by a single symbol /S/, can be used in the
-  formal argument list to indicate that the caller can provide extra
-  non-mandatory arguments, and they will be stored in a *list* bound to the symbol
-  /S/ when making the call. If no extra arguments are provided when making the
-  call, /S/ is bound to the empty list =nil=.
+  A keyword symbol =&rest= followed by a single symbol /S/, can be used in
+  the formal argument list to indicate that the caller can provide extra
+  non-mandatory arguments, and they will be stored in a *list* bound to
+  the symbol /S/ when making the call. If no extra arguments are provided
+  when making the call, /S/ is bound to the empty list =nil=.
 
   #+begin_src lisp
   > (define f
@@ -191,33 +193,40 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
 
   Return a new anonymous macro.
 
-  The =macro= primitive expects a list of formal arguments (which must be symbols)
-  and one or more expressions (of any type) for the body.
+  The =macro= primitive expects a list of formal arguments (which must be
+  symbols) and one or more expressions (of any type) for the body.
 
-  Expressions of type /Macro/ evaluate to themselves. Macros are generally similar
-  to lambdas, but there are some key differences:
+  Expressions of type /Macro/ evaluate to themselves. Macros are generally
+  similar to lambdas, but there are some key differences:
 
-  - When a macro is called, the arguments are *not* evaluated before applying it,
-    so the macro can operate on the un-evaluated expressions directly, instead
-    of on the values they compute. The first step of a macro call is binding the
-    un-evaluated arguments to the formals.
-  - Macros don't /directly/ compute values, they instead build Lisp expressions
-    that will be used to compute the actual values. The second step of a macro
-    call is the /macro expansion/ (see [[*General Primitives]]). In this step, the
-    macro is called just like a lambda, returning a Lisp expression.
-  - The last step of a macro call is evaluating the expanded expression, which
-    will be used to compute the actual value returned by the macro.
+  - When a macro is called, the arguments are *not* evaluated before
+    applying it, so the macro can operate on the un-evaluated
+    expressions directly, instead of on the values they compute. The
+    first step of a macro call is binding the un-evaluated arguments to
+    the formals.
+  - Macros don't /directly/ compute values, they instead build Lisp
+    expressions that will be used to compute the actual values. The
+    second step of a macro call is the /macro expansion/ (see
+    [[*General Primitives]]). In this step, the macro is called just like a
+    lambda, returning a Lisp expression.
+  - The last step of a macro call is evaluating the expanded expression,
+    which will be used to compute the actual value returned by the
+    macro.
 
   In other words the general call process of a lambda is:
 
   #+begin_example
-  Evaluate arguments -> Bind arguments -> Evaluate body ==> Result
+  Evaluate arguments -> Bind arguments -> Evaluate body
+                        `-----------------------------´
+                                   (Apply)
   #+end_example
 
   While the call process of a macro is:
 
   #+begin_example
-  Bind arguments -> Evaluate body (Expand) -> Evaluate expansion ==> Result
+  Bind arguments -> Evaluate body -> Evaluate expansion
+  `-----------------------------´
+              (Expand)
   #+end_example
 
   Some macro examples:
@@ -240,13 +249,14 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   123
   #+end_src
 
-  In the previous example, notice how we don't have to quote =some-name= when
-  calling =my-macro=. This is because, since macro arguments are not evaluated,
-  the /symbol/ =some-name= is passed to the macro, not the value bound to it. The
-  macro is expanded to the list =(define some-name 123)=, and then it's evaluated.
+  In the previous example, notice how we don't have to quote =some-name=
+  when calling =my-macro=. This is because, since macro arguments are not
+  evaluated, the /symbol/ =some-name= is passed to the macro, not the value
+  bound to it. The macro is expanded to the list =(define some-name 123)=,
+  and then it's evaluated.
 
-  Just like lambdas, macros support the use of the =&rest= keyword in the formal
-  argument list.
+  Just like lambdas, macros support the use of the =&rest= keyword in the
+  formal argument list.
 
   For more information on how macros behave in this Lisp, see the
   [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Macros.html][Emacs Lisp manual]].
@@ -255,11 +265,11 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
 
   Evaluate each argument in order, and return the last result.
 
-  This primitive is a special form for various reasons. When making a normal
-  procedure call, the arguments are not required to be evaluated in order, when
-  calling =begin=, they are. The fact that it has to evaluate the expressions is
-  helpful when combined with something like =apply= and a quoted expression (see
-  [[*General Primitives]]).
+  This primitive is a special form for various reasons. When making a
+  normal procedure call, the arguments are not required to be evaluated
+  in order, when calling =begin=, they are. The fact that it has to
+  evaluate the expressions is helpful when combined with something like
+  =apply= and a quoted expression (see [[*General Primitives]]).
 
   #+begin_src lisp
   ;; Arguments not evaluated because it's a special form.
@@ -299,16 +309,16 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   30
   #+end_src
 
-  Note that the /predicate/ is always evaluated, but only the /consequent/ or the
-  /alternative/ is evaluated afterwards. This is a good example on why special
-  forms are necessary, since a normal function call would have to evaluate the 3
-  arguments before applying =if= to them.
+  Note that the /predicate/ is always evaluated, but only the /consequent/
+  or the /alternative/ is evaluated afterwards. This is a good example on
+  why special forms are necessary, since a normal function call would
+  have to evaluate the 3 arguments before applying =if= to them.
 
 - Special Form: or expr ... ::
 
-  Evaluates each argument expression in order, and once it finds a non-nil
-  result, it stops evaluating and returns it. Returns =nil= if all of them
-  evaluated to =nil=, or when called with no arguments.
+  Evaluates each argument expression in order, and once it finds a
+  non-nil result, it stops evaluating and returns it. Returns =nil= if all
+  of them evaluated to =nil=, or when called with no arguments.
 
   #+begin_src lisp
   > (or (> 1 2) (> 3 4) (> 5 6))
@@ -321,8 +331,8 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   nil
   #+end_src
 
-  Note that this primitive does not need to be a special form, since it can be
-  built with a macro and =if=.
+  Note that this primitive does not need to be a special form, since it
+  can be built with a macro and =if=.
 
   #+begin_src lisp
   (defmacro my-or (&rest exprs)
@@ -338,9 +348,10 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
 
 - Special Form: and expr ... ::
 
-  Evaluates each argument expression in order, and if it finds a =nil= result, it
-  stops evaluating and returns =nil=. If all arguments evaluated to non-nil,
-  returns the last result. Returns =tru= when called with no arguments.
+  Evaluates each argument expression in order, and if it finds a =nil=
+  result, it stops evaluating and returns =nil=. If all arguments
+  evaluated to non-nil, returns the last result. Returns =tru= when called
+  with no arguments.
 
   #+begin_src lisp
   > (and (> 1 2) (> 3 4) (> 5 6))
@@ -353,8 +364,8 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   tru
   #+end_src
 
-  Note that this primitive does not need to be a special form, since it can be
-  built with a macro and =if=.
+  Note that this primitive does not need to be a special form, since it
+  can be built with a macro and =if=.
 
   #+begin_comment
   TODO: Show =my-and= macro.
