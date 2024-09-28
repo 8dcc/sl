@@ -5,14 +5,12 @@
 ;; TODO:
 ;;   - `nth'
 ;;   - `member' (return arg0 when car is arg1)
-;;   - `member?' (is arg1 in arg0)
-;;   - `length'
-;;   - `let' (Macro using `lambda')
+;;   - `member?' (is arg1 in arg0?)
 ;;   - `string-split' using regex
 ;;==============================================================================
 
 ;;------------------------------------------------------------------------------
-;; General macros
+;; Meta-definition macros
 ;;------------------------------------------------------------------------------
 
 ;; (defmacro 1+ (var)  >  (define 1+
@@ -31,7 +29,7 @@
         (cons 'lambda lambda-args)))
 
 ;;------------------------------------------------------------------------------
-;; List-related functions
+;; List-accessing functions
 ;;------------------------------------------------------------------------------
 
 (defun caar (lst) (car (car lst)))
@@ -48,10 +46,21 @@
 (defun cdddr (lst) (cdr (cdr (cdr lst))))
 
 ;;------------------------------------------------------------------------------
+;; List-building functions
+;;------------------------------------------------------------------------------
+
+(defun cons* (&rest args)
+  (if (null? (cdr args))
+      (car args)
+      (cons (car args)
+            (apply cons* (cdr args)))))
+
+;;------------------------------------------------------------------------------
 ;; Conditional macros
 ;;------------------------------------------------------------------------------
 
 ;; TODO: Support multiple expressions in clause without using begin?
+;; TODO: Don't use inner function, call `cond' from expansion.
 ;;
 ;; (cond (pred1 expr1)           >  (if pred1 (begin expr1)
 ;;       (pred2 expr2)           >    (if pred2 (begin expr2)
@@ -67,8 +76,26 @@
   (cond-lst clauses))
 
 ;;------------------------------------------------------------------------------
+;; Local variables
+;;------------------------------------------------------------------------------
+
+;; (let ((s1 e1)   >  ((lambda (s1 s2 s3)
+;;       (s2 e2)   >     body1
+;;       (s3 e3))  >     body2
+;;   body1         >     body3)
+;;   body2         >   e1 e2 e3)
+;;   body3)        >
+(defmacro let (definitions &rest body)
+  (cons (cons 'lambda
+              (cons (mapcar car definitions)
+                    body))
+        (mapcar cadr definitions)))
+
+;;------------------------------------------------------------------------------
 ;; General predicates
 ;;------------------------------------------------------------------------------
+
+;; TODO: Simplify these for single-argument?
 
 (defun not (predicate)
   (if (equal? predicate nil)
@@ -86,6 +113,7 @@
           (apply number? (cdr lst))
           nil)))
 
+;; NOTE: Should match C's `expr_is_applicable'
 (defun func? (&rest lst)
   (if (null? lst)
       tru
@@ -97,3 +125,13 @@
 (defun = (a &rest b)
   (and (apply number? (cons a b))
        (apply equal?  (cons a b))))
+
+;;------------------------------------------------------------------------------
+;; Mapping
+;;------------------------------------------------------------------------------
+
+(defun mapcar (f lst)
+  (if (null? lst)
+      nil
+      (cons (f (car lst))
+            (mapcar f (cdr lst)))))
