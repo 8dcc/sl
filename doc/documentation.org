@@ -265,7 +265,71 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   Return evaluated /consequent/ or /alternative/ depending on whether or not
   /predicate/ evaluated to non-nil or not, respectively.
 
-  TODO
+  #+begin_src lisp
+  > (if tru 'abc 'xyz)
+  abc
+
+  > (if nil 'abc 'xyz)
+  xyz
+
+  > (if (> 5 3)
+        (+ 10 20)
+        (- 60 50))
+  30
+  #+end_src
+
+  Note that the /predicate/ is always evaluated, but only the /consequent/ or the
+  /alternative/ is evaluated afterwards. This is a good example on why special
+  forms are necessary, since a normal function call would have to evaluate the 3
+  arguments before applying =if= to them.
+
+- Special Form: or expr ... ::
+
+  Evaluates each argument expression in order, and once it finds a non-nil
+  result, it stops evaluating and returns it. Returns =nil= if all of them
+  evaluated to =nil=, or when called with no arguments.
+
+  #+begin_src lisp
+  > (or (> 1 2) (> 3 4) (> 5 6))
+  nil
+
+  > (or (> 1 2) (> 3 4) 'hello)
+  hello
+
+  > (or)
+  nil
+  #+end_src
+
+  Note that this primitive does not need to be a special form, since it can be
+  built with a macro and =if=.
+
+  #+begin_comment
+  TODO: Show =my-or= macro.
+  #+end_comment
+
+- Special Form: and expr ... ::
+
+  Evaluates each argument expression in order, and if it finds a =nil= result, it
+  stops evaluating and returns =nil=. If all arguments evaluated to non-nil,
+  returns the last result. Returns =tru= when called with no arguments.
+
+  #+begin_src lisp
+  > (and (> 1 2) (> 3 4) (> 5 6))
+  nil
+
+  > (and (> 4 3) (> 2 1) 'hello)
+  hello
+
+  > (and)
+  tru
+  #+end_src
+
+  Note that this primitive does not need to be a special form, since it can be
+  built with a macro and =if=.
+
+  #+begin_comment
+  TODO: Show =my-and= macro.
+  #+end_comment
 
 ** General Primitives
 
