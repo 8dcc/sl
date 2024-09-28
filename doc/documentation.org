@@ -324,9 +324,17 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   Note that this primitive does not need to be a special form, since it can be
   built with a macro and =if=.
 
-  #+begin_comment
-  TODO: Show =my-or= macro.
-  #+end_comment
+  #+begin_src lisp
+  (defmacro my-or (&rest exprs)
+    (if (null? exprs)
+        nil
+        ;; TODO: Don't overwrite "result", generate unique symbol.
+        (list (list 'lambda (list 'result)
+                    (list 'if 'result 'result
+                          ;; Expansion will call `my-or'.
+                          (cons 'my-or (cdr exprs))))
+              (car exprs))))
+  #+end_src
 
 - Special Form: and expr ... ::
 
