@@ -154,7 +154,7 @@ global symbols, and even =a= as long as =inner= was called /within/ the body of
 The following code defines a /recursive procedure/ that performs an /iterative
 process/.
 
-#+begin_src emacs-lisp
+#+begin_src lisp
 (defun sum-iter (i end total)
   (if (> i end)
       total
@@ -172,3 +172,20 @@ where it was called from, it can just jump to the start of the function with the
 new parameters and no information will be lost. This jump optimization is called
 /tail-call optimization/, and an interpreter with this feature is called
 /tail-recursive/. For more information, see [[https://web.mit.edu/6.001/6.037/sicp.pdf#subsection.1.2.1][section 1.2.1 of SICP]].
+
+** Backquote
+
+In Emacs Lisp, the following code can be simplified using a backquote.
+
+#+begin_src emacs-lisp
+;; Without backquote
+(defmacro my-macro (arg)
+  (list 'define arg (list '+ '1 '2 (list '- 4 3))))
+
+;; Using backquote
+(defmacro my-macro (arg)
+  `(define ,arg (+ 1 2 (- 4 3))))
+#+end_src
+
+The [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Backquote.html][backquote construct]] allow you to quote a list, but selectively evaluate some
+of its elements by prefixing them with a comma.
