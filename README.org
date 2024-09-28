@@ -84,15 +84,15 @@ the basic [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][
 
 * Usage
 
-For more examples, see the [[file:test/][test]] folder.
+The full documentation can be found in the [[file:doc/documentation.org][doc]] folder. It's meant to be exported
+from =.org= to =.texi=, and then from =.texi= to =.pdf=, =.html=, etc.
+
+The [[file:test/][test]] folder also contains the Lisp code used for testing the interpreter.
 
 #+begin_src console
 $ ./sl
 sl> (+ 1 2 (- 5 4) (* 3 4) 10)
 26
-
-sl> (define my-symbol 'Testing)
-Testing
 
 sl> (define my-addition +)
 <primitive 0x55d31f51ba21>
