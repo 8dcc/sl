@@ -342,8 +342,9 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
         nil
         ;; TODO: Don't overwrite "result", generate unique symbol.
         (list (list 'lambda (list 'result)
-                    (list 'if 'result 'result
-                          ;; Expansion will call `my-or'.
+                    (list 'if
+                          'result
+                          'result
                           (cons 'my-or (cdr exprs))))
               (car exprs))))
   #+end_src
@@ -366,12 +367,22 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   tru
   #+end_src
 
-  Note that this primitive does not need to be a special form, since it
-  can be built with a macro and =if=.
+  Just like with =or=, this primitive does not need to be a special form:
 
-  #+begin_comment
-  TODO: Show =my-and= macro.
-  #+end_comment
+  #+begin_src lisp
+  (defmacro my-and (&rest exprs)
+    (if (null? exprs)
+        tru
+        ;; TODO: Don't overwrite "result", generate unique symbol.
+        (list (list 'lambda (list 'result)
+                    (list 'if
+                          'result
+                          (if (null? (cdr exprs))
+                              'result
+                              (cons 'my-and (cdr exprs)))
+                          nil))
+              (car exprs))))
+  #+end_src
 
 ** General Primitives
 
