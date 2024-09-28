@@ -17,6 +17,8 @@ These constants are defined by default in the global environment.
 #+begin_comment
 TODO: Org fails to export variables named "nil", so we need to add
 quotes until it's fixed.
+
+https://list.orgmode.org/878qvbstna.fsf@gmail.com/T/#u
 #+end_comment
 
 - Variable: `nil' ::
@@ -141,7 +143,7 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   123
   #+end_src
 
-  It is a special form since the odd arguments (symbols) are not
+  It is a special form because the odd arguments (symbols) are not
   evaluated. This way, they don't have to be quoted by the caller.
 
 - Special Form: lambda formals body... ::
@@ -213,7 +215,7 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
     which will be used to compute the actual value returned by the
     macro.
 
-  In other words the general call process of a lambda is:
+  In other words the general process when calling a lambda is:
 
   #+begin_example
   Evaluate arguments -> Bind arguments -> Evaluate body
@@ -229,7 +231,7 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
               (Expand)
   #+end_example
 
-  Some macro examples:
+  While the process of calling a macro is:
 
   #+begin_src lisp
   > (macro (name) (list 'define name 123))
