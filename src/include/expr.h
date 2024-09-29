@@ -118,7 +118,7 @@ bool expr_list_has_type(const Expr* e, enum EExprType type);
  * Does the specified linked list contain ONLY expressions with numeric types?
  *
  * Uses the `expr_is_number' inline function.
- * See also the `expr_list_has_only_type' inline function bellow.
+ * See also the `expr_list_has_only_type' inline function below.
  */
 bool expr_list_has_only_numbers(const Expr* e);
 
