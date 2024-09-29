@@ -1,4 +1,4 @@
-#+title: sl
+#+title: Simple Lisp
 #+options: toc:nil
 #+startup: showeverything
 #+author: 8dcc
@@ -7,14 +7,17 @@
 
 Simple Lisp interpreter made in C with no dependencies.
 
-Some good resources:
-- [[https://en.wikipedia.org/wiki/Lisp_(programming_language)][Lisp (Wikipedia)]]
-- [[https://en.wikipedia.org/wiki/Scheme_(programming_language)#Usage][Scheme (Wikipedia)]]
-- [[https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html][SICP website]]
-- [[https://www.scheme.org/][Official Scheme website]]
-- [[https://groups.csail.mit.edu/mac/ftpdir/scheme-7.4/doc-html/scheme_toc.html][MIT Scheme Reference]]
-- [[https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/][Scheme R5RS Specification]]
-- [[https://www.buildyourownlisp.com/][Build Your Own Lisp website]] (Although this project doesn't follow the book)
+Some good resources for learning about Lisp:
+
+- The [[https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html][Structure and Interpretation of Computer Programs]] book by Hal Abelson and
+  Gerald Jay Sussman.
+- The [[https://paulgraham.com/acl.html][ANSI Common Lisp]] book by Paul Graham.
+- The [[https://www.scheme.org/][Official Scheme website]].
+- The [[https://groups.csail.mit.edu/mac/ftpdir/scheme-7.4/doc-html/scheme_toc.html][MIT Scheme Reference]].
+- The [[https://www.gnu.org/software/guile/manual/][GNU Guile manual]].
+- The [[https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/][Scheme R5RS Specification]].
+- The [[https://www.buildyourownlisp.com/][Build Your Own Lisp]] book by Daniel Holden, although this project doesn't
+  follow it.
 
 * Building
 
@@ -51,7 +54,7 @@ the basic [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][
    1. Before evaluating the expression, it checks if the current expression is a
       [[https://web.mit.edu/6.001/6.037/sicp.pdf#subsection.4.1.1][Special Form]], which are evaluated differently from procedure calls. For
       example =quote=, =lambda= or =if=. The arguments of these special forms are
-      passed to the C primitives (defined in [[file:src/primitives.c][primitives.c]]) unevaluated.
+      passed to the C primitives (defined in [[file:src/primitives.c][primitives.c]]) un-evaluated.
    2. If it wasn't a special form, the expression type is checked. Some
       expressions like numbers evaluate to themselves, while some others
       don't.
