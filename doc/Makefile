@@ -1,5 +1,5 @@
 
-DOCNAME=documentation
+DOCNAME=sl-manual
 TEXI=$(addsuffix .texi, $(DOCNAME))
 PDF=$(addsuffix .pdf, $(DOCNAME))
 HTML=$(addsuffix .html, $(DOCNAME))

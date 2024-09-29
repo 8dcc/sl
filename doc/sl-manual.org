@@ -1,14 +1,13 @@
 # -*- fill-column: 72; -*-
-#+TITLE: SL documentation
+#+TITLE: SL Manual
 #+AUTHOR: 8dcc
 #+OPTIONS: toc:2
 #+STARTUP: nofold
-
 #+TEXINFO_DIR_CATEGORY: Software development
 
 #+TOC: headlines 2
 
-Documentation for [[https://github.com/8dcc/sl][8dcc/sl]].
+Manual for [[https://github.com/8dcc/sl][8dcc/sl]].
 
 * Constants
 
