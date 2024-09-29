@@ -402,12 +402,50 @@ and Interpretation of Computer Programs/[fn::
 
 ** General Primitives
 
-TODO
+These primitives don't fit into other categories. They are defined in
+[[file:prim_general.c]].
 
-- Function: apply function argument-list ::
+- Function: eval expr ::
+
+  Evaluate the specified expression.
+
+  Different expression types have different evaluation rules:
+
+  1. The empty list (=nil=) evaluates to itself.
+  2. Non-empty lists are evaluated as procedure calls.
+     - If the (un-evaluated) =car= of the list is a special form symbol
+       (see [[*Special Forms]]), it passes the un-evaluated =cdr= to the
+       corresponding special form primitive.
+     - If the (evaluated) =car= of the list is a macro, the macro is
+       called with the un-evaluated =cdr= of the list.
+     - Otherwise, the arguments are evaluated and the procedure is
+       called. If one argument fails to evaluate, evaluation stops.
+  3. Symbols evaluate to their bound values in the current
+     environment[fn::See also Section 3.2 of SICP.].
+  4. Other expression types (numbers, strings, functions, etc.)
+     evaluate to themselves.
+
+  Keep in mind that, since =eval= is a normal procedure, its arguments
+  will be evaluated before the actual function call is made, so the user
+  might need to use the =quote= special form.
+
+  #+begin_src lisp
+  (define var 123)
+
+  ;; We are evaluating 123, which evaluates to itself.
+  (eval var)
+
+  ;; We are evaluating the symbol "var", which evaluates to 123.
+  (eval (quote var))
+  #+end_src
+
+  The C /primitive/ is called =prim_eval=, but the actual evaluation process
+  is performed by the C function =eval=, defined in [[file:eval.c]].
+
+- Function: apply function arg-list ::
 
   TODO
 
-- Function: apply expr ::
+- Function: macroexpand quoted-expr ::
 
   TODO
