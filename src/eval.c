@@ -20,14 +20,16 @@
 /* Does this expression match the form "(NAME ...)"? */
 static bool is_special_form(const Expr* e, const char* name) {
     /*
-     * (define is-quote (e)
-     *   (and (not (null? e))
-     *        (equal? (car e) 'quote)))
+     * (defun is-special-form (e sym)
+     *   (assert (and (list? e)
+     *                (not (null? e))))
+     *   (and (symbol? (car e))
+     *        (equal? (car e) sym)))
      */
-    return e != NULL && e->type == EXPR_PARENT && e->val.children != NULL &&
-           e->val.children->type == EXPR_SYMBOL &&
+    SL_ASSERT(e != NULL && e->type == EXPR_PARENT && e->val.children != NULL);
+    return e->val.children->type == EXPR_SYMBOL &&
            e->val.children->val.s != NULL &&
-           !strcmp(e->val.children->val.s, name);
+           strcmp(e->val.children->val.s, name) == 0;
 }
 
 /*
@@ -149,48 +151,36 @@ Expr* eval(Env* env, Expr* e) {
     if (e == NULL)
         return NULL;
 
-    /*
-     * Check for Special Form primitives (See SICP Chapter 4.1.1):
-     *   - Quoted expression in the form (quote symbol), pass `cadr' to
-     *     primitive without evaluating it. The primitive will just return a
-     *     copy.
-     *   - When defining a variable, the symbol should not be evaluated. The
-     *     value, however, will be evaluated from the primitive (our Lisp don't
-     *     use lazy evaluation).
-     *   - The arguments of a call to `lambda' or `macro' (formal arguments and
-     *     body) are not supposed to be evaluated.
-     *   - Each argument of a call to `begin' is evaluated in order, and the
-     *     last one is returned.
-     *   - In an `if' call, only the "consequent" or "alternative" expression is
-     *     supposed to be evaluated, depending on the evaluated "predicate".
-     *   - The `or' and `and' primitives stop evaluating their arguments as soon
-     *     as one of them is non-nil or nil respectively, and return the last
-     *     evaluated argument.
-     */
-    if (is_special_form(e, "quote"))
-        return prim_quote(env, e->val.children->next);
-    if (is_special_form(e, "define"))
-        return prim_define(env, e->val.children->next);
-    if (is_special_form(e, "lambda"))
-        return prim_lambda(env, e->val.children->next);
-    if (is_special_form(e, "macro"))
-        return prim_macro(env, e->val.children->next);
-    if (is_special_form(e, "begin"))
-        return prim_begin(env, e->val.children->next);
-    if (is_special_form(e, "if"))
-        return prim_if(env, e->val.children->next);
-    if (is_special_form(e, "or"))
-        return prim_or(env, e->val.children->next);
-    if (is_special_form(e, "and"))
-        return prim_and(env, e->val.children->next);
-
     switch (e->type) {
         case EXPR_PARENT: {
             /* `nil' evaluates to itself */
             if (expr_is_nil(e))
                 return expr_clone(e);
 
-            /* Evaluate the list as a function call */
+            /*
+             * If the list is a call to a Special Form, pass the un-evaluated
+             * `cdr' to the primitive. See the "Special Forms" section of the SL
+             * manual, and Chapter 4.1.1 of SICP.
+             */
+            if (is_special_form(e, "quote"))
+                return prim_quote(env, e->val.children->next);
+            if (is_special_form(e, "define"))
+                return prim_define(env, e->val.children->next);
+            if (is_special_form(e, "lambda"))
+                return prim_lambda(env, e->val.children->next);
+            if (is_special_form(e, "macro"))
+                return prim_macro(env, e->val.children->next);
+            if (is_special_form(e, "begin"))
+                return prim_begin(env, e->val.children->next);
+            if (is_special_form(e, "if"))
+                return prim_if(env, e->val.children->next);
+            if (is_special_form(e, "or"))
+                return prim_or(env, e->val.children->next);
+            if (is_special_form(e, "and"))
+                return prim_and(env, e->val.children->next);
+
+            /* Evaluate the list as a procedure/macro call */
+            /* TODO: Replace most occurrences of "function" with "procedure" */
             return eval_function_call(env, e);
         }
 

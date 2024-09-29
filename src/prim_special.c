@@ -12,7 +12,7 @@
  * Special Form primitives. Their arguments are not evaluated before applying,
  * instead they are handled separately in `eval'.
  *
- * See SICP Chapter 4.1.1.
+ * See the "Special Forms" section of the SL manual, and Chapter 4.1.1 of SICP.
  */
 
 Expr* prim_quote(Env* env, Expr* e) {
