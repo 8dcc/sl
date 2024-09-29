@@ -64,18 +64,34 @@ SL. Primitive procedures are implemented in C.
 
 ** Special Forms
 
-These primitives are /special forms/, meaning that they don't follow
-normal evaluation rules. What this normally means is that they receive
-their arguments un-evaluated, and they operate on them and evaluate them
-manually whenever needed.
+These primitives are /special forms/, meaning that special evaluation
+rules are used when they are called. What this usually means is that
+they receive their arguments un-evaluated so they can operate on them,
+before evaluating them manually if needed.
 
-They are handled separately in [[file:eval.c]], so even though they are
-bound to a symbol in the global environment, overwriting the symbol with
-=define= has no effect.
+Calls to special forms are checked separately in [[file:eval.c]], so even
+though their primitives are bound to a symbol in the global environment,
+overwriting them (e.g. with =define=) has no effect. The C primitives for
+this section are defined in [[file:prim_special.c]].
 
-The actual C primitives are defined in [[file:prim_special.c]].
+A list is interpreted as a special form call when its first element is a
+special form symbol:
 
-For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/sicp.pdf#subsection.4.1.1][SICP Chapter 4.1.1]].
+#+begin_src lisp
+(define special-form-symbols
+    (list ...))
+
+(defun is-special-form (e)
+  ;; Non-empty list whose first element is a special symbol.
+  (and (list? e)
+       (not (null? e))
+       (symbol? (car e))
+       (member? (car e) special-form-symbol)))
+#+end_src
+
+For more information on special forms, see Section 4.1.1 of /Structure
+and Interpretation of Computer Programs/[fn::
+[[https://web.mit.edu/6.001/6.037/sicp.pdf#subsection.4.1.1]]].
 
 - Special Form: quote expr ::
 
@@ -263,7 +279,7 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   For more information on how macros behave in this Lisp, see the
   [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Macros.html][Emacs Lisp manual]].
 
-- Special Form: begin expr... ::
+- Special Form: begin &rest exprs ::
 
   Evaluate each argument in order, and return the last result.
 
@@ -316,7 +332,7 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
   why special forms are necessary, since a normal function call would
   have to evaluate the 3 arguments before applying =if= to them.
 
-- Special Form: or expr ... ::
+- Special Form: or &rest exprs ::
 
   Evaluates each argument expression in order, and once it finds a
   non-nil result, it stops evaluating and returns it. Returns =nil= if all
@@ -349,7 +365,7 @@ For more information on /special forms/, see [[https://web.mit.edu/6.001/6.037/s
               (car exprs))))
   #+end_src
 
-- Special Form: and expr ... ::
+- Special Form: and &rest exprs ::
 
   Evaluates each argument expression in order, and if it finds a =nil=
   result, it stops evaluating and returns =nil=. If all arguments
