@@ -9,14 +9,15 @@ Simple Lisp interpreter made in C with no dependencies.
 
 Some good resources for learning about Lisp:
 
-- The [[https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html][Structure and Interpretation of Computer Programs]] book by Hal Abelson and
+- [[https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html][Structure and Interpretation of Computer Programs]] by Hal Abelson and
   Gerald Jay Sussman.
-- The [[https://paulgraham.com/acl.html][ANSI Common Lisp]] book by Paul Graham.
+- [[https://paulgraham.com/acl.html][ANSI Common Lisp]] by Paul Graham.
 - The [[https://www.scheme.org/][Official Scheme website]].
 - The [[https://groups.csail.mit.edu/mac/ftpdir/scheme-7.4/doc-html/scheme_toc.html][MIT Scheme Reference]].
 - The [[https://www.gnu.org/software/guile/manual/][GNU Guile manual]].
 - The [[https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/][Scheme R5RS Specification]].
-- The [[https://www.buildyourownlisp.com/][Build Your Own Lisp]] book by Daniel Holden, although this project doesn't
+- [[https://www.gnu.org/software/emacs/manual/html_mono/eintr.html][An Introduction to Programming in Emacs Lisp]] by Robert J. Chassell.
+- [[https://www.buildyourownlisp.com/][Build Your Own Lisp]] by Daniel Holden, although this project doesn't
   follow it.
 
 * Building
