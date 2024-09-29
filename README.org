@@ -28,6 +28,48 @@ $ make
 ...
 #+end_src
 
+* Usage
+
+The full manual can be found in the [[file:doc/sl-manual.org][doc]] folder. It's meant to be exported from
+=.org= to =.texi=, and then from =.texi= to =.pdf=, =.html=, =.info=, etc.
+
+The [[file:test/][test]] folder also contains the Lisp code used for testing the interpreter.
+
+#+begin_src console
+$ ./sl
+sl> (+ 1 2 (- 5 4) (* 3 4) 10)
+26
+
+sl> (define my-addition +)
+<primitive 0x55d31f51ba21>
+
+sl> (define my-global 10.0)
+10.000000
+
+sl> (define my-lambda
+      (lambda (x y)
+        (* my-global (my-addition x y))))
+<lambda>
+
+sl> (my-lambda 3 4)
+70.000000
+
+sl> (define defmacro
+      (macro (name formals body)
+        (list 'define name (list 'macro formals body))))
+<macro>
+
+sl> (defmacro inc (var)
+      (list 'define var (list '+ var 1)))
+<macro>
+
+sl> (inc my-global)
+11.000000
+
+sl> my-global
+11.000000
+#+end_src
+
 * Overview of the code
 
 This Lisp has a few components that are responsible for their own data. This is
@@ -84,48 +126,6 @@ the basic [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][
          each expression in the body in order, returning the last one.
 5. After that, we print the evaluated expression using =expr_print()=, defined in
    [[file:src/expr.c][expr.c]].
-
-* Usage
-
-The full manual can be found in the [[file:doc/sl-manual.org][doc]] folder. It's meant to be exported from
-=.org= to =.texi=, and then from =.texi= to =.pdf=, =.html=, =.info=, etc.
-
-The [[file:test/][test]] folder also contains the Lisp code used for testing the interpreter.
-
-#+begin_src console
-$ ./sl
-sl> (+ 1 2 (- 5 4) (* 3 4) 10)
-26
-
-sl> (define my-addition +)
-<primitive 0x55d31f51ba21>
-
-sl> (define my-global 10.0)
-10.000000
-
-sl> (define my-lambda
-      (lambda (x y)
-        (* my-global (my-addition x y))))
-<lambda>
-
-sl> (my-lambda 3 4)
-70.000000
-
-sl> (define defmacro
-      (macro (name formals body)
-        (list 'define name (list 'macro formals body))))
-<macro>
-
-sl> (defmacro inc (var)
-      (list 'define var (list '+ var 1)))
-<macro>
-
-sl> (inc my-global)
-11.000000
-
-sl> my-global
-11.000000
-#+end_src
 
 * Todo list
 
