@@ -10,6 +10,7 @@ sl
 *.ky
 *.log
 *.toc
+*.texi
 *.info
 *.html
 *.pdf
