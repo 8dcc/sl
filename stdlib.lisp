@@ -61,20 +61,17 @@
 ;;------------------------------------------------------------------------------
 
 ;; TODO: Support multiple expressions in clause without using begin?
-;; TODO: Don't use inner function, call `cond' from expansion.
 ;;
 ;; (cond (pred1 expr1)           >  (if pred1 (begin expr1)
 ;;       (pred2 expr2)           >    (if pred2 (begin expr2)
 ;;       (pred3 expr3a expr3b))  >      (if pred3 (begin expr3a expr3b)
 ;;                               >        nil)))
 (defmacro cond (&rest clauses)
-  (defun cond-lst (clauses)
-    (if (null? clauses)
-        nil
-        (list 'if (caar clauses)
-              (cons 'begin (cdar clauses))
-              (cond-lst (cdr clauses)))))
-  (cond-lst clauses))
+  (if (null? clauses)
+      nil
+      (list 'if (caar clauses)
+            (cons 'begin (cdar clauses))
+            (cons 'cond (cdr clauses)))))
 
 ;;------------------------------------------------------------------------------
 ;; Local variables
