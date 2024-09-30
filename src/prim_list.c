@@ -135,6 +135,31 @@ Expr* prim_cdr(Env* env, Expr* e) {
     return ret;
 }
 
+Expr* prim_length(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT_ARG_NUM(e, 1);
+
+    long long result;
+    switch (e->type) {
+        case EXPR_PARENT:
+            result = expr_list_len(e->val.children);
+            break;
+
+        case EXPR_STRING:
+            result = strlen(e->val.s);
+            break;
+
+        default:
+            SL_WRN("Invalid argument of type '%s'.", exprtype2str(e->type));
+            return NULL;
+    }
+
+    Expr* ret  = expr_new(EXPR_NUM_INT);
+    ret->val.n = result;
+    return ret;
+}
+
 Expr* prim_append(Env* env, Expr* e) {
     SL_UNUSED(env);
 

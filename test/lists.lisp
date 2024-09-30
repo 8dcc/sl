@@ -1,11 +1,17 @@
 ;;------------------------------------------------------------------------------
 ;; Features tested in this source:
-;;   - Primitives for creating lists (`list', `append')
-;;   - Primitives for accessing lists (`car', `cdr')
+;;   - List creation: `list', `append', `cons'
+;;   - Accessing lists: `car', `cdr'
+;;   - List information: `length'
 ;;------------------------------------------------------------------------------
 
 (list)          ; Expected: nil
 (list 'a 'b 'c) ; Expected: (a b c)
+
+(append)                   ; Expected: nil
+(append nil)               ; Expected: nil
+(append '(a) '(b c) '(d))  ; Expected: (a b c d)
+(append '(a b) nil '(c d)) ; Expected: (a b c d)
 
 (cons 'a nil)        ; Expected: (a)
 (cons 'a '(b c))     ; Expected: (a b c)
@@ -19,7 +25,5 @@
 (cdr '(a))     ; Expected: nil
 (cdr '(a b c)) ; Expected: (b c)
 
-(append)                   ; Expected: nil
-(append nil)               ; Expected: nil
-(append '(a) '(b c) '(d))  ; Expected: (a b c d)
-(append '(a b) nil '(c d)) ; Expected: (a b c d)
+(length  nil)     ; Expected: 0
+(length '(a b c)) ; Expected: 3

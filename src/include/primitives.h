@@ -47,6 +47,7 @@ DECLARE_PRIM(list);
 DECLARE_PRIM(cons);
 DECLARE_PRIM(car);
 DECLARE_PRIM(cdr);
+DECLARE_PRIM(length);
 DECLARE_PRIM(append);
 
 /* String-related (prim_string.c) */
