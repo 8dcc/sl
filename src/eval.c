@@ -4,10 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "include/expr.h"
 #include "include/env.h"
+#include "include/expr.h"
 #include "include/lambda.h"
 #include "include/util.h"
+#include "include/debug.h"
 #include "include/eval.h"
 #include "include/primitives.h"
 
@@ -70,18 +71,6 @@ static Expr* eval_list(Env* env, Expr* list) {
 static Expr* eval_function_call(Env* env, Expr* e) {
     SL_ON_ERR(return NULL);
 
-#ifdef SL_DEBUG_TRACE
-    static size_t trace_nesting = 0;
-
-    for (size_t i = 0; i < trace_nesting; i++)
-        printf("  ");
-    printf("%zu: ", trace_nesting % 10);
-    expr_print(e);
-    putchar('\n');
-
-    trace_nesting++;
-#endif
-
     /* Caller should have checked if `e' is `nil' */
     SL_ASSERT(e->val.children != NULL);
 
@@ -103,6 +92,10 @@ static Expr* eval_function_call(Env* env, Expr* e) {
         return NULL;
     SL_EXPECT(expr_is_applicable(func), "Expected function or macro, got '%s'.",
               exprtype2str(func->type));
+
+    const bool should_print_trace = debug_is_traced_function(env, func);
+    if (should_print_trace)
+        debug_trace_print_pre(e);
 
     /*
      * Normally, we should evaluate each of the arguments before applying the
@@ -141,18 +134,8 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     if (should_eval_args)
         expr_list_free(args);
 
-#ifdef SL_DEBUG_TRACE
-    trace_nesting--;
-
-    for (size_t i = 0; i < trace_nesting; i++)
-        printf("  ");
-    printf("%zu: ", trace_nesting % 10);
-    if (applied == NULL)
-        printf("ERR");
-    else
-        expr_print(applied);
-    putchar('\n');
-#endif
+    if (should_print_trace)
+        debug_trace_print_post(applied);
 
     return applied;
 }

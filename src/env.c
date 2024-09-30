@@ -58,6 +58,13 @@ void env_init_defaults(Env* env) {
     };
     env_bind(env, "tru", &tru_expr);
 
+    Expr debug_trace_list = {
+        .type         = EXPR_PARENT,
+        .val.children = NULL,
+        .next         = NULL,
+    };
+    env_bind(env, "*debug-trace*", &debug_trace_list);
+
     /* Bind primitive C functions */
     BIND_PRIM(env, "quote", quote);
     BIND_PRIM(env, "define", define);
