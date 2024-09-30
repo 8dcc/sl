@@ -306,6 +306,29 @@ size_t expr_list_len(const Expr* e) {
     return result;
 }
 
+bool expr_list_equal(const Expr* a, const Expr* b) {
+    /*
+     * Keep iterating while both nodes are equal. We check this by
+     * calling `expr_equal', which allows NULL arguments.
+     *
+     * Since inside the loop both items are equal, if one of them is
+     * NULL, it means we reached the end of both lists and they are
+     * equal.
+     *
+     * This whole loop is similar to an implementation of strcmp().
+     */
+    while (expr_equal(a, b)) {
+        if (a == NULL)
+            return true;
+
+        a = a->next;
+        b = b->next;
+    }
+
+    /* If we broke out of the loop, an expression didn't match */
+    return false;
+}
+
 bool expr_list_is_homogeneous(const Expr* e) {
     if (e == NULL)
         return false;
@@ -365,31 +388,8 @@ bool expr_equal(const Expr* a, const Expr* b) {
         case EXPR_STRING:
             return strcmp(a->val.s, b->val.s) == 0;
 
-        case EXPR_PARENT: {
-            Expr* child_a = a->val.children;
-            Expr* child_b = b->val.children;
-
-            /*
-             * Keep iterating while both children are equal. We check this by
-             * calling ourselves recursivelly.
-             *
-             * Since inside the loop both children are equal, if one of them is
-             * NULL, it means we reached the end of both lists and they are
-             * equal.
-             *
-             * This whole loop is similar an implementation of strcmp().
-             */
-            while (expr_equal(child_a, child_b)) {
-                if (child_a == NULL)
-                    return true;
-
-                child_a = child_a->next;
-                child_b = child_b->next;
-            }
-
-            /* If we broke out of the loop, a children didn't match */
-            return false;
-        }
+        case EXPR_PARENT:
+            return expr_list_equal(a->val.children, b->val.children);
 
         case EXPR_PRIM:
             return a->val.prim == b->val.prim;

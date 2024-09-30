@@ -103,6 +103,12 @@ void expr_print_debug(const Expr* e);
 size_t expr_list_len(const Expr* e);
 
 /*
+ * Check if two linked lists of `Expr' structures are identical in length and
+ * content.
+ */
+bool expr_list_equal(const Expr* a, const Expr* b);
+
+/*
  * Is the specified linked list homogeneous? In other words, do all elements
  * share the same type?
  */
