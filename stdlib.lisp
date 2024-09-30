@@ -3,6 +3,7 @@
 ;; https://github.com/8dcc/sl
 ;;
 ;; TODO:
+;;   - `let*'
 ;;   - `nth'
 ;;   - `member' (return arg0 when car is arg1)
 ;;   - `member?' (is arg1 in arg0?)
