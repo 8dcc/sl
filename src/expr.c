@@ -396,8 +396,7 @@ bool expr_equal(const Expr* a, const Expr* b) {
 
         case EXPR_MACRO:
         case EXPR_LAMBDA:
-            /* TODO: Compare lambda bodies and parameters */
-            return false;
+            return lambda_ctx_equal(a->val.lambda, b->val.lambda);
 
         case EXPR_ERR:
             return false;

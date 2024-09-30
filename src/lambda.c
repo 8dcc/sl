@@ -147,6 +147,25 @@ void lambda_ctx_print_args(const LambdaCtx* ctx) {
     putchar(')');
 }
 
+bool lambda_ctx_equal(const LambdaCtx* a, const LambdaCtx* b) {
+    if (a->formals_num != b->formals_num)
+        return false;
+
+    for (size_t i = 0; i < a->formals_num; i++)
+        if (strcmp(a->formals[i], b->formals[i]) != 0)
+            return false;
+
+    if (a->formal_rest != b->formal_rest &&
+        (a->formal_rest == NULL || b->formal_rest == NULL ||
+         strcmp(a->formal_rest, b->formal_rest) != 0))
+        return false;
+
+    if (!expr_list_equal(a->body, b->body))
+        return false;
+
+    return true;
+}
+
 /*----------------------------------------------------------------------------*/
 
 static Expr* lambda_ctx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {

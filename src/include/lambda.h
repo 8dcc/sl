@@ -50,6 +50,12 @@ void lambda_ctx_free(LambdaCtx* ctx);
 void lambda_ctx_print_args(const LambdaCtx* ctx);
 
 /*
+ * Are two `LambdaCtx' structures equal? Uses `strcmp' and `expr_list_equal'.
+ */
+bool lambda_ctx_equal(const LambdaCtx* a, const LambdaCtx* b);
+
+
+/*
  * Call the specified lambda `func' in the specified environment `env' with the
  * specified arguments `args'.
  */
