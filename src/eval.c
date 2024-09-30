@@ -17,19 +17,22 @@
  * of errors (e.g. when asserts fail)
  */
 
-/* Does this expression match the form "(NAME ...)"? */
-static bool is_special_form(const Expr* e, const char* name) {
-    /*
-     * (defun is-special-form (e sym)
-     *   (assert (and (list? e)
-     *                (not (null? e))))
-     *   (and (symbol? (car e))
-     *        (equal? (car e) sym)))
-     */
-    SL_ASSERT(e != NULL && e->type == EXPR_PARENT && e->val.children != NULL);
-    return e->val.children->type == EXPR_SYMBOL &&
-           e->val.children->val.s != NULL &&
-           strcmp(e->val.children->val.s, name) == 0;
+/*
+ * Is this expression a special form symbol?
+ */
+static bool is_special_form(const Expr* e) {
+    static const char* special_form_symbols[] = {
+        "quote", "define", "lambda", "macro", "begin", "if", "or", "and",
+    };
+
+    if (e->type != EXPR_SYMBOL || e->val.s == NULL)
+        return false;
+
+    for (int i = 0; i < LENGTH(special_form_symbols); i++)
+        if (strcmp(e->val.s, special_form_symbols[i]) == 0)
+            return true;
+
+    return false;
 }
 
 /*
@@ -86,6 +89,9 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* car = e->val.children;
     Expr* cdr = e->val.children->next;
 
+    /* Check if the function is a special form symbol, before evaluating it */
+    const bool got_special_form = is_special_form(car);
+
     /*
      * Evaluate the expression representing the function. If the evaluation
      * fails, stop. Note that both the evaluated function and the evaluated list
@@ -100,11 +106,14 @@ static Expr* eval_function_call(Env* env, Expr* e) {
 
     /*
      * Normally, we should evaluate each of the arguments before applying the
-     * function. However, we will skip this step if the function is a macro
-     * because their arguments are not evaluated.  We will use this boolean when
-     * evaluating and freeing.
+     * function. However, this step is skipped if:
+     *   - There are no arguments.
+     *   - The function is a special form.
+     *   - The function is a macro.
+     * This boolean will be used when evaluating and freeing.
      */
-    const bool should_eval_args = (cdr != NULL && func->type != EXPR_MACRO);
+    const bool should_eval_args =
+      (cdr != NULL && !got_special_form && func->type != EXPR_MACRO);
 
     /*
      * If the arguments should be evaluated, evaluate them. If one of them
@@ -160,30 +169,7 @@ Expr* eval(Env* env, Expr* e) {
             if (expr_is_nil(e))
                 return expr_clone(e);
 
-            /*
-             * If the list is a call to a Special Form, pass the un-evaluated
-             * `cdr' to the primitive. See the "Special Forms" section of the SL
-             * manual, and Chapter 4.1.1 of SICP.
-             */
-            if (is_special_form(e, "quote"))
-                return prim_quote(env, e->val.children->next);
-            if (is_special_form(e, "define"))
-                return prim_define(env, e->val.children->next);
-            if (is_special_form(e, "lambda"))
-                return prim_lambda(env, e->val.children->next);
-            if (is_special_form(e, "macro"))
-                return prim_macro(env, e->val.children->next);
-            if (is_special_form(e, "begin"))
-                return prim_begin(env, e->val.children->next);
-            if (is_special_form(e, "if"))
-                return prim_if(env, e->val.children->next);
-            if (is_special_form(e, "or"))
-                return prim_or(env, e->val.children->next);
-            if (is_special_form(e, "and"))
-                return prim_and(env, e->val.children->next);
-
             /* Evaluate the list as a procedure/macro call */
-            /* TODO: Replace most occurrences of "function" with "procedure" */
             return eval_function_call(env, e);
         }
 
