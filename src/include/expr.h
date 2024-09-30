@@ -109,6 +109,12 @@ size_t expr_list_len(const Expr* e);
 bool expr_list_equal(const Expr* a, const Expr* b);
 
 /*
+ * Is the expression `e' inside the linked list `lst'? Checks using
+ * `expr_equal'.
+ */
+bool expr_list_is_member(const Expr* lst, const Expr* e);
+
+/*
  * Is the specified linked list homogeneous? In other words, do all elements
  * share the same type?
  */

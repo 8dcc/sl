@@ -329,6 +329,17 @@ bool expr_list_equal(const Expr* a, const Expr* b) {
     return false;
 }
 
+bool expr_list_is_member(const Expr* lst, const Expr* e) {
+    if (e == NULL)
+        return false;
+
+    for (; lst != NULL; lst = lst->next)
+        if (expr_equal(lst, e))
+            return true;
+
+    return false;
+}
+
 bool expr_list_is_homogeneous(const Expr* e) {
     if (e == NULL)
         return false;
