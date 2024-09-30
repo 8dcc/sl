@@ -462,10 +462,11 @@ These primitives don't fit into other categories. They are defined in
   #+end_src
 
   Just like with =eval=, the C /primitive/ is called =prim_apply=, but it's
-  just a wrapper for the C function =apply= (defined in [[file:eval.c]]). It
+  just a wrapper for the C function =apply=, defined in [[file:eval.c]]. It
   checks the type of the =function= expression, and dispatches the call to
   the appropriate function for performing the actual application process
-  (e.g. =lambda_call=).
+  (e.g. =lambda_call=). For more information, see =lambda= and =macro= in
+  [[*Special Forms][Special Forms]].
 
 - Function: macroexpand quoted-expr ::
 
