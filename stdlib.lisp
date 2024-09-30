@@ -29,6 +29,10 @@
   (list 'define name
         (cons 'lambda lambda-args)))
 
+(defmacro trace (func)
+  (list 'define '*debug-trace*
+        (list 'cons func '*debug-trace*)))
+
 ;;------------------------------------------------------------------------------
 ;; List-accessing functions
 ;;------------------------------------------------------------------------------
