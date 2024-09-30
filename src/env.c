@@ -181,7 +181,7 @@ void env_bind(Env* env, const char* sym, const Expr* val) {
     env->values[env->size - 1]  = expr_clone_recur(val);
 }
 
-Expr* env_get(Env* env, const char* sym) {
+Expr* env_get(const Env* env, const char* sym) {
     SL_ASSERT(env != NULL);
     SL_ASSERT(sym != NULL);
 
