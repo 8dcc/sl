@@ -138,7 +138,10 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     for (size_t i = 0; i < trace_nesting; i++)
         printf("  ");
     printf("%zu: ", trace_nesting % 10);
-    expr_print(applied);
+    if (applied == NULL)
+        printf("ERR");
+    else
+        expr_print(applied);
     putchar('\n');
 #endif
 
