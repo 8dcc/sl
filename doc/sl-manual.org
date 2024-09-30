@@ -443,7 +443,29 @@ These primitives don't fit into other categories. They are defined in
 
 - Function: apply function arg-list ::
 
-  TODO
+  Apply a function to a list of arguments.
+
+  The first argument must be an /applicable/ expression, that is, a
+  /Primitive/, /Lambda/ or /Macro/; and the second argument must be a list.
+
+  Again, =apply= is a normal procedure, so its arguments will be evaluated
+  before the call. However, even thought the user might need to quote
+  the argument list, the first argument must be a /procedure/, not a
+  /symbol/.
+
+  #+begin_src lisp
+  > (apply '+ '(1 2 3))
+  Error: Expected a procedure as the first argument, got 'Symbol'.
+
+  > (apply + '(1 2 3))
+  6
+  #+end_src
+
+  Just like with =eval=, the C /primitive/ is called =prim_apply=, but it's
+  just a wrapper for the C function =apply= (defined in [[file:eval.c]]). It
+  checks the type of the =function= expression, and dispatches the call to
+  the appropriate function for performing the actual application process
+  (e.g. =lambda_call=).
 
 - Function: macroexpand quoted-expr ::
 
