@@ -374,7 +374,9 @@ bool expr_list_has_only_numbers(const Expr* e) {
 /*----------------------------------------------------------------------------*/
 
 bool expr_is_nil(const Expr* e) {
-    return e != NULL && e->type == EXPR_PARENT && e->val.children == NULL;
+    return e != NULL && ((e->type == EXPR_PARENT && e->val.children == NULL) ||
+                         (e->type == EXPR_SYMBOL && e->val.s != NULL &&
+                          strcmp(e->val.s, "nil") == 0));
 }
 
 bool expr_equal(const Expr* a, const Expr* b) {
