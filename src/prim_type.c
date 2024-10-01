@@ -87,6 +87,16 @@ Expr* prim_str2flt(Env* env, Expr* e) {
 /*----------------------------------------------------------------------------*/
 /* Type-checking primitives */
 
+Expr* prim_type_of(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT_ARG_NUM(e, 1);
+
+    Expr* ret = expr_new(EXPR_SYMBOL);
+    ret->val.s = sl_safe_strdup(exprtype2str(e->type));
+    return ret;
+}
+
 Expr* prim_is_int(Env* env, Expr* e) {
     const bool result = expr_list_has_only_type(e, EXPR_NUM_INT);
     return (result) ? env_get(env, "tru") : env_get(env, "nil");

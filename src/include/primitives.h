@@ -34,6 +34,7 @@ DECLARE_PRIM(str2int);
 DECLARE_PRIM(str2flt);
 
 /* Type-checking (prim_type.c) */
+DECLARE_PRIM(type_of);
 DECLARE_PRIM(is_int);
 DECLARE_PRIM(is_flt);
 DECLARE_PRIM(is_symbol);

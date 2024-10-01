@@ -20,6 +20,11 @@ unbound-error-var  ; Expected: Unbound symbol: unbound-error-var
 (equal? '(1 2 3) '(1 2 3)) ; Expected: tru
 (equal? '(1 2 3) '(1 2 9)) ; Expected: nil
 
+;; Symbol `nil' evaluates to itself, see manual.
+(type-of nil)     ; Expected: List
+(type-of 'nil)    ; Expected: Symbol
+(equal? nil 'nil) ; Expected: tru
+
 (> 1 1) ; Expected: nil
 (< 1 1) ; Expected: nil
 (> 1 2) ; Expected: nil
@@ -34,12 +39,6 @@ unbound-error-var  ; Expected: Unbound symbol: unbound-error-var
 (or nil tru 'unreachable)  ; Expected: tru
 (and 123 nil 'unreachable) ; Expected: nil
 
-;; TODO: Add `import' primitive and import stdlib.
-;;
-;;  (cond ((equal? 1 2) 123)
-;;        ((equal? 5 6) 333)
-;;        (tru          777))
-
-(set-random-seed 420)
+(set-random-seed 50)
 (random 1337)
 (random 10.0)

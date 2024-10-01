@@ -103,6 +103,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "flt->str", flt2str);
     BIND_PRIM(env, "str->int", str2int);
     BIND_PRIM(env, "str->flt", str2flt);
+    BIND_PRIM(env, "type-of", type_of);
     BIND_PRIM(env, "int?", is_int);
     BIND_PRIM(env, "flt?", is_flt);
     BIND_PRIM(env, "symbol?", is_symbol);
