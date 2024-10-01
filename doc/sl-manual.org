@@ -42,8 +42,8 @@ https://list.orgmode.org/878qvbstna.fsf@gmail.com/T/#u
 
 - Variable: `nil' ::
 
-  Represents the empty list, but is also used to denote /false/ in
-  procedures returning predicates.
+  Represents the empty list, but is also used to denote the logical
+  value /false/.
 
   #+begin_src lisp
   > nil
@@ -60,6 +60,42 @@ https://list.orgmode.org/878qvbstna.fsf@gmail.com/T/#u
 
   > (cons 1 (cons 2 nil))
   (1 2)
+  #+end_src
+
+  This symbol is very special, since it represents the empty list =()=
+  even when quoted. The following four expressions evaluate to the same
+  value: The quoted symbol ='nil=, the symbol =nil=, the quoted empty list
+  ='()=, and the empty list =()=.
+
+  #+begin_src lisp
+  > (type-of nil)
+  List
+
+  > (type-of 'nil)
+  Symbol
+
+  > (null? 'nil)
+  tru
+
+  > (equal? 'nil nil)
+  tru
+  #+end_src
+
+  Note that this exception only applies to the symbol =nil=, it doesn't
+  happen with other symbols bound to the empty list.
+
+  #+begin_src lisp
+  > (define var nil)
+  nil
+
+  > (type-of 'var)
+  Symbol
+
+  > (null? 'var)
+  nil
+
+  > (null? var)
+  tru
   #+end_src
 
 - Variable: `tru' ::
