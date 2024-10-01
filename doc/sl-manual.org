@@ -110,15 +110,12 @@ and Interpretation of Computer Programs/[fn::
   Note that ='expr= is just syntactic sugar for =(quote expr)=. This is
   handled in [[file:parser.c]].
 
-- Special Form: define symbol expr ... ::
+- Special Form: define symbol expr ::
 
-  Bind symbol(s) in the current environment.
+  Bind symbol to a value in the current environment.
 
-  Expects an even number of arguments. Odd arguments must be symbols,
-  even arguments can have any type.
-
-  Evaluates even arguments, and binds them to the previous one. Returns
-  the last (evaluated) bound expression.
+  Evaluates the second argument, and binds it to the first one. Returns
+  the evaluated expression.
 
   #+begin_src lisp
   > n
@@ -129,17 +126,9 @@ and Interpretation of Computer Programs/[fn::
 
   > n
   123
-
-  > (define n 1
-            a 2
-            b 3)
-  3
-
-  > n
-  1
   #+end_src
 
-  As mentioned, it works on the /current/ environment.
+  As mentioned, it only operates on the /current/ environment.
 
   #+begin_src lisp
   > (define n 123)
@@ -158,8 +147,30 @@ and Interpretation of Computer Programs/[fn::
   123
   #+end_src
 
-  It is a special form because the odd arguments (symbols) are not
-  evaluated. This way, they don't have to be quoted by the caller.
+  It is a special form because the first argument is not evaluated. This
+  way, it doesn't have to be quoted by the caller.
+
+- Special Form: define-global symbol expr ::
+
+  Bind symbol to a value in the top-most environment. See the =define=
+  special form for more information.
+
+  #+begin_src lisp
+  > (define n 123)
+  123
+
+  > (define f
+      (lambda ()
+        (define-global n 999)
+        (list "Finished:" n)))
+  <lambda>
+
+  > (f)
+  ("Finished:" 999)
+
+  > n
+  999
+  #+end_src
 
 - Special Form: lambda formals body... ::
 
