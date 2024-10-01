@@ -30,44 +30,25 @@ Expr* prim_quote(Env* env, Expr* e) {
 
 Expr* prim_define(Env* env, Expr* e) {
     /*
-     * The `define' function binds the even arguments to the odd arguments.
-     * Therefore, it expects an even number of arguments.
+     * The `define' function binds a value (second argument) to a symbol (first
+     * argument).
      *
-     * Since it's a special form, the arguments we received in `e' are not
-     * evaluated. Before binding each even argument, we evaluate it. We don't
+     * Since it's a special form, we must evaluate the second argument. We don't
      * bind it if there is an error in the evaluation.
      *
-     * Returns an evaluated copy of the last bound expression.
+     * Returns the evaluated expression.
      */
-    Expr* last_bound = NULL;
-    SL_ON_ERR(return last_bound);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(expr_list_len(e) == 2,
+              "The special form `define' expects exactly 2 arguments.");
+    SL_EXPECT_TYPE(e, EXPR_SYMBOL);
 
-    for (Expr* arg = e; arg != NULL; arg = arg->next) {
-        SL_EXPECT(arg->next != NULL,
-                  "Got an odd number of arguments, ignoring last.");
+    Expr* evaluated = eval(env, e->next);
+    if (evaluated == NULL)
+        return NULL;
 
-        /* Odd argument: Symbol */
-        SL_EXPECT_TYPE(arg, EXPR_SYMBOL);
-        const char* sym = arg->val.s;
-
-        /* Even argument: Expression */
-        arg = arg->next;
-
-        Expr* evaluated = eval(env, arg);
-        if (evaluated == NULL)
-            continue;
-
-        env_bind(env, sym, evaluated);
-
-        expr_free(last_bound);
-        last_bound = evaluated;
-    }
-
-    /*
-     * Last bound holds either NULL or the last valid expression returned by
-     * `eval'. Since `eval' returns a new expression, we can return it safely.
-     */
-    return last_bound;
+    env_bind(env, e->val.s, evaluated);
+    return evaluated;
 }
 
 Expr* prim_lambda(Env* env, Expr* e) {
