@@ -5,6 +5,12 @@
 #+STARTUP: nofold
 #+TEXINFO_DIR_CATEGORY: Software development
 
+#+begin_comment emacs-lisp :results none
+(defalias 'add-dedicated-target
+   (kmacro "/ ^ - SPC <return> f : l l v E y A SPC < < <escape> p A > > <escape>")
+   "Add an Org dedicated target to the next description list item.")
+#+end_comment
+
 #+TOC: headlines 2
 
 Manual for [[https://github.com/8dcc/sl][8dcc/sl]].
@@ -33,7 +39,7 @@ see https://www.gnu.org/licenses/.
 
 These variables are defined by default in the global environment.
 
-- Variable: `nil' ::
+- Variable: `nil' :: <<nil>>
 
   #+begin_comment text
   TODO: Org fails to export variables named "nil", so we need to add
@@ -98,7 +104,7 @@ These variables are defined by default in the global environment.
   tru
   #+end_src
 
-- Variable: `tru' ::
+- Variable: `tru' :: <<tru>>
 
   Symbol that evaluates to itself, used for representing explicit truth
   in procedures returning predicates. There is no need for this symbol,
@@ -112,15 +118,11 @@ These variables are defined by default in the global environment.
   tru
   #+end_src
 
-- Variable: `*debug-trace*' ::
+- Variable: `*debug-trace*' :: <<*debug-trace*>>
 
   List of expressions that are traced when called. It's not advised to
   change the value of =*debug-trace*= directly with =define=, but instead
-  use the standard library function =trace= (see TODO).
-
-  #+begin_comment text
-  TODO: Link to `trace' function.
-  #+end_comment
+  use the standard library function =trace= (see [[trace]]).
 
   #+begin_src lisp
   > (defun fact (n)
@@ -147,7 +149,7 @@ These variables are defined by default in the global environment.
   In the previous example, notice how the function itself is added to
   the list, not the symbol =fact=. This allows debugging anonymous
   functions and macros, as long as they match with the =equal?= primitive
-  (see [[*Logical primitives][Logical primitives]]).
+  (see [[equal?]]).
 
   #+begin_src lisp
   > (defun identity (e) e)
@@ -203,7 +205,7 @@ For more information on special forms, see Section 4.1.1 of /Structure
 and Interpretation of Computer Programs/[fn::
 [[https://web.mit.edu/6.001/6.037/sicp.pdf#subsection.4.1.1]]].
 
-- Special Form: quote expr ::
+- Special Form: quote expr :: <<quote>>
 
   Return the argument, effectively delaying its evaluation.
 
@@ -221,7 +223,7 @@ and Interpretation of Computer Programs/[fn::
   Note that ='expr= is just syntactic sugar for =(quote expr)=. This is
   handled in [[file:parser.c]].
 
-- Special Form: define symbol expr ::
+- Special Form: define symbol expr :: <<define>>
 
   Bind symbol to a value in the current environment.
 
@@ -261,7 +263,7 @@ and Interpretation of Computer Programs/[fn::
   It is a special form because the first argument is not evaluated. This
   way, it doesn't have to be quoted by the caller.
 
-- Special Form: define-global symbol expr ::
+- Special Form: define-global symbol expr :: <<define-global>>
 
   Bind symbol to a value in the top-most environment. See the =define=
   special form for more information.
@@ -283,7 +285,7 @@ and Interpretation of Computer Programs/[fn::
   999
   #+end_src
 
-- Special Form: lambda formals body... ::
+- Special Form: lambda formals body... :: <<lambda>>
 
   Return a new anonymous procedure.
 
@@ -328,7 +330,7 @@ and Interpretation of Computer Programs/[fn::
   (1 2 (3 4 5))
   #+end_src
 
-- Special Form: macro formals body... ::
+- Special Form: macro formals body... :: <<macro>>
 
   Return a new anonymous macro.
 
@@ -346,7 +348,7 @@ and Interpretation of Computer Programs/[fn::
   - Macros don't /directly/ compute values, they instead build Lisp
     expressions that will be used to compute the actual values. The
     second step of a macro call is the /macro expansion/ (see
-    [[*General Primitives]]). In this step, the macro is called just like a
+    [[macroexpand]]). In this step, the macro is called just like a
     lambda, returning a Lisp expression.
   - The last step of a macro call is evaluating the expanded expression,
     which will be used to compute the actual value returned by the
@@ -400,7 +402,7 @@ and Interpretation of Computer Programs/[fn::
   For more information on how macros behave in this Lisp, see the
   [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Macros.html][Emacs Lisp manual]].
 
-- Special Form: begin &rest exprs ::
+- Special Form: begin &rest exprs :: <<begin>>
 
   Evaluate each argument in order, and return the last result.
 
@@ -408,7 +410,7 @@ and Interpretation of Computer Programs/[fn::
   normal procedure call, the arguments are not required to be evaluated
   in order, when calling =begin=, they are. The fact that it has to
   evaluate the expressions is helpful when combined with something like
-  =apply= and a quoted expression (see [[*General Primitives]]).
+  =apply= and a quoted expression (see [[apply]]).
 
   #+begin_src lisp
   ;; Arguments not evaluated because it's a special form.
@@ -430,7 +432,7 @@ and Interpretation of Computer Programs/[fn::
   456
   #+end_src
 
-- Special Form: if predicate consequent alternative ::
+- Special Form: if predicate consequent alternative :: <<if>>
 
   Return evaluated /consequent/ or /alternative/ depending on whether or not
   /predicate/ evaluated to non-nil or not, respectively.
@@ -453,7 +455,7 @@ and Interpretation of Computer Programs/[fn::
   why special forms are necessary, since a normal function call would
   have to evaluate the 3 arguments before applying =if= to them.
 
-- Special Form: or &rest exprs ::
+- Special Form: or &rest exprs :: <<or>>
 
   Evaluates each argument expression in order, and once it finds a
   non-nil result, it stops evaluating and returns it. Returns =nil= if all
@@ -486,7 +488,7 @@ and Interpretation of Computer Programs/[fn::
               (car exprs))))
   #+end_src
 
-- Special Form: and &rest exprs ::
+- Special Form: and &rest exprs :: <<and>>
 
   Evaluates each argument expression in order, and if it finds a =nil=
   result, it stops evaluating and returns =nil=. If all arguments
@@ -526,7 +528,7 @@ and Interpretation of Computer Programs/[fn::
 These primitives don't fit into other categories. They are defined in
 [[file:prim_general.c]].
 
-- Function: eval expr ::
+- Function: eval expr :: <<eval>>
 
   Evaluate the specified expression.
 
@@ -563,7 +565,7 @@ These primitives don't fit into other categories. They are defined in
   The C /primitive/ is called =prim_eval=, but the actual evaluation process
   is performed by the C function =eval=, defined in [[file:eval.c]].
 
-- Function: apply function arg-list ::
+- Function: apply function arg-list :: <<apply>>
 
   Apply a function to a list of arguments.
 
@@ -587,15 +589,28 @@ These primitives don't fit into other categories. They are defined in
   just a wrapper for the C function =apply=, defined in [[file:eval.c]]. It
   checks the type of the =function= expression, and dispatches the call to
   the appropriate function for performing the actual application process
-  (e.g. =lambda_call=). For more information, see =lambda= and =macro= in
-  [[*Special Forms][Special Forms]].
+  (e.g. =lambda_call=). For more information, see [[lambda]] and [[macro]].
 
-- Function: macroexpand quoted-expr ::
+- Function: macroexpand quoted-expr :: <<macroexpand>>
 
   TODO
 
 ** Logical primitives
 
-- Function: equal? &rest args ::
+TODO
+
+- Function: equal? &rest args :: <<equal?>>
+
+  TODO
+
+* Standard library
+
+TODO
+
+** Debugging
+
+TODO
+
+- Function: trace function :: <<trace>>
 
   TODO
