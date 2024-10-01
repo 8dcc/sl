@@ -113,6 +113,13 @@
         ((not (f (car lst))) nil)
         (tru (every f (cdr lst)))))
 
+(defun some (f lst)
+  (if (null? lst)
+      nil
+      (let ((result (f (car lst))))
+        (if result result
+            (some f (cdr lst))))))
+
 ;; NOTE: Should match C's `expr_is_number'
 (defun number? (expr)
   (or (int? expr)
