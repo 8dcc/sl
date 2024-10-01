@@ -9,6 +9,26 @@
 
 Manual for [[https://github.com/8dcc/sl][8dcc/sl]].
 
+* Copying
+:PROPERTIES:
+:COPYING: t
+:END:
+
+This manual is for SL (version 0.1), a simple Lisp interpreter.
+
+Copyright \copy 2024 8dcc.
+
+#+begin_quote
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.
+
+A copy of the license should be included along with the manual. If not,
+see https://www.gnu.org/licenses/.
+#+end_quote
+
 * Constants
 
 These constants are defined by default in the global environment.
