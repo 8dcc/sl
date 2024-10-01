@@ -94,9 +94,8 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     SL_EXPECT(expr_is_applicable(func), "Expected function or macro, got '%s'.",
               exprtype2str(func->type));
 
+    /* Is this function in the `*debug-trace*' list? */
     const bool should_print_trace = debug_is_traced_function(env, func);
-    if (should_print_trace)
-        debug_trace_print_pre(e);
 
     /*
      * Normally, we should evaluate each of the arguments before applying the
@@ -126,6 +125,9 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     } else {
         args = cdr;
     }
+
+    if (should_print_trace)
+        debug_trace_print_pre(car, args);
 
     /* Apply the evaluated function to the evaluated argument list */
     Expr* applied = apply(env, func, args);

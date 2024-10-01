@@ -8,18 +8,11 @@
 
 static size_t trace_nesting = 0;
 
-static void debug_trace_print_expr(const Expr* e) {
-    for (size_t i = 0; i < trace_nesting; i++)
+static void print_trace_number(void) {
+    for (size_t i = 0; i <= trace_nesting; i++)
         printf("  ");
 
     printf("%zu: ", trace_nesting % 10);
-
-    if (e == NULL)
-        printf("ERR");
-    else
-        expr_print(e);
-
-    putchar('\n');
 }
 
 bool debug_is_traced_function(const Env* env, const Expr* e) {
@@ -33,12 +26,28 @@ bool debug_is_traced_function(const Env* env, const Expr* e) {
     return result;
 }
 
-void debug_trace_print_pre(const Expr* e) {
-    debug_trace_print_expr(e);
+void debug_trace_print_pre(const Expr* func, const Expr* arg) {
+    print_trace_number();
+
+    putchar('(');
+    expr_print(func);
+    for (; arg != NULL; arg = arg->next) {
+        putchar(' ');
+        expr_print(arg);
+    }
+    printf(")\n");
+
     trace_nesting++;
 }
 
 void debug_trace_print_post(const Expr* e) {
     trace_nesting--;
-    debug_trace_print_expr(e);
+    print_trace_number();
+
+    if (e == NULL)
+        printf("ERR");
+    else
+        expr_print(e);
+
+    putchar('\n');
 }

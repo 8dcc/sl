@@ -40,6 +40,8 @@ void env_init_defaults(Env* env) {
      *     NULL as `val.children'.
      *   - tru: Symbol that evaluates to itself, used for explicit truth in
      *     boolean functions.
+     *   - *debug-trace*: List of functions that are currently being traced by
+     *     the debugger.
      *
      * Since the expressions will be cloned, it's safe to pass the stack address
      * to `env_bind'.
