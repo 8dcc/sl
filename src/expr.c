@@ -387,6 +387,14 @@ bool expr_equal(const Expr* a, const Expr* b) {
     if (a == NULL || b == NULL)
         return a == b;
 
+    /*
+     * If both of them are `nil', they are equal. This check is important
+     * because the symbol "nil" and the empty list have different types but are
+     * equal.
+     */
+    if (expr_is_nil(a) && expr_is_nil(b))
+        return true;
+
     if (a->type != b->type)
         return false;
 
