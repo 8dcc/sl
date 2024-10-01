@@ -102,36 +102,31 @@
 ;; General predicates
 ;;------------------------------------------------------------------------------
 
-;; TODO: Simplify these for single-argument?
-
 (defun not (predicate)
-  (if (equal? predicate nil)
-      tru
-      nil))
+  (if predicate nil tru))
 
-(defun null? (&rest args)
-  (apply equal? (cons nil args)))
+(defun null? (expr)
+  (not expr))
 
-(defun number? (&rest lst)
-  (if (null? lst)
-      tru
-      (if (or (int? (car lst))
-              (flt? (car lst)))
-          (apply number? (cdr lst))
-          nil)))
+(defun every (f lst)
+  (cond ((null? lst) tru)
+        ((not (f (car lst))) nil)
+        (tru (every f (cdr lst)))))
+
+;; NOTE: Should match C's `expr_is_number'
+(defun number? (expr)
+  (or (int? expr)
+      (flt? expr)))
 
 ;; NOTE: Should match C's `expr_is_applicable'
-(defun func? (&rest lst)
-  (if (null? lst)
-      tru
-      (if (or (primitive? (car lst))
-              (lambda?    (car lst)))
-          (apply func? (cdr lst))
-          nil)))
+(defun applicable? (expr)
+  (or (primitive? expr)
+      (lambda?    expr)
+      (macro?     expr)))
 
-(defun = (a &rest b)
-  (and (apply number? (cons a b))
-       (apply equal?  (cons a b))))
+(defun = (&rest nums)
+  (and (every number? nums)
+       (apply equal? nums)))
 
 ;;------------------------------------------------------------------------------
 ;; Mapping
