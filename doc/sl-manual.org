@@ -29,18 +29,18 @@ A copy of the license should be included along with the manual. If not,
 see https://www.gnu.org/licenses/.
 #+end_quote
 
-* Constants
+* Variables
 
-These constants are defined by default in the global environment.
-
-#+begin_comment
-TODO: Org fails to export variables named "nil", so we need to add
-quotes until it's fixed.
-
-https://list.orgmode.org/878qvbstna.fsf@gmail.com/T/#u
-#+end_comment
+These variables are defined by default in the global environment.
 
 - Variable: `nil' ::
+
+  #+begin_comment text
+  TODO: Org fails to export variables named "nil", so we need to add
+  quotes until it's fixed.
+
+  https://list.orgmode.org/878qvbstna.fsf@gmail.com/T/#u
+  #+end_comment
 
   Represents the empty list, but is also used to denote the logical
   value /false/.
@@ -110,6 +110,59 @@ https://list.orgmode.org/878qvbstna.fsf@gmail.com/T/#u
 
   > (eval tru)
   tru
+  #+end_src
+
+- Variable: `*debug-trace*' ::
+
+  List of expressions that are traced when called. It's not advised to
+  change the value of =*debug-trace*= directly with =define=, but instead
+  use the standard library function =trace= (see TODO).
+
+  #+begin_comment text
+  TODO: Link to `trace' function.
+  #+end_comment
+
+  #+begin_src lisp
+  > (defun fact (n)
+      (if (= n 0)
+          1
+          (* n (fact (- n 1)))))
+  <lambda>
+
+  > (define *debug-trace* (list fact))
+  (<lambda>)
+
+  > (fact 3)
+    0: (fact 3)
+      1: (fact 2)
+        2: (fact 1)
+          3: (fact 0)
+          3: 1
+        2: 1
+      1: 2
+    0: 6
+  6
+  #+end_src
+
+  In the previous example, notice how the function itself is added to
+  the list, not the symbol =fact=. This allows debugging anonymous
+  functions and macros, as long as they match with the =equal?= primitive
+  (see [[*Logical primitives][Logical primitives]]).
+
+  #+begin_src lisp
+  > (defun identity (e) e)
+  <lambda>
+
+  > (equal? identity
+            (lambda (e) e))
+
+  > (trace (lambda (e) e))
+  "Trace enabled."
+
+  > (identity 5)
+    0: (identity 5)
+    0: 5
+  5
   #+end_src
 
 * Primitive Procedures
@@ -538,5 +591,11 @@ These primitives don't fit into other categories. They are defined in
   [[*Special Forms][Special Forms]].
 
 - Function: macroexpand quoted-expr ::
+
+  TODO
+
+** Logical primitives
+
+- Function: equal? &rest args ::
 
   TODO
