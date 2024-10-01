@@ -29,10 +29,6 @@
   (list 'define name
         (cons 'lambda lambda-args)))
 
-(defmacro trace (func)
-  (list 'define '*debug-trace*
-        (list 'cons func '*debug-trace*)))
-
 ;;------------------------------------------------------------------------------
 ;; List-accessing functions
 ;;------------------------------------------------------------------------------
@@ -92,6 +88,15 @@
               (cons (mapcar car definitions)
                     body))
         (mapcar cadr definitions)))
+
+;;------------------------------------------------------------------------------
+;; Debugging
+;;------------------------------------------------------------------------------
+
+;; TODO: Toggle by removing `func' if it's already in `*debug-trace*'
+(defun trace (func)
+  (define-global *debug-trace* (cons func *debug-trace*))
+  "Trace enabled.")
 
 ;;------------------------------------------------------------------------------
 ;; General predicates
