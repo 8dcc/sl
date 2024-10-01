@@ -51,6 +51,29 @@ Expr* prim_define(Env* env, Expr* e) {
     return evaluated;
 }
 
+Expr* prim_define_global(Env* env, Expr* e) {
+    /*
+     * The `define' function binds a value (second argument) to a symbol (first
+     * argument).
+     *
+     * Since it's a special form, we must evaluate the second argument. We don't
+     * bind it if there is an error in the evaluation.
+     *
+     * Returns the evaluated expression.
+     */
+    SL_ON_ERR(return NULL);
+    SL_EXPECT(expr_list_len(e) == 2,
+              "The special form `define' expects exactly 2 arguments.");
+    SL_EXPECT_TYPE(e, EXPR_SYMBOL);
+
+    Expr* evaluated = eval(env, e->next);
+    if (evaluated == NULL)
+        return NULL;
+
+    env_bind_global(env, e->val.s, evaluated);
+    return evaluated;
+}
+
 Expr* prim_lambda(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);

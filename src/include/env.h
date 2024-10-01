@@ -42,6 +42,12 @@ void env_free(Env* env);
 void env_bind(Env* env, const char* sym, const struct Expr* val);
 
 /*
+ * Bind the expression `val' to the symbol `sym' in the top-most parent of
+ * environment `env'.
+ */
+void env_bind_global(Env* env, const char* sym, const struct Expr* val);
+
+/*
  * Get a copy of the expression associated to the symbol `sym' in environment
  * `env', or in parent environments. The returned copy must be freed by the
  * caller.

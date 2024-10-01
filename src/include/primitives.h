@@ -10,6 +10,7 @@ struct Expr; /* expr.h */
 /* Special Form (prim_special.c) */
 DECLARE_PRIM(quote);
 DECLARE_PRIM(define);
+DECLARE_PRIM(define_global);
 DECLARE_PRIM(lambda);
 DECLARE_PRIM(macro);
 DECLARE_PRIM(begin);

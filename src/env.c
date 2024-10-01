@@ -68,6 +68,7 @@ void env_init_defaults(Env* env) {
     /* Bind primitive C functions */
     BIND_PRIM(env, "quote", quote);
     BIND_PRIM(env, "define", define);
+    BIND_PRIM(env, "define-global", define_global);
     BIND_PRIM(env, "lambda", lambda);
     BIND_PRIM(env, "macro", macro);
     BIND_PRIM(env, "begin", begin);
@@ -186,6 +187,12 @@ void env_bind(Env* env, const char* sym, const Expr* val) {
 
     env->symbols[env->size - 1] = sl_safe_strdup(sym);
     env->values[env->size - 1]  = expr_clone_recur(val);
+}
+
+void env_bind_global(Env* env, const char* sym, const Expr* val) {
+    while (env->parent != NULL)
+        env = env->parent;
+    env_bind(env, sym, val);
 }
 
 Expr* env_get(const Env* env, const char* sym) {
