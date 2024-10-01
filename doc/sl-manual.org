@@ -63,18 +63,15 @@ SL. Primitive procedures are implemented in C.
 
 ** Special Forms
 
-These primitives are /special forms/, meaning that special evaluation
-rules are used when they are called. What this usually means is that
-they receive their arguments un-evaluated so they can operate on them,
-before evaluating them manually if needed.
-
-Calls to special forms are checked separately in [[file:eval.c]], so even
-though their primitives are bound to a symbol in the global environment,
-overwriting them (e.g. with =define=) has no effect. The C primitives for
-this section are defined in [[file:prim_special.c]].
+These primitives are /special forms/, that is, special procedures whose
+arguments are /not/ evaluated before the call. This way the procedures can
+operate on the un-evaluated expressions, before evaluating them manually
+if needed. The C primitives for this section are defined in
+[[file:prim_special.c]].
 
 A list is interpreted as a special form call when its first element is a
-special form symbol:
+special form symbol. The list of special form symbols is defined in
+[[file:eval.c]], so they are hard-coded into the interpreter.
 
 #+begin_src lisp
 (define special-form-symbols
@@ -87,6 +84,11 @@ special form symbol:
        (symbol? (car e))
        (member? (car e) special-form-symbol)))
 #+end_src
+
+However, since the actual functions corresponding to the special form
+symbols are retrieved normally from the current environment, it is
+/technically/ possible to overwrite the symbols with new functions
+(e.g. using =define=), but it's highly discouraged.
 
 For more information on special forms, see Section 4.1.1 of /Structure
 and Interpretation of Computer Programs/[fn::
