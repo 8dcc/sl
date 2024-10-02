@@ -617,6 +617,43 @@ These primitives don't fit into other categories. They are defined in
   expansion. Calling a macro simply means evaluating the expanded
   expression. See also [[macro][=macro=]].
 
+- Function: random limit :: <<random>>
+
+  Return a random number between zero and =limit=. The argument type must
+  be numerical, and the returned number will share the same type.
+
+  #+begin_src lisp
+  > (random 5)
+  4
+
+  > (random 5.0)
+  2.261398
+
+  > (type-of (random 1))
+  Integer
+
+  > (type-of (random 1.0))
+  Float
+  #+end_src
+
+- Function: set-random-seed seed :: <<set-random-seed>>
+
+  Set the random seed to the specified integer argument. Returns =tru=.
+
+  #+begin_src lisp
+  > (set-random-seed 1337)
+  tru
+
+  > (random 1000)
+  136
+
+  > (set-random-seed 1337)
+  tru
+
+  > (random 1000)
+  136
+  #+end_src
+
 ** Logical primitives
 
 TODO
