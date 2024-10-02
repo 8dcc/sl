@@ -594,7 +594,28 @@ These primitives don't fit into other categories. They are defined in
 
 - Function: macroexpand quoted-expr :: <<macroexpand>>
 
-  TODO
+  Expand =quoted-expr=, a list representing a macro call. The evaluated
+  =car= of the list must be an expression of type /Macro/. The expansion of
+  a macro is the expression returned by that macro before being
+  evaluated. The /expansion/ step of a macro call is the same as a normal
+  lambda call, but the arguments are not evaluated before calling
+  it.
+
+  #+begin_src lisp
+  > (defmacro inc (sym)
+      (list 'define sym (list '+ sym 1)))
+  <macro>
+
+  > (define my-var 5)
+  5
+
+  > (macroexpand '(inc my-var))
+  (define my-var (+ my-var 1))
+  #+end_src
+
+  Notice how the macro body just returns a list. That is the macro
+  expansion. Calling a macro simply means evaluating the expanded
+  expression. See also [[macro][=macro=]].
 
 ** Logical primitives
 
