@@ -122,7 +122,7 @@ These variables are defined by default in the global environment.
 
   List of expressions that are traced when called. It's not advised to
   change the value of =*debug-trace*= directly with =define=, but instead
-  use the standard library function =trace= (see [[trace]]).
+  use the standard library function =trace= (see [[trace][=trace=]]).
 
   #+begin_src lisp
   > (defun fact (n)
@@ -149,7 +149,7 @@ These variables are defined by default in the global environment.
   In the previous example, notice how the function itself is added to
   the list, not the symbol =fact=. This allows debugging anonymous
   functions and macros, as long as they match with the =equal?= primitive
-  (see [[equal?]]).
+  (see [[equal?][=equal?=]]).
 
   #+begin_src lisp
   > (defun identity (e) e)
@@ -265,8 +265,8 @@ and Interpretation of Computer Programs/[fn::
 
 - Special Form: define-global symbol expr :: <<define-global>>
 
-  Bind symbol to a value in the top-most environment. See the =define=
-  special form for more information.
+  Bind symbol to a value in the top-most environment. For more
+  information, see [[define][=define=]].
 
   #+begin_src lisp
   > (define n 123)
@@ -348,7 +348,7 @@ and Interpretation of Computer Programs/[fn::
   - Macros don't /directly/ compute values, they instead build Lisp
     expressions that will be used to compute the actual values. The
     second step of a macro call is the /macro expansion/ (see
-    [[macroexpand]]). In this step, the macro is called just like a
+    [[macroexpand][=macroexpand=]]). In this step, the macro is called just like a
     lambda, returning a Lisp expression.
   - The last step of a macro call is evaluating the expanded expression,
     which will be used to compute the actual value returned by the
@@ -410,7 +410,7 @@ and Interpretation of Computer Programs/[fn::
   normal procedure call, the arguments are not required to be evaluated
   in order, when calling =begin=, they are. The fact that it has to
   evaluate the expressions is helpful when combined with something like
-  =apply= and a quoted expression (see [[apply]]).
+  =apply= and a quoted expression (see [[apply][=apply=]]).
 
   #+begin_src lisp
   ;; Arguments not evaluated because it's a special form.
@@ -435,7 +435,8 @@ and Interpretation of Computer Programs/[fn::
 - Special Form: if predicate consequent alternative :: <<if>>
 
   Return evaluated /consequent/ or /alternative/ depending on whether or not
-  /predicate/ evaluated to non-nil or not, respectively.
+  /predicate/ evaluated to non-nil or not, respectively. See also [[nil][=nil=]]
+  and [[tru][=tru=]].
 
   #+begin_src lisp
   > (if tru 'abc 'xyz)
@@ -588,8 +589,8 @@ These primitives don't fit into other categories. They are defined in
   Just like with =eval=, the C /primitive/ is called =prim_apply=, but it's
   just a wrapper for the C function =apply=, defined in [[file:eval.c]]. It
   checks the type of the =function= expression, and dispatches the call to
-  the appropriate function for performing the actual application process
-  (e.g. =lambda_call=). For more information, see [[lambda]] and [[macro]].
+  the appropriate function for performing the actual application
+  process. For more information, see [[lambda][=lambda=]] and [[macro][=macro=]].
 
 - Function: macroexpand quoted-expr :: <<macroexpand>>
 
