@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h> /* isatty() */
+#include <time.h>   /* time() */
 
 #include "include/env.h"
 #include "include/expr.h"
@@ -37,6 +38,9 @@ int main(int argc, char** argv) {
     /* Initialize global environment with symbols like "nil" */
     Env* global_env = env_new();
     env_init_defaults(global_env);
+
+    /* Set unique random seed, can be overwritten with `prim_set_random_seed' */
+    srand(time(NULL));
 
     if (print_prompt)
         puts("Welcome to the Simple Lisp REPL.");
