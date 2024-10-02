@@ -217,8 +217,12 @@ void expr_print_debug(const Expr* e) {
             putchar('\n');
 
             /* Print each expression in the body of the function */
+            for (int i = 0; i < indent; i++)
+                putchar(' ');
+            printf("Body:\n");
+            indent += INDENT_STEP;
             expr_print_debug(e->val.lambda->body);
-            indent -= INDENT_STEP;
+            indent -= INDENT_STEP * 2;
         } break;
 
         case EXPR_ERR: {
