@@ -184,10 +184,6 @@ Expr* eval(Env* env, Expr* e) {
 /*----------------------------------------------------------------------------*/
 
 Expr* apply(Env* env, Expr* func, Expr* args) {
-    SL_ASSERT(env != NULL);
-    SL_ASSERT(func != NULL);
-    SL_ASSERT(expr_is_applicable(func));
-
     /*
      * Some important notes about the implementation of `apply':
      *   - It expects a valid environment and a valid applicable function (see
@@ -196,11 +192,12 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
      *     necessary. The arguments are passed to the function unchanged.
      *   - The `args' pointer can be NULL, since some functions expect no
      *     arguments. Again, the pointer is passed as-is.
-     *   - Special forms are handled separately in `eval', so they can't be
-     *     applied using this function.
      */
-    Expr* result;
+    SL_ASSERT(env != NULL);
+    SL_ASSERT(func != NULL);
+    SL_ASSERT(expr_is_applicable(func));
 
+    Expr* result;
     switch (func->type) {
         case EXPR_PRIM: {
             /* Get primitive C function from the expression */
