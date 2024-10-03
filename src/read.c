@@ -115,7 +115,7 @@ char* read_expr(FILE* fp) {
              * are done.
              */
             if (nesting_level <= 0) {
-                SL_WRN("Encountered unmatched ')'.");
+                SL_ERR("Encountered unmatched ')'.");
                 i--;
             } else {
                 nesting_level--;

@@ -102,7 +102,7 @@ Expr* expr_clone(const Expr* e) {
             break;
 
         case EXPR_ERR:
-            SL_WRN("Trying to clone <error>");
+            SL_ERR("Trying to clone <error>");
             break;
     }
 
@@ -160,7 +160,7 @@ void expr_print_debug(const Expr* e) {
 
     if (e == NULL) {
         printf("[ERR] ");
-        SL_WRN("Unexpected NULL expression. Returning...");
+        SL_ERR("Unexpected NULL expression. Returning...");
         return;
     }
 
@@ -248,7 +248,7 @@ static void print_list(const Expr* e) {
 
 void expr_print(const Expr* e) {
     if (e == NULL) {
-        SL_WRN("Unexpected NULL expression. Returning...");
+        SL_ERR("Unexpected NULL expression. Returning...");
         return;
     }
 

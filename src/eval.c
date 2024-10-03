@@ -235,7 +235,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
         } break;
 
         default: {
-            SL_WRN("Expected 'Primitive' or 'Lambda', got '%s'.",
+            SL_ERR("Expected 'Primitive' or 'Lambda', got '%s'.",
                    exprtype2str(func->type));
             result = NULL;
         } break;

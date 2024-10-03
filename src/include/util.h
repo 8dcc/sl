@@ -20,17 +20,17 @@
 #define CLAMP(N, LO, HI) (MIN(MAX((LO), (N)), (HI)))
 
 /*
- * Wrapper for `print_wrn'.
+ * Wrapper for `sl_print_err'.
  */
-#define SL_WRN(...) print_wrn(__func__, __VA_ARGS__)
+#define SL_ERR(...) sl_print_err(__func__, __VA_ARGS__)
 
 /*
- * Show error message with `print_err' and exit.
+ * Show error message with `sl_print_ftl' and exit.
  */
-#define SL_FATAL(...)                                         \
-    do {                                                      \
-        print_err(__FILE__, __LINE__, __func__, __VA_ARGS__); \
-        exit(1);                                              \
+#define SL_FATAL(...)                                            \
+    do {                                                         \
+        sl_print_ftl(__FILE__, __LINE__, __func__, __VA_ARGS__); \
+        exit(1);                                                 \
     } while (0)
 
 /*
@@ -59,7 +59,7 @@ sl_lbl_on_err:                  \
 #define SL_EXPECT(COND, ...)                                         \
     do {                                                             \
         if ((COND) == 0) {                                           \
-            SL_WRN(__VA_ARGS__);                                     \
+            SL_ERR(__VA_ARGS__);                                     \
             goto sl_lbl_on_err; /* Make sure you call SL_ON_ERR() */ \
         }                                                            \
     } while (0)
@@ -106,9 +106,9 @@ sl_lbl_on_err:                  \
  * Print different error messages to stderr, along with some context
  * information.
  */
-void print_wrn(const char* func, const char* fmt, ...);
-void print_err(const char* file, int line, const char* func, const char* fmt,
-               ...);
+void sl_print_err(const char* func, const char* fmt, ...);
+void sl_print_ftl(const char* file, int line, const char* func, const char* fmt,
+                  ...);
 
 /*
  * Allocate `sz' bytes using `malloc' or `calloc', ensuring a valid pointer is

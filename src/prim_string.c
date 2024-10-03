@@ -43,7 +43,7 @@ Expr* prim_format(Env* env, Expr* e) {
 
         /* Make sure the user supplied enough arguments. */
         if (cur_arg == NULL) {
-            SL_WRN("Not enough arguments for the specified format.");
+            SL_ERR("Not enough arguments for the specified format.");
             free(dst);
             return NULL;
         }
@@ -78,7 +78,7 @@ Expr* prim_format(Env* env, Expr* e) {
                 goto done;
 
             default:
-                SL_WRN("Invalid format specifier: '%c' (0x%02x).", *fmt, *fmt);
+                SL_ERR("Invalid format specifier: '%c' (0x%02x).", *fmt, *fmt);
                 dst[dst_pos++] = *fmt++;
                 continue;
         }
@@ -89,7 +89,7 @@ Expr* prim_format(Env* env, Expr* e) {
          * argument.
          */
         if (expr_type != cur_arg->type) {
-            SL_WRN("Format specifier expected argument of type '%s', got '%s'.",
+            SL_ERR("Format specifier expected argument of type '%s', got '%s'.",
                    exprtype2str(expr_type), exprtype2str(cur_arg->type));
             free(dst);
             return NULL;

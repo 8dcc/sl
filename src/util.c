@@ -14,7 +14,7 @@
 #define COL_NORM_RED    "\e[0;31m"
 #define COL_BOLD_CYAN   "\e[1;36m"
 
-void print_wrn(const char* func, const char* fmt, ...) {
+void sl_print_err(const char* func, const char* fmt, ...) {
     va_list va;
     va_start(va, fmt);
 
@@ -33,8 +33,8 @@ void print_wrn(const char* func, const char* fmt, ...) {
     va_end(va);
 }
 
-void print_err(const char* file, int line, const char* func, const char* fmt,
-               ...) {
+void sl_print_ftl(const char* file, int line, const char* func, const char* fmt,
+                  ...) {
     va_list va;
     va_start(va, fmt);
 
@@ -94,7 +94,7 @@ char escaped2byte(char escaped) {
         case '\\': return '\\';
         case '\"': return '\"';
         default:
-            SL_WRN("The specified escape sequence (\\%c) is not currently "
+            SL_ERR("The specified escape sequence (\\%c) is not currently "
                    "supported.",
                    escaped);
             return escaped;
@@ -157,7 +157,7 @@ bool sl_regex_matches(const char* pat, const char* str, bool ignore_case,
         cflags |= REG_ICASE;
 
     if (regcomp(&r, pat, cflags) != REG_NOERROR) {
-        SL_WRN("Failed to compile pattern \"%s\"", pat);
+        SL_ERR("Failed to compile pattern \"%s\"", pat);
         return false;
     }
 
@@ -191,7 +191,7 @@ size_t int2str(long long x, char** dst) {
      */
     const int size = snprintf(NULL, 0, "%lld", x);
     if (size < 0) {
-        SL_WRN("Failed to get the target string length for integer: %lld", x);
+        SL_ERR("Failed to get the target string length for integer: %lld", x);
         *dst = NULL;
         return 0;
     }
@@ -204,7 +204,7 @@ size_t int2str(long long x, char** dst) {
 size_t flt2str(double x, char** dst) {
     const int size = snprintf(NULL, 0, "%f", x);
     if (size < 0) {
-        SL_WRN("Failed to get the target string length for float: %f", x);
+        SL_ERR("Failed to get the target string length for float: %f", x);
         *dst = NULL;
         return 0;
     }
