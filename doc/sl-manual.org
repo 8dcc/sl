@@ -433,6 +433,26 @@ and Interpretation of Computer Programs/[fn::
   456
   #+end_src
 
+  Furthermore, it could be defined as a macro using =lambda=, with some
+  limitations. For example, in the following macro version, calls to
+  =define= would bind the variables in the =lambda= environment, which does
+  not happen in the special form version.
+
+  #+begin_src lisp
+  > (defmacro my-begin (&rest exprs)
+      (list (cons* 'lambda '() exprs)))
+  <macro>
+
+  > (my-begin
+     (define my-var 123) ; Only defined in body
+     'ignored-sym
+     (+ 1 2 3))
+  6
+
+  > my-var
+  Unbound symbol: my-var
+  #+end_src
+
 - Special Form: if predicate consequent alternative :: <<if>>
 
   Return evaluated /consequent/ or /alternative/ depending on whether or not
