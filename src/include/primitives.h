@@ -25,13 +25,10 @@ DECLARE_PRIM(macroexpand);
 DECLARE_PRIM(random);
 DECLARE_PRIM(set_random_seed);
 
-/* Type-conversion (prim_type.c) */
-DECLARE_PRIM(int2flt);
-DECLARE_PRIM(flt2int);
-DECLARE_PRIM(int2str);
-DECLARE_PRIM(flt2str);
-DECLARE_PRIM(str2int);
-DECLARE_PRIM(str2flt);
+/* Logical (prim_logic.c) */
+DECLARE_PRIM(equal);
+DECLARE_PRIM(lt);
+DECLARE_PRIM(gt);
 
 /* Type-checking (prim_type.c) */
 DECLARE_PRIM(type_of);
@@ -43,6 +40,14 @@ DECLARE_PRIM(is_list);
 DECLARE_PRIM(is_primitive);
 DECLARE_PRIM(is_lambda);
 DECLARE_PRIM(is_macro);
+
+/* Type-conversion (prim_type.c) */
+DECLARE_PRIM(int2flt);
+DECLARE_PRIM(flt2int);
+DECLARE_PRIM(int2str);
+DECLARE_PRIM(flt2str);
+DECLARE_PRIM(str2int);
+DECLARE_PRIM(str2flt);
 
 /* List-related (prim_list.c) */
 DECLARE_PRIM(list);
@@ -74,10 +79,5 @@ DECLARE_PRIM(bit_xor);
 DECLARE_PRIM(bit_not);
 DECLARE_PRIM(shr);
 DECLARE_PRIM(shl);
-
-/* Logical (prim_logic.c) */
-DECLARE_PRIM(equal);
-DECLARE_PRIM(lt);
-DECLARE_PRIM(gt);
 
 #endif /* PRIMITIVES_H_ */
