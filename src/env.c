@@ -133,6 +133,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "write", write);
     BIND_PRIM(env, "read-str", read_str);
     BIND_PRIM(env, "print-str", print_str);
+    BIND_PRIM(env, "error", error);
 }
 
 Env* env_clone(Env* env) {

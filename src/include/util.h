@@ -22,7 +22,7 @@
 /*
  * Wrapper for `sl_print_err'.
  */
-#define SL_ERR(...) sl_print_err(__func__, __VA_ARGS__)
+#define SL_ERR(...) sl_print_err(true, __func__, __VA_ARGS__)
 
 /*
  * Show error message with `sl_print_ftl' and exit.
@@ -106,7 +106,7 @@ sl_lbl_on_err:                  \
  * Print different error messages to stderr, along with some context
  * information.
  */
-void sl_print_err(const char* func, const char* fmt, ...);
+void sl_print_err(bool is_c_func, const char* func, const char* fmt, ...);
 void sl_print_ftl(const char* file, int line, const char* func, const char* fmt,
                   ...);
 

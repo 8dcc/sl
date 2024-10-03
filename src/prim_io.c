@@ -39,7 +39,7 @@ Expr* prim_write(Env* env, Expr* e) {
     SL_EXPECT_ARG_NUM(e, 1);
 
     expr_print(e);
-	return env_get(env, "tru");
+    return env_get(env, "tru");
 }
 
 Expr* prim_read_str(Env* env, Expr* e) {
@@ -96,5 +96,17 @@ Expr* prim_print_str(Env* env, Expr* e) {
     SL_EXPECT_TYPE(e, EXPR_STRING);
 
     printf("%s", e->val.s);
-	return expr_clone(e);
+    return expr_clone(e);
+}
+
+Expr* prim_error(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_TYPE(e, EXPR_STRING);
+
+    sl_print_err(false, "error", "%s", e->val.s);
+
+	/* Intentionally return NULL to stop execution */
+    return NULL;
 }
