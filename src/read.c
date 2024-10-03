@@ -123,15 +123,21 @@ char* read_expr(FILE* fp) {
                 break;
         } else if (nesting_level == 0) {
             /*
-             * We are reading outside of an expression. If we weren't reading an
-             * isolated atom and this isn't a token separator, start reading the
-             * atom. Otherwise, if we were reading an isolated atom and we
-             * reached a token separator, we are done.
+             * We are reading outside of an expression.
+             *
+             * If we weren't reading an isolated atom and this isn't a token
+             * separator, start reading the atom.
+             *
+             * Otherwise, if we were reading an isolated atom and we reached a
+             * token separator, we are done. Decrease `i' because the token
+             * separator we just read isn't part of the final string.
              */
-            if (!isolated_symbol && !is_token_separator(c))
+            if (!isolated_symbol && !is_token_separator(c)) {
                 isolated_symbol = true;
-            else if (isolated_symbol && is_token_separator(c))
+            } else if (isolated_symbol && is_token_separator(c)) {
+                i--;
                 break;
+            }
         }
     }
 
