@@ -90,15 +90,6 @@
         (mapcar cadr definitions)))
 
 ;;------------------------------------------------------------------------------
-;; Debugging
-;;------------------------------------------------------------------------------
-
-;; TODO: Toggle by removing `func' if it's already in `*debug-trace*'
-(defun trace (func)
-  (define-global *debug-trace* (cons func *debug-trace*))
-  "Trace enabled.")
-
-;;------------------------------------------------------------------------------
 ;; General predicates
 ;;------------------------------------------------------------------------------
 
@@ -131,9 +122,30 @@
       (lambda?    expr)
       (macro?     expr)))
 
-(defun = (&rest nums)
-  (and (every number? nums)
-       (apply equal? nums)))
+(defun = (num &rest rest)
+  (defun unify-number-type (n)
+    (cond ((int? n) (int->flt n))
+          ((flt? n) n)
+          (tru (error "Unexpected numeric type."))))
+  (cond ((null? rest) tru)
+        ((and (number? num)
+              (equal? (unify-number-type num)
+                      (unify-number-type (car rest))))
+         (apply = (cdr rest)))
+        (tru nil)))
+
+;;------------------------------------------------------------------------------
+;; Debugging
+;;------------------------------------------------------------------------------
+
+;; TODO: Toggle by removing `func' if it's already in `*debug-trace*'
+;; TODO: Use assert
+(defun trace (func)
+  (if (not (applicable? func))
+      (error "Trying to trace non-applicable expression.")
+      nil)
+  (define-global *debug-trace* (cons func *debug-trace*))
+  "Trace enabled.")
 
 ;;------------------------------------------------------------------------------
 ;; Mapping
