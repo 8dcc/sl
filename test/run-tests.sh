@@ -29,10 +29,19 @@ SL_BIN="$SCRIPT_DIR/../sl"
 for file in $(ls "$SCRIPT_DIR"/*.lisp); do
     file_msg "Testing" "$file"
 
-    valgrind --leak-check=full   \
-             --track-origins=yes \
-             --error-exitcode=1  \
-             $SL_BIN $file
+    input_str=""
+    if [ "$(basename "$file")" == "io.lisp" ]; then
+        input_str+="123"
+        input_str+="(+ 1 2 3 (- 5 4))"
+        input_str+="User string...\n"
+        input_str+="Another delimited line. EXTRA"
+    fi
+
+    echo -e "$input_str" | \
+        valgrind --leak-check=full   \
+                 --track-origins=yes \
+                 --error-exitcode=1  \
+                 $SL_BIN $file
     valgrind_code=$?
 
     echo "-------------------------------------------------------------------"
