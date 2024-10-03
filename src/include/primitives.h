@@ -80,4 +80,10 @@ DECLARE_PRIM(bit_not);
 DECLARE_PRIM(shr);
 DECLARE_PRIM(shl);
 
+/* Input/Output (prim_io.c) */
+DECLARE_PRIM(read);
+DECLARE_PRIM(write);
+DECLARE_PRIM(read_str);
+DECLARE_PRIM(print_str);
+
 #endif /* PRIMITIVES_H_ */
