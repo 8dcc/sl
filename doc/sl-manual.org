@@ -233,7 +233,7 @@ and Interpretation of Computer Programs/[fn::
 
   #+begin_src lisp
   > n
-  Unbound symbol: n
+  Unbound symbol: `n'.
 
   > (define n 123)
   123
@@ -450,7 +450,7 @@ and Interpretation of Computer Programs/[fn::
   6
 
   > my-var
-  Unbound symbol: my-var
+  Unbound symbol: `my-var'.
   #+end_src
 
 - Special Form: if predicate consequent alternative :: <<if>>

@@ -162,7 +162,7 @@ Expr* eval(Env* env, Expr* e) {
         case EXPR_SYMBOL: {
             /* Symbols evaluate to the bound value in the current environment */
             Expr* val = env_get(env, e->val.s);
-            SL_EXPECT(val != NULL, "Unbound symbol: %s", e->val.s);
+            SL_EXPECT(val != NULL, "Unbound symbol: `%s'.", e->val.s);
             return val;
         }
 
