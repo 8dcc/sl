@@ -10,24 +10,41 @@
 #include "include/primitives.h"
 
 /* Used in `env_init_defaults' */
-#define BIND_PRIM(ENV, SYM, FUNC)         \
-    do {                                  \
-        Expr FUNC##_expr = {              \
-            .type     = EXPR_PRIM,        \
-            .val.prim = prim_##FUNC,      \
-            .next     = NULL,             \
-        };                                \
-        env_bind(ENV, SYM, &FUNC##_expr); \
+#define BIND_PRIM(ENV, SYM, FUNC)                        \
+    do {                                                 \
+        Expr FUNC##_expr = {                             \
+            .type     = EXPR_PRIM,                       \
+            .val.prim = prim_##FUNC,                     \
+            .next     = NULL,                            \
+        };                                               \
+        env_bind(ENV, SYM, &FUNC##_expr, ENV_FLAG_NONE); \
     } while (0)
+
+/*----------------------------------------------------------------------------*/
+/* Global constants */
+
+static Expr nil_expr = {
+    .type         = EXPR_PARENT,
+    .val.children = NULL,
+    .next         = NULL,
+};
+
+static Expr tru_expr = {
+    .type  = EXPR_SYMBOL,
+    .val.s = "tru",
+    .next  = NULL,
+};
+
+const Expr* g_nil = &nil_expr;
+const Expr* g_tru = &tru_expr;
 
 /*----------------------------------------------------------------------------*/
 
 Env* env_new(void) {
-    Env* env     = sl_safe_malloc(sizeof(Env));
-    env->parent  = NULL;
-    env->size    = 0;
-    env->symbols = NULL;
-    env->values  = NULL;
+    Env* env      = sl_safe_malloc(sizeof(Env));
+    env->parent   = NULL;
+    env->size     = 0;
+    env->bindings = NULL;
     return env;
 }
 
@@ -46,26 +63,15 @@ void env_init_defaults(Env* env) {
      * Since the expressions will be cloned, it's safe to pass the stack address
      * to `env_bind'.
      */
-    Expr nil_expr = {
-        .type         = EXPR_PARENT,
-        .val.children = NULL,
-        .next         = NULL,
-    };
-    env_bind(env, "nil", &nil_expr);
-
-    Expr tru_expr = {
-        .type  = EXPR_SYMBOL,
-        .val.s = "tru",
-        .next  = NULL,
-    };
-    env_bind(env, "tru", &tru_expr);
+    env_bind(env, "nil", g_nil, ENV_FLAG_CONST);
+    env_bind(env, "tru", g_tru, ENV_FLAG_CONST);
 
     Expr debug_trace_list = {
         .type         = EXPR_PARENT,
         .val.children = NULL,
         .next         = NULL,
     };
-    env_bind(env, "*debug-trace*", &debug_trace_list);
+    env_bind(env, "*debug-trace*", &debug_trace_list, ENV_FLAG_NONE);
 
     /* Bind primitive C functions */
     BIND_PRIM(env, "quote", quote);
@@ -138,13 +144,13 @@ Env* env_clone(Env* env) {
     Env* cloned    = env_new();
     cloned->parent = env->parent;
 
-    cloned->size    = env->size;
-    cloned->symbols = sl_safe_malloc(cloned->size * sizeof(char*));
-    cloned->values  = sl_safe_malloc(cloned->size * sizeof(Expr*));
+    cloned->size     = env->size;
+    cloned->bindings = sl_safe_malloc(cloned->size * sizeof(EnvBinding));
 
     for (size_t i = 0; i < cloned->size; i++) {
-        cloned->symbols[i] = sl_safe_strdup(env->symbols[i]);
-        cloned->values[i]  = expr_clone_recur(env->values[i]);
+        cloned->bindings[i].sym   = sl_safe_strdup(env->bindings[i].sym);
+        cloned->bindings[i].val   = expr_clone_recur(env->bindings[i].val);
+        cloned->bindings[i].flags = env->bindings[i].flags;
     }
 
     return cloned;
@@ -152,54 +158,58 @@ Env* env_clone(Env* env) {
 
 void env_free(Env* env) {
     for (size_t i = 0; i < env->size; i++) {
-        free(env->symbols[i]);
-        expr_free(env->values[i]);
+        free(env->bindings[i].sym);
+        expr_free(env->bindings[i].val);
     }
 
-    free(env->symbols);
-    free(env->values);
+    free(env->bindings);
     free(env);
 }
 
 /*----------------------------------------------------------------------------*/
 
-/*
- * TODO: Add `env_bind_global' function and `define-global' primitive for
- * binding a symbol to a value in the global environment.
- */
-
-void env_bind(Env* env, const char* sym, const Expr* val) {
+bool env_bind(Env* env, const char* sym, const Expr* val,
+              enum EEnvBindingFlag flags) {
     SL_ASSERT(env != NULL);
     SL_ASSERT(sym != NULL);
+    SL_ON_ERR(return false);
 
     /*
      * Before creating a new item in the environment, traverse the existing
      * nodes on the linked list and check if one of the symbols matches what we
-     * are trying to bind. If we find a match, overwrite its value.
+     * are trying to bind. If we find a match, and it's not a constant binding,
+     * overwrite its value and flags.
      *
-     * Otherwise, reallocate the `symbols' and `values' arrays, and add a clone
-     * of the symbol string and value expression we received.
+     * Otherwise, reallocate the `bindings' array, add a clone of the symbol
+     * string, a clone of the value expression, and the flags we received.
      */
     for (size_t i = 0; i < env->size; i++) {
-        if (!strcmp(env->symbols[i], sym)) {
-            expr_free(env->values[i]);
-            env->values[i] = expr_clone_recur(val);
-            return;
+        if (strcmp(env->bindings[i].sym, sym) == 0) {
+            SL_EXPECT((env->bindings[i].flags & ENV_FLAG_CONST) == 0,
+                      "Trying to set constant symbol `%s'.", sym);
+
+            expr_free(env->bindings[i].val);
+            env->bindings[i].val   = expr_clone_recur(val);
+            env->bindings[i].flags = flags;
+            return true;
         }
     }
 
     env->size++;
-    sl_safe_realloc(env->symbols, env->size * sizeof(char*));
-    sl_safe_realloc(env->values, env->size * sizeof(Expr*));
+    sl_safe_realloc(env->bindings, env->size * sizeof(EnvBinding));
 
-    env->symbols[env->size - 1] = sl_safe_strdup(sym);
-    env->values[env->size - 1]  = expr_clone_recur(val);
+    env->bindings[env->size - 1].sym   = sl_safe_strdup(sym);
+    env->bindings[env->size - 1].val   = expr_clone_recur(val);
+    env->bindings[env->size - 1].flags = flags;
+
+    return true;
 }
 
-void env_bind_global(Env* env, const char* sym, const Expr* val) {
+bool env_bind_global(Env* env, const char* sym, const Expr* val,
+                     enum EEnvBindingFlag flags) {
     while (env->parent != NULL)
         env = env->parent;
-    env_bind(env, sym, val);
+    return env_bind(env, sym, val, flags);
 }
 
 Expr* env_get(const Env* env, const char* sym) {
@@ -211,8 +221,8 @@ Expr* env_get(const Env* env, const char* sym) {
      * return a copy of the value.
      */
     for (size_t i = 0; i < env->size; i++)
-        if (!strcmp(env->symbols[i], sym))
-            return expr_clone_recur(env->values[i]);
+        if (strcmp(env->bindings[i].sym, sym) == 0)
+            return expr_clone_recur(env->bindings[i].val);
 
     /*
      * We didn't find a value associated to that symbol. If there is a parent
@@ -230,9 +240,9 @@ void env_print(Env* env) {
         if (i != 0)
             printf("\n ");
 
-        printf("(\"%s\" ", env->symbols[i]);
-        expr_print(env->values[i]);
-        putchar(')');
+        printf("(\"%s\" ", env->bindings[i].sym);
+        expr_print(env->bindings[i].val);
+        printf(" %#x)", env->bindings[i].flags);
     }
     printf(")\n");
 }

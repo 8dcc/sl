@@ -47,8 +47,8 @@ Expr* prim_define(Env* env, Expr* e) {
     if (evaluated == NULL)
         return NULL;
 
-    env_bind(env, e->val.s, evaluated);
-    return evaluated;
+    const bool success = env_bind(env, e->val.s, evaluated, ENV_FLAG_NONE);
+    return (success) ? evaluated : NULL;
 }
 
 Expr* prim_define_global(Env* env, Expr* e) {
@@ -70,8 +70,9 @@ Expr* prim_define_global(Env* env, Expr* e) {
     if (evaluated == NULL)
         return NULL;
 
-    env_bind_global(env, e->val.s, evaluated);
-    return evaluated;
+    const bool success =
+      env_bind_global(env, e->val.s, evaluated, ENV_FLAG_NONE);
+    return (success) ? evaluated : NULL;
 }
 
 Expr* prim_lambda(Env* env, Expr* e) {
