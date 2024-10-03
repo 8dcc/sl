@@ -108,19 +108,20 @@ char* read_expr(FILE* fp) {
             nesting_level++;
         } else if (c == ')') {
             /*
-             * If we are still in level 0, we should have opened an expression.
+             * If we are still in level 0, we should have opened an
+             * expression. Just decrease `i' and ignore it.
              *
              * Otherwise, if we closed all the expressions that we opened, we
              * are done.
              */
             if (nesting_level <= 0) {
                 SL_WRN("Encountered unmatched ')'.");
-                break;
+                i--;
+            } else {
+                nesting_level--;
+                if (nesting_level <= 0)
+                    break;
             }
-
-            nesting_level--;
-            if (nesting_level <= 0)
-                break;
         } else if (nesting_level == 0) {
             /*
              * We are reading outside of an expression.
