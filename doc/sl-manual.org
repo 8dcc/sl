@@ -107,8 +107,9 @@ These variables are defined by default in the global environment.
 - Variable: `tru' :: <<tru>>
 
   Symbol that evaluates to itself, used for representing explicit truth
-  in procedures returning predicates. There is no need for this symbol,
-  since any non-nil expression represents truth, but it's convenient.
+  in procedures returning predicates (see [[*Logical primitives][Logical primitives]]). There is
+  no need for this symbol, since any non-nil expression represents
+  truth, but it's convenient.
 
   #+begin_src lisp
   > tru
@@ -656,15 +657,90 @@ These primitives don't fit into other categories. They are defined in
 
 ** Logical primitives
 
-TODO
+These primitives are used to check for logical truth. They usually
+return a /predicate/, that is, an expression whose value is meant to be
+interpreted as either /true/ or /false/. In SL, the empty list =nil= is used
+to denote /false/, and other values denote /true/ implicitly (see
+[[nil][=nil=]]). Usually, these functions return either =nil= or the explicit truth
+symbol =tru=.
 
-- Function: equal? &rest args :: <<equal?>>
+- Function: equal? a b &rest rest :: <<equal?>>
 
-  TODO
+  Return =tru= if the structure of /all/ arguments is equal, =nil=
+  otherwise. In other words, if they are isomorphic. As a rule of thumb,
+  two expressions are isomorphic if they print equally. Isomorphism for
+  different types will be expanded below.
+
+  The primitive doesn't /require/ arguments of the same type, but the
+  equality will usually fail if they don't share a common one.
+
+  Important exceptions:
+
+  - The /symbol/ =nil= and the empty /list/ =()= are interchangeable, and
+    therefore equal. This is an exception, and is explained in more
+    detail in [[nil][=nil=]].
+
+  Equality for different types:
+
+  - Two non-empty lists are equal if they have the same number of
+    elements, and if each expression in the first list is equal to the
+    corresponding expression in the second list, according to this
+    function =equal?=.
+  - Two numbers are equal if they share the same type, and if they have
+    the same value. See also [[=][===]].
+  - For symbols are equal if they have the same length, and if all of
+    their characters match.
+  - Strings are handled just like symbols, but note that, since they
+    have different expression types, they are not equal according to
+    this function.
+  - Two expressions of type /Primitive/ are equal if they point to the
+    same C function in memory.
+  - Two lambda functions are equal if they have the same number of
+    formals, their formals have the same names, and all of the
+    expressions in their body match according to this function =equal?=.
+  - Macros are handled just like lambdas, but, just like symbols and
+    strings, they are not equal according to this function because they
+    don't share the same expression type.
+
+  Some examples:
+
+  #+begin_src lisp
+  > (equal? 123 123)
+  tru
+
+  > (equal? 5 5.0)
+  nil
+
+  > (equal? 'abc "abc")
+  nil
+
+  > (defun foo (x) x)
+  <lambda>
+
+  > (equal? foo (lambda (x) x))
+  tru
+
+  > (equal? foo (lambda (y) y))
+  nil
+
+  > (defmacro bar (x) x)
+  <macro>
+
+  > (equal? foo bar)
+  nil
+  #+end_src
 
 * Standard library
 
 TODO
+
+** Logical functions
+
+TODO
+
+- Function: = num &rest rest :: <<=>>
+
+  TODO
 
 ** Debugging
 
