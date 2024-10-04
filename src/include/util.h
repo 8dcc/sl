@@ -2,7 +2,7 @@
 #define UTIL_H_ 1
 
 #include <stdbool.h>
-#include <stdio.h>  /* fprintf() */
+#include <stdio.h>  /* FILE, fprintf() */
 #include <stdlib.h> /* exit() */
 #include <regex.h>  /* regmatch_t */
 
@@ -148,7 +148,7 @@ const char* byte2escaped(char byte);
  * Print a string with values corresponding to escape sequences. The printed
  * string should evaluate to the input.
  */
-void print_escaped_str(const char* s);
+void print_escaped_str(FILE* fp, const char* s);
 
 /*----------------------------------------------------------------------------*/
 

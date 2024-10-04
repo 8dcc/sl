@@ -3,6 +3,7 @@
 #define LAMBDA_H_ 1
 
 #include <stddef.h>
+#include <stdio.h> /* FILE */
 
 struct Expr; /* expr.h */
 struct Env;  /* env.h */
@@ -56,7 +57,7 @@ bool lambda_ctx_equal(const LambdaCtx* a, const LambdaCtx* b);
  * Print all the formal arguments of a `LambdaCtx' structure, just like they
  * would be written on a lambda declaration.
  */
-void lambda_ctx_print_args(const LambdaCtx* ctx);
+void lambda_ctx_print_args(FILE* fp, const LambdaCtx* ctx);
 
 /*----------------------------------------------------------------------------*/
 

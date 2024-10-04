@@ -3,6 +3,7 @@
 #define DEBUG_H_ 1
 
 #include <stdbool.h>
+#include <stdio.h> /* FILE */
 
 struct Env;  /* env.h */
 struct Expr; /* expr.h */
@@ -20,7 +21,8 @@ bool debug_is_traced_function(const struct Env* env, const struct Expr* e);
  * NULL; and the `applied' argument should be a pointer to the evaluated result
  * of the procedure call.
  */
-void debug_trace_print_pre(const struct Expr* func, const struct Expr* args);
-void debug_trace_print_post(const struct Expr* e);
+void debug_trace_print_pre(FILE* fp, const struct Expr* func,
+                           const struct Expr* args);
+void debug_trace_print_post(FILE* fp, const struct Expr* e);
 
 #endif /* DEBUG_H_ */

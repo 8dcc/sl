@@ -3,6 +3,7 @@
 #define ENV_H_ 1
 
 #include <stdbool.h>
+#include <stdio.h> /* FILE */
 
 struct Expr; /* expr.h */
 
@@ -85,6 +86,6 @@ struct Expr* env_get(const Env* env, const char* sym);
 /*
  * Print environment in Lisp list format.
  */
-void env_print(Env* env);
+void env_print(FILE* fp, const Env* env);
 
 #endif /* ENV_H_ */

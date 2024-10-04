@@ -1,6 +1,8 @@
 #ifndef LEXER_H_
 #define LEXER_H_ 1
 
+#include <stdio.h> /* FILE */
+
 enum ETokenTypes {
     /* Used to indicate the end of a Token array */
     TOKEN_EOF,
@@ -41,6 +43,6 @@ void tokens_free(Token* arr);
 bool is_token_separator(char c);
 
 /* Print all tokens in a Token array terminated by TOKEN_EOF */
-void tokens_print(Token* arr);
+void tokens_print(FILE* fp, Token* arr);
 
 #endif /* LEXER_H_ */

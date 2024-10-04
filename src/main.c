@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
         if (evaluated == NULL)
             continue;
 
-        expr_println(evaluated);
+        expr_println(stdout, evaluated);
 
         /* Free the evaluated expression */
         expr_free(evaluated);

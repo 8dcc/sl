@@ -145,27 +145,27 @@ bool lambda_ctx_equal(const LambdaCtx* a, const LambdaCtx* b) {
 
 /*----------------------------------------------------------------------------*/
 
-void lambda_ctx_print_args(const LambdaCtx* ctx) {
+void lambda_ctx_print_args(FILE* fp, const LambdaCtx* ctx) {
     /* Position in the `ctx->formals' array, shared across all argument types */
     size_t formals_pos = 0;
 
-    putchar('(');
+    fputc('(', fp);
 
     /* Print mandatory arguments */
     for (size_t i = 0; i < ctx->formals_num; i++) {
         if (formals_pos > 0)
-            putchar(' ');
-        printf("%s", ctx->formals[formals_pos++]);
+            fputc(' ', fp);
+        fprintf(fp, "%s", ctx->formals[formals_pos++]);
     }
 
     /* There can only be one argument after "&rest" */
     if (ctx->formal_rest) {
         if (formals_pos > 0)
-            putchar(' ');
-        printf("&rest %s", ctx->formal_rest);
+            fputc(' ', fp);
+        fprintf(fp, "&rest %s", ctx->formal_rest);
     }
 
-    putchar(')');
+    fputc(')', fp);
 }
 
 /*----------------------------------------------------------------------------*/

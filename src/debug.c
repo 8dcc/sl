@@ -8,11 +8,11 @@
 
 static size_t trace_nesting = 0;
 
-static void print_trace_number(void) {
+static void print_trace_number(FILE* fp) {
     for (size_t i = 0; i <= trace_nesting; i++)
-        printf("  ");
+        fprintf(fp, "  ");
 
-    printf("%zu: ", trace_nesting % 10);
+    fprintf(fp, "%zu: ", trace_nesting % 10);
 }
 
 bool debug_is_traced_function(const Env* env, const Expr* e) {
@@ -26,28 +26,28 @@ bool debug_is_traced_function(const Env* env, const Expr* e) {
     return result;
 }
 
-void debug_trace_print_pre(const Expr* func, const Expr* arg) {
-    print_trace_number();
+void debug_trace_print_pre(FILE* fp, const Expr* func, const Expr* arg) {
+    print_trace_number(fp);
 
-    putchar('(');
-    expr_print(func);
+    fputc('(', fp);
+    expr_print(fp, func);
     for (; arg != NULL; arg = arg->next) {
-        putchar(' ');
-        expr_print(arg);
+        fputc(' ', fp);
+        expr_print(fp, arg);
     }
-    printf(")\n");
+    fprintf(fp, ")\n");
 
     trace_nesting++;
 }
 
-void debug_trace_print_post(const Expr* e) {
+void debug_trace_print_post(FILE* fp, const Expr* e) {
     trace_nesting--;
-    print_trace_number();
+    print_trace_number(fp);
 
     if (e == NULL)
-        printf("ERR");
+        fprintf(fp, "ERR");
     else
-        expr_print(e);
+        expr_print(fp, e);
 
     putchar('\n');
 }

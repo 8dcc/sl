@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdio.h> /* FILE, putchar() */
 
 struct Env;       /* env.h */
 struct LambdaCtx; /* lambda.h */
@@ -181,9 +182,14 @@ static inline bool expr_list_has_only_type(const Expr* e, enum EExprType type) {
 /*
  * Print expression in different formats.
  */
-void expr_print(const Expr* e);
-void expr_println(const Expr* e);
-void expr_print_debug(const Expr* e);
+void expr_print(FILE* fp, const Expr* e);
+void expr_list_print(FILE* fp, const Expr* e);
+void expr_print_debug(FILE* fp, const Expr* e);
+
+static inline void expr_println(FILE* fp, const Expr* e) {
+    expr_print(fp, e);
+    fputc('\n', fp);
+}
 
 /*
  * Return a string literal representing the specified expression type.

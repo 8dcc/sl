@@ -334,102 +334,7 @@ bool expr_list_has_only_numbers(const Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
-#define INDENT_STEP 4
-void expr_print_debug(const Expr* e) {
-    static int indent = 0;
-
-    for (int i = 0; i < indent; i++)
-        putchar(' ');
-
-    if (e == NULL) {
-        printf("[ERR] ");
-        SL_ERR("Unexpected NULL expression. Returning...");
-        return;
-    }
-
-    switch (e->type) {
-        case EXPR_NUM_INT: {
-            printf("[INT] %lld\n", e->val.n);
-        } break;
-
-        case EXPR_NUM_FLT: {
-            printf("[FLT] %f\n", e->val.f);
-        } break;
-
-        case EXPR_SYMBOL: {
-            printf("[SYM] \"%s\"\n", e->val.s);
-        } break;
-
-        case EXPR_STRING: {
-            printf("[STR] ");
-            print_escaped_str(e->val.s);
-            putchar('\n');
-        } break;
-
-        case EXPR_PARENT: {
-            printf("[LST]");
-
-            if (expr_is_nil(e)) {
-                printf(" (NIL)\n");
-                break;
-            }
-
-            putchar('\n');
-
-            /* If the token is a parent, indent and print all children */
-            indent += INDENT_STEP;
-            expr_print_debug(e->val.children);
-            indent -= INDENT_STEP;
-        } break;
-
-        case EXPR_PRIM: {
-            printf("[PRI] <primitive %p>\n", e->val.prim);
-        } break;
-
-        case EXPR_MACRO:
-        case EXPR_LAMBDA: {
-            printf("[FUN] <%s>\n",
-                   (e->type == EXPR_LAMBDA) ? "lambda" : "macro");
-
-            /* Print list of formal arguments */
-            indent += INDENT_STEP;
-            for (int i = 0; i < indent; i++)
-                putchar(' ');
-            printf("Formals: ");
-            lambda_ctx_print_args(e->val.lambda);
-            putchar('\n');
-
-            /* Print each expression in the body of the function */
-            for (int i = 0; i < indent; i++)
-                putchar(' ');
-            printf("Body:\n");
-            indent += INDENT_STEP;
-            expr_print_debug(e->val.lambda->body);
-            indent -= INDENT_STEP * 2;
-        } break;
-
-        case EXPR_ERR: {
-            printf("[ERR] (Stopping)");
-            return;
-        }
-    }
-
-    if (e->next != NULL)
-        expr_print_debug(e->next);
-}
-
-static void print_list(const Expr* e) {
-    putchar('(');
-    for (; e != NULL; e = e->next) {
-        expr_print(e);
-
-        if (e->next != NULL)
-            putchar(' ');
-    }
-    putchar(')');
-}
-
-void expr_print(const Expr* e) {
+void expr_print(FILE* fp, const Expr* e) {
     if (e == NULL) {
         SL_ERR("Unexpected NULL expression. Returning...");
         return;
@@ -437,47 +342,137 @@ void expr_print(const Expr* e) {
 
     switch (e->type) {
         case EXPR_NUM_INT:
-            printf("%lld", e->val.n);
+            fprintf(fp, "%lld", e->val.n);
             break;
 
         case EXPR_NUM_FLT:
-            printf("%f", e->val.f);
+            fprintf(fp, "%f", e->val.f);
             break;
 
         case EXPR_SYMBOL:
-            printf("%s", e->val.s);
+            fprintf(fp, "%s", e->val.s);
             break;
 
         case EXPR_STRING:
-            print_escaped_str(e->val.s);
+            print_escaped_str(fp, e->val.s);
             break;
 
         case EXPR_PARENT:
             if (expr_is_nil(e))
-                printf("nil");
+                fprintf(fp, "nil");
             else
-                print_list(e->val.children);
+                expr_list_print(fp, e->val.children);
             break;
 
         case EXPR_PRIM:
-            printf("<primitive %p>", e->val.prim);
+            fprintf(fp, "<primitive %p>", e->val.prim);
             break;
 
         case EXPR_LAMBDA:
-            printf("<lambda>");
+            fprintf(fp, "<lambda>");
             break;
 
         case EXPR_MACRO:
-            printf("<macro>");
+            fprintf(fp, "<macro>");
             break;
 
         case EXPR_ERR:
-            printf("<error>");
+            fprintf(fp, "<error>");
             break;
     }
 }
 
-void expr_println(const Expr* e) {
-    expr_print(e);
-    putchar('\n');
+void expr_list_print(FILE* fp, const Expr* e) {
+    fputc('(', fp);
+    for (; e != NULL; e = e->next) {
+        expr_print(fp, e);
+
+        if (e->next != NULL)
+            fputc(' ', fp);
+    }
+    fputc(')', fp);
+}
+
+#define INDENT_STEP 4
+void expr_print_debug(FILE* fp, const Expr* e) {
+    static int indent = 0;
+
+    for (int i = 0; i < indent; i++)
+        fputc(' ', fp);
+
+    if (e == NULL) {
+        fprintf(fp, "[ERR] ");
+        SL_ERR("Unexpected NULL expression. Returning...");
+        return;
+    }
+
+    switch (e->type) {
+        case EXPR_NUM_INT: {
+            fprintf(fp, "[INT] %lld\n", e->val.n);
+        } break;
+
+        case EXPR_NUM_FLT: {
+            fprintf(fp, "[FLT] %f\n", e->val.f);
+        } break;
+
+        case EXPR_SYMBOL: {
+            fprintf(fp, "[SYM] \"%s\"\n", e->val.s);
+        } break;
+
+        case EXPR_STRING: {
+            fprintf(fp, "[STR] ");
+            print_escaped_str(fp, e->val.s);
+            fputc('\n', fp);
+        } break;
+
+        case EXPR_PARENT: {
+            fprintf(fp, "[LST]");
+
+            if (expr_is_nil(e)) {
+                fprintf(fp, " (NIL)\n");
+                break;
+            }
+
+            fputc('\n', fp);
+
+            /* If the token is a parent, indent and print all children */
+            indent += INDENT_STEP;
+            expr_print_debug(fp, e->val.children);
+            indent -= INDENT_STEP;
+        } break;
+
+        case EXPR_PRIM: {
+            fprintf(fp, "[PRI] <primitive %p>\n", e->val.prim);
+        } break;
+
+        case EXPR_MACRO:
+        case EXPR_LAMBDA: {
+            fprintf(fp, "[FUN] <%s>\n",
+                    (e->type == EXPR_LAMBDA) ? "lambda" : "macro");
+
+            /* Print list of formal arguments */
+            indent += INDENT_STEP;
+            for (int i = 0; i < indent; i++)
+                fputc(' ', fp);
+            fprintf(fp, "Formals: ");
+            lambda_ctx_print_args(fp, e->val.lambda);
+            fputc('\n', fp);
+
+            /* Print each expression in the body of the function */
+            for (int i = 0; i < indent; i++)
+                putchar(' ');
+            fprintf(fp, "Body:\n");
+            indent += INDENT_STEP;
+            expr_print_debug(fp, e->val.lambda->body);
+            indent -= INDENT_STEP * 2;
+        } break;
+
+        case EXPR_ERR: {
+            fprintf(fp, "[ERR] (Stopping)");
+            return;
+        }
+    }
+
+    if (e->next != NULL)
+        expr_print_debug(fp, e->next);
 }

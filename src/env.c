@@ -234,16 +234,16 @@ Expr* env_get(const Env* env, const char* sym) {
 
 /*----------------------------------------------------------------------------*/
 
-void env_print(Env* env) {
-    putchar('(');
+void env_print(FILE* fp, const Env* env) {
+    fputc('(', fp);
     for (size_t i = 0; i < env->size; i++) {
         /* Add indentation to match parentheses of first line */
         if (i != 0)
-            printf("\n ");
+            fprintf(fp, "\n ");
 
-        printf("(\"%s\" ", env->bindings[i].sym);
-        expr_print(env->bindings[i].val);
-        printf(" %#x)", env->bindings[i].flags);
+        fprintf(fp, "(\"%s\" ", env->bindings[i].sym);
+        expr_print(fp, env->bindings[i].val);
+        fprintf(fp, " %#x)", env->bindings[i].flags);
     }
-    printf(")\n");
+    fprintf(fp, ")\n");
 }

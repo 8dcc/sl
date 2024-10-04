@@ -127,7 +127,7 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     }
 
     if (should_print_trace)
-        debug_trace_print_pre(car, args);
+        debug_trace_print_pre(stdout, car, args);
 
     /* Apply the evaluated function to the evaluated argument list */
     Expr* applied = apply(env, func, args);
@@ -138,7 +138,7 @@ static Expr* eval_function_call(Env* env, Expr* e) {
         expr_list_free(args);
 
     if (should_print_trace)
-        debug_trace_print_post(applied);
+        debug_trace_print_post(stdout, applied);
 
     return applied;
 }

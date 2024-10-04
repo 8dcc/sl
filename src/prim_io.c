@@ -38,7 +38,7 @@ Expr* prim_write(Env* env, Expr* e) {
     SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
 
-    expr_print(e);
+    expr_print(stdout, e);
     return env_get(env, "tru");
 }
 

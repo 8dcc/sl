@@ -183,47 +183,47 @@ bool is_token_separator(char c) {
     return isspace(c) || c == '\0' || c == '(' || c == ')';
 }
 
-void tokens_print(Token* arr) {
-    printf("[ ");
+void tokens_print(FILE* fp, Token* arr) {
+    fprintf(fp, "[ ");
 
     while (arr->type != TOKEN_EOF) {
         switch (arr->type) {
             case TOKEN_NUM_INT:
-                printf("%lld, ", arr->val.n);
+                fprintf(fp, "%lld, ", arr->val.n);
                 break;
 
             case TOKEN_NUM_FLT:
-                printf("%f, ", arr->val.f);
+                fprintf(fp, "%f, ", arr->val.f);
                 break;
 
             case TOKEN_SYMBOL:
-                printf("\"%s\", ", arr->val.s);
+                fprintf(fp, "\"%s\", ", arr->val.s);
                 break;
 
             case TOKEN_STRING:
-                print_escaped_str(arr->val.s);
-                printf(", ");
+                print_escaped_str(fp, arr->val.s);
+                fprintf(fp, ", ");
                 break;
 
             case TOKEN_LIST_OPEN:
-                printf("LIST_OPEN, ");
+                fprintf(fp, "LIST_OPEN, ");
                 break;
 
             case TOKEN_LIST_CLOSE:
-                printf("LIST_CLOSE, ");
+                fprintf(fp, "LIST_CLOSE, ");
                 break;
 
             case TOKEN_QUOTE:
-                printf("QUOTE, ");
+                fprintf(fp, "QUOTE, ");
                 break;
 
             case TOKEN_EOF:
-                printf("???");
+                fprintf(fp, "???");
                 break;
         }
 
         arr++;
     }
 
-    printf("EOF ]\n");
+    fprintf(fp, "EOF ]\n");
 }

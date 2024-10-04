@@ -121,18 +121,18 @@ const char* byte2escaped(char byte) {
 }
 /* clang-format on */
 
-void print_escaped_str(const char* s) {
+void print_escaped_str(FILE* fp, const char* s) {
     SL_ASSERT(s != NULL);
 
-    putchar('\"');
+    fputc('\"', fp);
     for (; *s != '\0'; s++) {
         const char* escape_sequence = byte2escaped(*s);
         if (escape_sequence != NULL)
-            printf("%s", escape_sequence);
+            fprintf(fp, "%s", escape_sequence);
         else
-            printf("%c", *s);
+            fprintf(fp, "%c", *s);
     }
-    putchar('\"');
+    fputc('\"', fp);
 }
 
 /*----------------------------------------------------------------------------*/
