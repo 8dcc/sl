@@ -63,15 +63,11 @@ int main(int argc, char** argv) {
         /* Tokenize input. We don't need to check for NULL. */
         Token* tokens = tokenize(input);
 
-        tokens_print(stdout, tokens);
-
         /* We are done with the string from `read_expr', free it */
         free(input);
 
         /* Get expression (AST) from token array */
         Expr* expr = parse(tokens);
-
-        expr_print_debug(stdout, expr);
 
         /* We are done with the token array, free it */
         tokens_free(tokens);
