@@ -1,3 +1,7 @@
+/*
+ * Special Form primitives. Their arguments are not evaluated before applying.
+ * See the "Special Forms" section of the SL manual, and Chapter 4.1.1 of SICP.
+ */
 
 #include <stddef.h>
 
@@ -8,18 +12,10 @@
 #include "include/eval.h"
 #include "include/primitives.h"
 
-/*
- * Special Form primitives. Their arguments are not evaluated before applying,
- * instead they are handled separately in `eval'.
- *
- * See the "Special Forms" section of the SL manual, and Chapter 4.1.1 of SICP.
- */
-
 Expr* prim_quote(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(expr_list_len(e) == 1,
-              "The special form `quote' expects exactly 1 argument.");
+    SL_EXPECT_ARG_NUM(e, 1);
 
     /*
      * The special form `quote' simply returns the expression it receives,
@@ -39,8 +35,7 @@ Expr* prim_define(Env* env, Expr* e) {
      * Returns the evaluated expression.
      */
     SL_ON_ERR(return NULL);
-    SL_EXPECT(expr_list_len(e) == 2,
-              "The special form `define' expects exactly 2 arguments.");
+    SL_EXPECT_ARG_NUM(e, 2);
     SL_EXPECT_TYPE(e, EXPR_SYMBOL);
 
     Expr* evaluated = eval(env, e->next);
@@ -62,8 +57,7 @@ Expr* prim_define_global(Env* env, Expr* e) {
      * Returns the evaluated expression.
      */
     SL_ON_ERR(return NULL);
-    SL_EXPECT(expr_list_len(e) == 2,
-              "The special form `define' expects exactly 2 arguments.");
+    SL_EXPECT_ARG_NUM(e, 2);
     SL_EXPECT_TYPE(e, EXPR_SYMBOL);
 
     Expr* evaluated = eval(env, e->next);
