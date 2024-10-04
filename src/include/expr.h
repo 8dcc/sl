@@ -89,11 +89,51 @@ Expr* expr_list_clone(const Expr* e);
 /*----------------------------------------------------------------------------*/
 
 /*
- * Print expression in different formats.
+ * Is the specified expression an empty list? Note that the empty list is also
+ * used to represent false in functions that return predicates.
  */
-void expr_print(const Expr* e);
-void expr_println(const Expr* e);
-void expr_print_debug(const Expr* e);
+bool expr_is_nil(const Expr* e);
+
+/*
+ * Check if two linked lists of `Expr' structures are identical in length and
+ * content using `expr_equal'.
+ */
+bool expr_list_equal(const Expr* a, const Expr* b);
+
+/*
+ * Return true if `a' and `b' have the same effective value.
+ */
+bool expr_equal(const Expr* a, const Expr* b);
+
+/*
+ * Return true if `a' is lesser/greater than `b'.
+ */
+bool expr_lt(const Expr* a, const Expr* b);
+bool expr_gt(const Expr* a, const Expr* b);
+
+/*
+ * Check if the specified expression type is a number: Integer or float.
+ */
+static inline bool exprtype_is_number(enum EExprType type) {
+    return type == EXPR_NUM_INT || type == EXPR_NUM_FLT;
+}
+
+/*
+ * Check if the specified expression is a number. Wrapper for
+ * `exprtype_is_number'.
+ */
+static inline bool expr_is_number(const Expr* e) {
+    return exprtype_is_number(e->type);
+}
+
+/*
+ * Check if the specified expression can be applied (i.e. called): Primitive,
+ * lambda or macro.
+ */
+static inline bool expr_is_applicable(const Expr* e) {
+    return e->type == EXPR_PRIM || e->type == EXPR_LAMBDA ||
+           e->type == EXPR_MACRO;
+}
 
 /*----------------------------------------------------------------------------*/
 
@@ -101,12 +141,6 @@ void expr_print_debug(const Expr* e);
  * Count the number of elements in a linked list of `Expr' structures.
  */
 size_t expr_list_len(const Expr* e);
-
-/*
- * Check if two linked lists of `Expr' structures are identical in length and
- * content.
- */
-bool expr_list_equal(const Expr* a, const Expr* b);
 
 /*
  * Is the expression `e' inside the linked list `lst'? Checks using
@@ -134,26 +168,22 @@ bool expr_list_has_type(const Expr* e, enum EExprType type);
  */
 bool expr_list_has_only_numbers(const Expr* e);
 
+/*
+ * Does the specified linked list contain ONLY expressions with the specified
+ * type?
+ */
+static inline bool expr_list_has_only_type(const Expr* e, enum EExprType type) {
+    return expr_list_is_homogeneous(e) && e->type == type;
+}
+
 /*----------------------------------------------------------------------------*/
 
 /*
- * Is the specified expression an empty list? Note that the empty list is also
- * used to represent false in functions that return predicates.
+ * Print expression in different formats.
  */
-bool expr_is_nil(const Expr* e);
-
-/*
- * Return true if `a' and `b' have the same effective value.
- */
-bool expr_equal(const Expr* a, const Expr* b);
-
-/*
- * Return true if `a' is lesser/greater than `b'.
- */
-bool expr_lt(const Expr* a, const Expr* b);
-bool expr_gt(const Expr* a, const Expr* b);
-
-/*----------------------------------------------------------------------------*/
+void expr_print(const Expr* e);
+void expr_println(const Expr* e);
+void expr_print_debug(const Expr* e);
 
 /*
  * Return a string literal representing the specified expression type.
@@ -176,36 +206,6 @@ static inline const char* exprtype2str(enum EExprType type) {
     __builtin_unreachable();
 }
 
-/*
- * Check if the specified expression type is a number: Integer or float.
- */
-static inline bool exprtype_is_number(enum EExprType type) {
-    return type == EXPR_NUM_INT || type == EXPR_NUM_FLT;
-}
-
-/*
- * Check if the specified expression is a number. Wrapper for
- * `exprtype_is_number'.
- */
-static inline bool expr_is_number(const Expr* e) {
-    return exprtype_is_number(e->type);
-}
-
-/*
- * Check if the specified expression can be applied (i.e. called): Primitive,
- * lambda or macro.
- */
-static inline bool expr_is_applicable(const Expr* e) {
-    return e->type == EXPR_PRIM || e->type == EXPR_LAMBDA ||
-           e->type == EXPR_MACRO;
-}
-
-/*
- * Does the specified linked list contain ONLY expressions with the specified
- * type?
- */
-static inline bool expr_list_has_only_type(const Expr* e, enum EExprType type) {
-    return expr_list_is_homogeneous(e) && e->type == type;
-}
+/*----------------------------------------------------------------------------*/
 
 #endif /* EXPR_H_ */

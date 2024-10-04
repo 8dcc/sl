@@ -151,6 +151,189 @@ Expr* expr_list_clone(const Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
+bool expr_is_nil(const Expr* e) {
+    return e != NULL && ((e->type == EXPR_PARENT && e->val.children == NULL) ||
+                         (e->type == EXPR_SYMBOL && e->val.s != NULL &&
+                          strcmp(e->val.s, "nil") == 0));
+}
+
+bool expr_list_equal(const Expr* a, const Expr* b) {
+    /*
+     * Keep iterating while both nodes are equal. We check this by
+     * calling `expr_equal', which allows NULL arguments.
+     *
+     * Since inside the loop both items are equal, if one of them is
+     * NULL, it means we reached the end of both lists and they are
+     * equal.
+     *
+     * This whole loop is similar to an implementation of strcmp().
+     */
+    while (expr_equal(a, b)) {
+        if (a == NULL)
+            return true;
+
+        a = a->next;
+        b = b->next;
+    }
+
+    /* If we broke out of the loop, an expression didn't match */
+    return false;
+}
+
+bool expr_equal(const Expr* a, const Expr* b) {
+    /*
+     * If one of them is NULL, they are equal if the other is also NULL. This is
+     * an important check, specially since when calling ourselves recursively.
+     */
+    if (a == NULL || b == NULL)
+        return a == b;
+
+    /*
+     * If both of them are `nil', they are equal. This check is important
+     * because the symbol "nil" and the empty list have different types but are
+     * equal.
+     */
+    if (expr_is_nil(a) && expr_is_nil(b))
+        return true;
+
+    if (a->type != b->type)
+        return false;
+
+    switch (a->type) {
+        case EXPR_NUM_INT:
+            return a->val.n == b->val.n;
+
+        case EXPR_NUM_FLT:
+            return a->val.f == b->val.f;
+
+        case EXPR_SYMBOL:
+        case EXPR_STRING:
+            return strcmp(a->val.s, b->val.s) == 0;
+
+        case EXPR_PARENT:
+            return expr_list_equal(a->val.children, b->val.children);
+
+        case EXPR_PRIM:
+            return a->val.prim == b->val.prim;
+
+        case EXPR_MACRO:
+        case EXPR_LAMBDA:
+            return lambda_ctx_equal(a->val.lambda, b->val.lambda);
+
+        case EXPR_ERR:
+            return false;
+    }
+
+    return true;
+}
+
+bool expr_lt(const Expr* a, const Expr* b) {
+    if (a == NULL || b == NULL || a->type != b->type)
+        return false;
+
+    switch (a->type) {
+        case EXPR_NUM_INT:
+            return a->val.n < b->val.n;
+
+        case EXPR_NUM_FLT:
+            return a->val.f < b->val.f;
+
+        case EXPR_SYMBOL:
+        case EXPR_STRING:
+            return strcmp(a->val.s, b->val.s) < 0;
+
+        case EXPR_PARENT:
+        case EXPR_PRIM:
+        case EXPR_LAMBDA:
+        case EXPR_MACRO:
+        case EXPR_ERR:
+            return false;
+    }
+
+    return true;
+}
+
+bool expr_gt(const Expr* a, const Expr* b) {
+    if (a == NULL || b == NULL || a->type != b->type)
+        return false;
+
+    switch (a->type) {
+        case EXPR_NUM_INT:
+            return a->val.n > b->val.n;
+
+        case EXPR_NUM_FLT:
+            return a->val.f > b->val.f;
+
+        case EXPR_SYMBOL:
+        case EXPR_STRING:
+            return strcmp(a->val.s, b->val.s) > 0;
+
+        case EXPR_PARENT:
+        case EXPR_PRIM:
+        case EXPR_LAMBDA:
+        case EXPR_MACRO:
+        case EXPR_ERR:
+            return false;
+    }
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+size_t expr_list_len(const Expr* e) {
+    size_t result = 0;
+
+    for (; e != NULL; e = e->next)
+        result++;
+
+    return result;
+}
+
+bool expr_list_is_member(const Expr* lst, const Expr* e) {
+    if (e == NULL)
+        return false;
+
+    for (; lst != NULL; lst = lst->next)
+        if (expr_equal(lst, e))
+            return true;
+
+    return false;
+}
+
+bool expr_list_is_homogeneous(const Expr* e) {
+    if (e == NULL)
+        return false;
+
+    const enum EExprType first_type = e->type;
+    for (e = e->next; e != NULL; e = e->next)
+        if (e->type != first_type)
+            return false;
+
+    return true;
+}
+
+bool expr_list_has_type(const Expr* e, enum EExprType type) {
+    for (; e != NULL; e = e->next)
+        if (e->type == type)
+            return true;
+
+    return false;
+}
+
+bool expr_list_has_only_numbers(const Expr* e) {
+    if (e == NULL)
+        return false;
+
+    for (; e != NULL; e = e->next)
+        if (!expr_is_number(e))
+            return false;
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
 #define INDENT_STEP 4
 void expr_print_debug(const Expr* e) {
     static int indent = 0;
@@ -297,187 +480,4 @@ void expr_print(const Expr* e) {
 void expr_println(const Expr* e) {
     expr_print(e);
     putchar('\n');
-}
-
-/*----------------------------------------------------------------------------*/
-
-size_t expr_list_len(const Expr* e) {
-    size_t result = 0;
-
-    for (; e != NULL; e = e->next)
-        result++;
-
-    return result;
-}
-
-bool expr_list_equal(const Expr* a, const Expr* b) {
-    /*
-     * Keep iterating while both nodes are equal. We check this by
-     * calling `expr_equal', which allows NULL arguments.
-     *
-     * Since inside the loop both items are equal, if one of them is
-     * NULL, it means we reached the end of both lists and they are
-     * equal.
-     *
-     * This whole loop is similar to an implementation of strcmp().
-     */
-    while (expr_equal(a, b)) {
-        if (a == NULL)
-            return true;
-
-        a = a->next;
-        b = b->next;
-    }
-
-    /* If we broke out of the loop, an expression didn't match */
-    return false;
-}
-
-bool expr_list_is_member(const Expr* lst, const Expr* e) {
-    if (e == NULL)
-        return false;
-
-    for (; lst != NULL; lst = lst->next)
-        if (expr_equal(lst, e))
-            return true;
-
-    return false;
-}
-
-bool expr_list_is_homogeneous(const Expr* e) {
-    if (e == NULL)
-        return false;
-
-    const enum EExprType first_type = e->type;
-    for (e = e->next; e != NULL; e = e->next)
-        if (e->type != first_type)
-            return false;
-
-    return true;
-}
-
-bool expr_list_has_type(const Expr* e, enum EExprType type) {
-    for (; e != NULL; e = e->next)
-        if (e->type == type)
-            return true;
-
-    return false;
-}
-
-bool expr_list_has_only_numbers(const Expr* e) {
-    if (e == NULL)
-        return false;
-
-    for (; e != NULL; e = e->next)
-        if (!expr_is_number(e))
-            return false;
-
-    return true;
-}
-
-/*----------------------------------------------------------------------------*/
-
-bool expr_is_nil(const Expr* e) {
-    return e != NULL && ((e->type == EXPR_PARENT && e->val.children == NULL) ||
-                         (e->type == EXPR_SYMBOL && e->val.s != NULL &&
-                          strcmp(e->val.s, "nil") == 0));
-}
-
-bool expr_equal(const Expr* a, const Expr* b) {
-    /*
-     * If one of them is NULL, they are equal if the other is also NULL. This is
-     * an important check, specially since when calling ourselves recursively.
-     */
-    if (a == NULL || b == NULL)
-        return a == b;
-
-    /*
-     * If both of them are `nil', they are equal. This check is important
-     * because the symbol "nil" and the empty list have different types but are
-     * equal.
-     */
-    if (expr_is_nil(a) && expr_is_nil(b))
-        return true;
-
-    if (a->type != b->type)
-        return false;
-
-    switch (a->type) {
-        case EXPR_NUM_INT:
-            return a->val.n == b->val.n;
-
-        case EXPR_NUM_FLT:
-            return a->val.f == b->val.f;
-
-        case EXPR_SYMBOL:
-        case EXPR_STRING:
-            return strcmp(a->val.s, b->val.s) == 0;
-
-        case EXPR_PARENT:
-            return expr_list_equal(a->val.children, b->val.children);
-
-        case EXPR_PRIM:
-            return a->val.prim == b->val.prim;
-
-        case EXPR_MACRO:
-        case EXPR_LAMBDA:
-            return lambda_ctx_equal(a->val.lambda, b->val.lambda);
-
-        case EXPR_ERR:
-            return false;
-    }
-
-    return true;
-}
-
-bool expr_lt(const Expr* a, const Expr* b) {
-    if (a == NULL || b == NULL || a->type != b->type)
-        return false;
-
-    switch (a->type) {
-        case EXPR_NUM_INT:
-            return a->val.n < b->val.n;
-
-        case EXPR_NUM_FLT:
-            return a->val.f < b->val.f;
-
-        case EXPR_SYMBOL:
-        case EXPR_STRING:
-            return strcmp(a->val.s, b->val.s) < 0;
-
-        case EXPR_PARENT:
-        case EXPR_PRIM:
-        case EXPR_LAMBDA:
-        case EXPR_MACRO:
-        case EXPR_ERR:
-            return false;
-    }
-
-    return true;
-}
-
-bool expr_gt(const Expr* a, const Expr* b) {
-    if (a == NULL || b == NULL || a->type != b->type)
-        return false;
-
-    switch (a->type) {
-        case EXPR_NUM_INT:
-            return a->val.n > b->val.n;
-
-        case EXPR_NUM_FLT:
-            return a->val.f > b->val.f;
-
-        case EXPR_SYMBOL:
-        case EXPR_STRING:
-            return strcmp(a->val.s, b->val.s) > 0;
-
-        case EXPR_PARENT:
-        case EXPR_PRIM:
-        case EXPR_LAMBDA:
-        case EXPR_MACRO:
-        case EXPR_ERR:
-            return false;
-    }
-
-    return true;
 }
