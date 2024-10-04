@@ -36,8 +36,6 @@ static bool count_formals(const Expr* list, size_t* mandatory, bool* has_rest) {
     return true;
 }
 
-/*----------------------------------------------------------------------------*/
-
 LambdaCtx* lambda_ctx_new(const Expr* formals, const Expr* body) {
     SL_ASSERT(formals->type == EXPR_PARENT);
 
@@ -124,6 +122,29 @@ void lambda_ctx_free(LambdaCtx* ctx) {
     free(ctx);
 }
 
+/*----------------------------------------------------------------------------*/
+
+bool lambda_ctx_equal(const LambdaCtx* a, const LambdaCtx* b) {
+    if (a->formals_num != b->formals_num)
+        return false;
+
+    for (size_t i = 0; i < a->formals_num; i++)
+        if (strcmp(a->formals[i], b->formals[i]) != 0)
+            return false;
+
+    if (a->formal_rest != b->formal_rest &&
+        (a->formal_rest == NULL || b->formal_rest == NULL ||
+         strcmp(a->formal_rest, b->formal_rest) != 0))
+        return false;
+
+    if (!expr_list_equal(a->body, b->body))
+        return false;
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
 void lambda_ctx_print_args(const LambdaCtx* ctx) {
     /* Position in the `ctx->formals' array, shared across all argument types */
     size_t formals_pos = 0;
@@ -145,25 +166,6 @@ void lambda_ctx_print_args(const LambdaCtx* ctx) {
     }
 
     putchar(')');
-}
-
-bool lambda_ctx_equal(const LambdaCtx* a, const LambdaCtx* b) {
-    if (a->formals_num != b->formals_num)
-        return false;
-
-    for (size_t i = 0; i < a->formals_num; i++)
-        if (strcmp(a->formals[i], b->formals[i]) != 0)
-            return false;
-
-    if (a->formal_rest != b->formal_rest &&
-        (a->formal_rest == NULL || b->formal_rest == NULL ||
-         strcmp(a->formal_rest, b->formal_rest) != 0))
-        return false;
-
-    if (!expr_list_equal(a->body, b->body))
-        return false;
-
-    return true;
 }
 
 /*----------------------------------------------------------------------------*/

@@ -43,17 +43,22 @@ LambdaCtx* lambda_ctx_clone(const LambdaCtx* ctx);
  */
 void lambda_ctx_free(LambdaCtx* ctx);
 
-/*
- * Print all the formal arguments of a `LambdaCtx' structure, just like they
- * would be written on a lambda declaration.
- */
-void lambda_ctx_print_args(const LambdaCtx* ctx);
+/*----------------------------------------------------------------------------*/
 
 /*
  * Are two `LambdaCtx' structures equal? Uses `strcmp' and `expr_list_equal'.
  */
 bool lambda_ctx_equal(const LambdaCtx* a, const LambdaCtx* b);
 
+/*----------------------------------------------------------------------------*/
+
+/*
+ * Print all the formal arguments of a `LambdaCtx' structure, just like they
+ * would be written on a lambda declaration.
+ */
+void lambda_ctx_print_args(const LambdaCtx* ctx);
+
+/*----------------------------------------------------------------------------*/
 
 /*
  * Call the specified lambda `func' in the specified environment `env' with the
