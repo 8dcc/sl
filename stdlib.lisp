@@ -33,10 +33,10 @@
 ;; List-accessing functions
 ;;------------------------------------------------------------------------------
 
-(defun caar (lst) (car (car lst)))
-(defun cadr (lst) (car (cdr lst)))
-(defun cdar (lst) (cdr (car lst)))
-(defun cddr (lst) (cdr (cdr lst)))
+(defun caar  (lst) (car (car lst)))
+(defun cadr  (lst) (car (cdr lst)))
+(defun cdar  (lst) (cdr (car lst)))
+(defun cddr  (lst) (cdr (cdr lst)))
 (defun caaar (lst) (car (car (car lst))))
 (defun caadr (lst) (car (car (cdr lst))))
 (defun cadar (lst) (car (cdr (car lst))))
@@ -60,7 +60,7 @@
 ;; Conditional macros
 ;;------------------------------------------------------------------------------
 
-;; TODO: Support multiple expressions in clause without using begin?
+;; TODO: Convert to primitive?
 ;;
 ;; (cond (pred1 expr1)           >  (if pred1 (begin expr1)
 ;;       (pred2 expr2)           >    (if pred2 (begin expr2)
@@ -138,12 +138,17 @@
 ;; Debugging
 ;;------------------------------------------------------------------------------
 
+(defmacro assert (predicate)
+  (list 'if predicate predicate
+        (list 'error
+              (list 'append
+                    "Assertion `"
+                    (list 'write-to-string (list 'quote predicate))
+                    "' failed."))))
+
 ;; TODO: Toggle by removing `func' if it's already in `*debug-trace*'
-;; TODO: Use assert
 (defun trace (func)
-  (if (not (applicable? func))
-      (error "Trying to trace non-applicable expression.")
-      nil)
+  (assert (applicable? func))
   (define-global *debug-trace* (cons func *debug-trace*))
   "Trace enabled.")
 
