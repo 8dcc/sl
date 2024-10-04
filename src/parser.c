@@ -15,10 +15,10 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed);
  * Parse the next expression in `tokens[*parsed]', and wrap it in a list whose
  * first element is the symbol `func_name'.
  */
-static Expr* wrap_in_call(const Token* tokens, size_t* parsed,
-                          const char* func_name) {
+static void wrap_in_call(const Token* tokens, size_t* parsed, Expr* expr,
+                         const char* func_name) {
     /* Create a list whose `car' is `func_name' */
-    Expr* expr                = expr_new(EXPR_PARENT);
+    expr->type                = EXPR_PARENT;
     expr->val.children        = expr_new(EXPR_SYMBOL);
     expr->val.children->val.s = sl_safe_strdup(func_name);
 
@@ -35,8 +35,6 @@ static Expr* wrap_in_call(const Token* tokens, size_t* parsed,
      */
     SL_ASSERT(parsed_in_call > 0);
     *parsed += parsed_in_call;
-
-    return expr;
 }
 
 static Expr* parse_recur(const Token* tokens, size_t* parsed) {
@@ -107,17 +105,17 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
 
         case TOKEN_QUOTE: {
             /* Wrap the next expression in (quote ...) */
-            expr = wrap_in_call(tokens, parsed, "quote");
+            wrap_in_call(tokens, parsed, expr, "quote");
         } break;
 
         case TOKEN_BACKQUOTE: {
             /* The function for backquoting is called "`". */
-            expr = wrap_in_call(tokens, parsed, "`");
+            wrap_in_call(tokens, parsed, expr, "`");
         } break;
 
         case TOKEN_COMMA: {
             /* The function for unquoting is called ",". */
-            expr = wrap_in_call(tokens, parsed, ",");
+            wrap_in_call(tokens, parsed, expr, ",");
         } break;
 
         case TOKEN_EOF:
