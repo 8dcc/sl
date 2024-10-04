@@ -1,9 +1,9 @@
 define sl_print_expr
-  print expr_println($arg0)
+  print expr_println(stdout, $arg0)
 end
 
 define sl_print_expr_debug
-  print expr_print_debug($arg0)
+  print expr_print_debug(stdout, $arg0)
 end
 
 define sl_continue_and_print_expr
