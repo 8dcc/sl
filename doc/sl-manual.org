@@ -688,7 +688,8 @@ symbol =tru=.
 
   Return =tru= if the structure of /all/ arguments is equal, =nil=
   otherwise. In other words, if they are isomorphic. As a rule of thumb,
-  two expressions are isomorphic if they print equally. Isomorphism for
+  two expressions are isomorphic if =write-to-string= returns the same
+  string for both of them (see [[write-to-string][=write-to-string=]]). Isomorphism for
   different types will be expanded below.
 
   The primitive doesn't /require/ arguments of the same type, but the
@@ -749,6 +750,14 @@ symbol =tru=.
   > (equal? foo bar)
   nil
   #+end_src
+
+** String primitives
+
+TODO
+
+- Function: write-to-string expr :: <<write-to-string>>
+
+  TODO
 
 * Standard library
 
