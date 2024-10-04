@@ -35,8 +35,8 @@ static Expr tru_expr = {
     .next  = NULL,
 };
 
-const Expr* g_nil = &nil_expr;
-const Expr* g_tru = &tru_expr;
+const Expr* nil = &nil_expr;
+const Expr* tru = &tru_expr;
 
 /*----------------------------------------------------------------------------*/
 
@@ -63,8 +63,8 @@ void env_init_defaults(Env* env) {
      * Since the expressions will be cloned, it's safe to pass the stack address
      * to `env_bind'.
      */
-    env_bind(env, "nil", g_nil, ENV_FLAG_CONST);
-    env_bind(env, "tru", g_tru, ENV_FLAG_CONST);
+    env_bind(env, "nil", nil, ENV_FLAG_CONST);
+    env_bind(env, "tru", tru, ENV_FLAG_CONST);
 
     Expr debug_trace_list = {
         .type         = EXPR_PARENT,

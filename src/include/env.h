@@ -39,6 +39,12 @@ struct Env {
 };
 
 /*----------------------------------------------------------------------------*/
+/* Global constants */
+
+extern const struct Expr* nil;
+extern const struct Expr* tru;
+
+/*----------------------------------------------------------------------------*/
 
 /*
  * Allocate and return an empty `Env' structure without specifying the parent.
