@@ -1,12 +1,11 @@
 ;;------------------------------------------------------------------------------
 ;; Features tested in this source:
+;;   - Backquote (`) and unquote (,)
 ;;   - Macro definitions
 ;;   - Macro expansion
 ;;   - Macro calls
 ;;   - Usage of `defmacro' and `defun' macros
 ;;------------------------------------------------------------------------------
-
-;; TODO: Move important macros to stdlib, import from here.
 
 ;; Define a macro called `defmacro'. It will take a `name', and the rest of the
 ;; arguments will be stored in a list `macro-args'. The expanded macro will just
@@ -24,13 +23,12 @@
 ;;
 (define defmacro
   (macro (name &rest macro-args)
-    (list 'define name
-          (cons 'macro macro-args))))
+    `(define ,name ,(cons 'macro macro-args))))
 
 ;; Example usage of `defmacro'. Create a macro that will take a variable and
 ;; re-define it to its value plus one.
 (defmacro inc (var)
-  (list 'define var (list '+ var 1)))
+  `(define ,var (+ ,var 1)))
 
 ;; First, test the `macroexpand' primitive, which should return:
 ;;   (define my-variable (+ my-variable 1))
@@ -56,8 +54,7 @@
 ;;         (+ 1 n)))
 ;;
 (defmacro defun (name &rest lambda-args)
-  (list 'define name
-        (cons 'lambda lambda-args)))
+  `(define ,name ,(cons 'lambda lambda-args)))
 
 ;; Define a simple function using the previous `defun' macro. Wrap the call in:
 ;;

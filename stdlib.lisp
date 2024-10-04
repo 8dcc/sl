@@ -19,15 +19,13 @@
 ;;                     >      (list '+ 1 var)))
 (define defmacro
   (macro (name &rest macro-args)
-    (list 'define name
-          (cons 'macro macro-args))))
+    `(define ,name ,(cons 'macro macro-args))))
 
 ;; (defun my-function (n)  >  (define my-function
 ;;   (+ 1 n))              >    (lambda (n)
 ;;                         >      (+ 1 n)))
 (defmacro defun (name &rest lambda-args)
-  (list 'define name
-        (cons 'lambda lambda-args)))
+  `(define ,name ,(cons 'lambda lambda-args)))
 
 ;;------------------------------------------------------------------------------
 ;; List-accessing functions
@@ -139,12 +137,10 @@
 ;;------------------------------------------------------------------------------
 
 (defmacro assert (predicate)
-  (list 'if predicate predicate
-        (list 'error
-              (list 'append
-                    "Assertion `"
-                    (list 'write-to-string (list 'quote predicate))
-                    "' failed."))))
+  `(if ,predicate ,predicate
+       (error (append "Assertion `"
+                      (write-to-string (quote ,predicate))
+                      "' failed."))))
 
 ;; TODO: Toggle by removing `func' if it's already in `*debug-trace*'
 (defun trace (func)
