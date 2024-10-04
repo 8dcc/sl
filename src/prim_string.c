@@ -100,41 +100,20 @@ Expr* prim_format(Env* env, Expr* e) {
          * string and the expression type.
          */
         switch (expr_type) {
-            case EXPR_STRING: {
-                const size_t str_len = strlen(cur_arg->val.s);
-                if (dst_pos + str_len >= dst_sz - 1) {
-                    dst_sz += str_len + FORMAT_BUFSZ;
-                    sl_safe_realloc(dst, dst_sz);
-                }
+            case EXPR_STRING:
+                sl_concat_format(&dst, &dst_sz, &dst_pos, c_format,
+                                 cur_arg->val.s);
+                break;
 
-                const int written = snprintf(&dst[dst_pos], str_len + 1,
-                                             c_format, cur_arg->val.s);
-                dst_pos += written;
-            } break;
+            case EXPR_NUM_INT:
+                sl_concat_format(&dst, &dst_sz, &dst_pos, c_format,
+                                 cur_arg->val.n);
+                break;
 
-            case EXPR_NUM_INT: {
-                const int str_len = snprintf(NULL, 0, c_format, cur_arg->val.n);
-                if (dst_pos + str_len >= dst_sz - 1) {
-                    dst_sz += str_len + FORMAT_BUFSZ;
-                    sl_safe_realloc(dst, dst_sz);
-                }
-
-                const int written = snprintf(&dst[dst_pos], str_len + 1,
-                                             c_format, cur_arg->val.n);
-                dst_pos += written;
-            } break;
-
-            case EXPR_NUM_FLT: {
-                const int str_len = snprintf(NULL, 0, c_format, cur_arg->val.f);
-                if (dst_pos + str_len >= dst_sz - 1) {
-                    dst_sz += str_len + FORMAT_BUFSZ;
-                    sl_safe_realloc(dst, dst_sz);
-                }
-
-                const int written = snprintf(&dst[dst_pos], str_len + 1,
-                                             c_format, cur_arg->val.f);
-                dst_pos += written;
-            } break;
+            case EXPR_NUM_FLT:
+                sl_concat_format(&dst, &dst_sz, &dst_pos, c_format,
+                                 cur_arg->val.f);
+                break;
 
             default:
                 SL_FATAL("Unexpected expression type after processing format "

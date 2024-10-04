@@ -159,6 +159,25 @@ bool sl_regex_matches(const char* pat, const char* str, bool ignore_case,
                       size_t* nmatch, regmatch_t** pmatch);
 
 /*
+ * Concatenate formatted data into an existing string, at an specific offset.
+ *
+ * The `dst' argument should point to a reallocable string of size
+ * `*dst_sz'. The value at `dst_offset' is the location in the string where the
+ * data will be written.
+ *
+ * If the new formatted data would write past `*dst_sz', `dst' is reallocated and
+ * `*dst_sz' is updated accordingly.
+ *
+ * The function will update `*dst_offset' so it marks the position in `*dst'
+ * where we finished writing. In other words, the position of the null
+ * terminator.
+ *
+ * The function returns `true' on success, or `false' if an error was printed.
+ */
+bool sl_concat_format(char** dst, size_t* dst_sz, size_t* dst_offet,
+                      const char* fmt, ...);
+
+/*
  * Allocate a string in `*dst' big enough to store the representation of the
  * integer `x', and convert it. The allocated string must be freed by the
  * caller.

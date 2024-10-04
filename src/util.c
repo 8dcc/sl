@@ -186,6 +186,36 @@ bool sl_regex_matches(const char* pat, const char* str, bool ignore_case,
 
 /*----------------------------------------------------------------------------*/
 
+bool sl_concat_format(char** dst, size_t* dst_sz, size_t* dst_offset,
+                      const char* fmt, ...) {
+    va_list va;
+
+    va_start(va, fmt);
+    const int data_size = vsnprintf(NULL, 0, fmt, va);
+    va_end(va);
+
+    if (data_size < 0) {
+        SL_ERR("Failed to get the target string length for C format: %s", fmt);
+        return false;
+    }
+
+    if (*dst_offset + data_size + 1 >= *dst_sz) {
+        *dst_sz = *dst_offset + data_size + 1;
+        sl_safe_realloc(*dst, *dst_sz);
+    }
+
+    char* real_dst = &(*dst)[*dst_offset];
+
+    va_start(va, fmt);
+    const int written = vsnprintf(real_dst, data_size + 1, fmt, va);
+    va_end(va);
+
+    *dst_offset += written;
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
 size_t int2str(long long x, char** dst) {
     /*
      * A call to `snprintf' with (NULL, 0, ...) as arguments can be used to get
