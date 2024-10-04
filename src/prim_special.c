@@ -185,7 +185,7 @@ Expr* prim_or(Env* env, Expr* e) {
             break;
     }
 
-    return (result == NULL) ? env_get(env, "nil") : result;
+    return (result == NULL) ? expr_clone(nil) : result;
 }
 
 Expr* prim_and(Env* env, Expr* e) {
@@ -205,5 +205,5 @@ Expr* prim_and(Env* env, Expr* e) {
             break;
     }
 
-    return (result == NULL) ? env_get(env, "tru") : result;
+    return (result == NULL) ? expr_clone(tru) : result;
 }

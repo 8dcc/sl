@@ -82,10 +82,11 @@ Expr* prim_random(Env* env, Expr* e) {
 }
 
 Expr* prim_set_random_seed(Env* env, Expr* e) {
+    SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_NUM_INT);
 
     srand(e->val.n);
-    return env_get(env, "tru");
+    return expr_clone(tru);
 }

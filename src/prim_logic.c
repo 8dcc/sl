@@ -7,6 +7,7 @@
 #include "include/primitives.h"
 
 Expr* prim_equal(Env* env, Expr* e) {
+    SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(expr_list_len(e) >= 2, "Expected at least 2 arguments.");
 
@@ -20,10 +21,11 @@ Expr* prim_equal(Env* env, Expr* e) {
         }
     }
 
-    return (result) ? env_get(env, "tru") : env_get(env, "nil");
+    return (result) ? expr_clone(tru) : expr_clone(nil);
 }
 
 Expr* prim_lt(Env* env, Expr* e) {
+    SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(expr_list_len(e) >= 2, "Expected at least 2 arguments.");
 
@@ -37,10 +39,11 @@ Expr* prim_lt(Env* env, Expr* e) {
         }
     }
 
-    return (result) ? env_get(env, "tru") : env_get(env, "nil");
+    return (result) ? expr_clone(tru) : expr_clone(nil);
 }
 
 Expr* prim_gt(Env* env, Expr* e) {
+    SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(expr_list_len(e) >= 2, "Expected at least 2 arguments.");
 
@@ -54,5 +57,5 @@ Expr* prim_gt(Env* env, Expr* e) {
         }
     }
 
-    return (result) ? env_get(env, "tru") : env_get(env, "nil");
+    return (result) ? expr_clone(tru) : expr_clone(nil);
 }

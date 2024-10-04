@@ -39,7 +39,7 @@ Expr* prim_write(Env* env, Expr* e) {
     SL_EXPECT_ARG_NUM(e, 1);
 
     const bool success = expr_write(stdout, e);
-    return (success) ? env_get(env, "tru") : NULL;
+    return (success) ? expr_clone(tru) : NULL;
 }
 
 Expr* prim_read_str(Env* env, Expr* e) {
