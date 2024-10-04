@@ -180,12 +180,29 @@ static inline bool expr_list_has_only_type(const Expr* e, enum EExprType type) {
 /*----------------------------------------------------------------------------*/
 
 /*
- * Print expression in different formats.
+ * Print a linked list of expressions using `expr_print', wrapped in
+ * parentheses.
+ */
+void expr_list_print(FILE* fp, const Expr* e);
+
+/*
+ * Print an expression in a human-friendly form.
  */
 void expr_print(FILE* fp, const Expr* e);
-void expr_list_print(FILE* fp, const Expr* e);
+
+/*
+ * Print an expression in a way suitable for `read'.
+ */
+bool expr_write(FILE* fp, const Expr* e);
+
+/*
+ * Print a linked list of expressions in a tree form, for debugging.
+ */
 void expr_print_debug(FILE* fp, const Expr* e);
 
+/*
+ * Print an expression and a newline character ('\n').
+ */
 static inline void expr_println(FILE* fp, const Expr* e) {
     expr_print(fp, e);
     fputc('\n', fp);

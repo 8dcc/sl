@@ -38,8 +38,8 @@ Expr* prim_write(Env* env, Expr* e) {
     SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
 
-    expr_print(stdout, e);
-    return env_get(env, "tru");
+    const bool success = expr_write(stdout, e);
+    return (success) ? env_get(env, "tru") : NULL;
 }
 
 Expr* prim_read_str(Env* env, Expr* e) {
@@ -107,6 +107,6 @@ Expr* prim_error(Env* env, Expr* e) {
 
     sl_print_err(false, "error", "%s", e->val.s);
 
-	/* Intentionally return NULL to stop execution */
+    /* Intentionally return NULL to stop execution */
     return NULL;
 }

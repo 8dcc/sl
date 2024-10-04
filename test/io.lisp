@@ -18,7 +18,7 @@
 (begin
  (print-str "\nWriting two expressions...\n")
  (writeln '(+ 1 2 3 (f 'sym "str")))
- (writeln +))
+ (writeln writeln))
 
 (begin
  (print-str "\nReading two user-strings...\n")

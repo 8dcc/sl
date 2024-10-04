@@ -58,6 +58,7 @@ DECLARE_PRIM(length);
 DECLARE_PRIM(append);
 
 /* String-related (prim_string.c) */
+DECLARE_PRIM(write_to_string);
 DECLARE_PRIM(format);
 DECLARE_PRIM(substring);
 DECLARE_PRIM(string_matches);

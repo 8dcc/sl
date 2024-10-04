@@ -2,7 +2,7 @@
 ;; Features tested in this source:
 ;;   - String evaluation (single-line and multi-line)
 ;;   - Common list primitives: `length', `append'
-;;   - String creation: `format', `substring'
+;;   - String creation: `write-to-string', `format', `substring'
 ;;   - String matching: `string-matches'
 ;;   - String predicates: `equal?', `<', `>'
 ;;------------------------------------------------------------------------------
@@ -18,6 +18,11 @@ supported." ; Expected: "Multi-line\nstrings\nsupported."
 
 (append "" "")
 (append "Concatenating" " multiple " "strings...")
+
+(write-to-string '(+ 1 2 3 (- 5 4)))
+(write-to-string (lambda (x)
+                   'symbol
+                   (func x 123 "Hello, world!\n")))
 
 (format "%%s: %s %s %s" "Testing" "format" "specifiers!")
 (format "%%d: %d %d %d" 1 2 3)

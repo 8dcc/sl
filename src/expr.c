@@ -334,6 +334,17 @@ bool expr_list_has_only_numbers(const Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
+void expr_list_print(FILE* fp, const Expr* e) {
+    fputc('(', fp);
+    for (; e != NULL; e = e->next) {
+        expr_print(fp, e);
+
+        if (e->next != NULL)
+            fputc(' ', fp);
+    }
+    fputc(')', fp);
+}
+
 void expr_print(FILE* fp, const Expr* e) {
     if (e == NULL) {
         SL_ERR("Unexpected NULL expression. Returning...");
@@ -382,15 +393,67 @@ void expr_print(FILE* fp, const Expr* e) {
     }
 }
 
-void expr_list_print(FILE* fp, const Expr* e) {
-    fputc('(', fp);
+static bool expr_list_write(FILE* fp, const Expr* e) {
     for (; e != NULL; e = e->next) {
-        expr_print(fp, e);
+        if (!expr_write(fp, e))
+            return false;
 
         if (e->next != NULL)
             fputc(' ', fp);
     }
-    fputc(')', fp);
+    return true;
+}
+
+bool expr_write(FILE* fp, const Expr* e) {
+    SL_ASSERT(e != NULL);
+
+    switch (e->type) {
+        case EXPR_NUM_INT:
+            fprintf(fp, "%lld", e->val.n);
+            break;
+
+        case EXPR_NUM_FLT:
+            fprintf(fp, "%f", e->val.f);
+            break;
+
+        case EXPR_SYMBOL:
+            fprintf(fp, "%s", e->val.s);
+            break;
+
+        case EXPR_STRING:
+            print_escaped_str(fp, e->val.s);
+            break;
+
+        case EXPR_PARENT:
+            if (expr_is_nil(e)) {
+                fprintf(fp, "nil");
+            } else {
+                fputc('(', fp);
+                expr_list_write(fp, e->val.children);
+                fputc(')', fp);
+            }
+            break;
+
+        case EXPR_LAMBDA:
+        case EXPR_MACRO:
+            fprintf(fp, "(%s ",
+                    (e->type == EXPR_LAMBDA)  ? "lambda"
+                    : (e->type == EXPR_MACRO) ? "macro"
+                                              : "ERROR");
+            lambda_ctx_print_args(fp, e->val.lambda);
+            fputc(' ', fp);
+            expr_list_write(fp, e->val.lambda->body);
+            fputc(')', fp);
+            break;
+
+        case EXPR_PRIM:
+        case EXPR_ERR:
+            SL_ERR("Expressions of type '%s' can't be converted to a string.",
+                   exprtype2str(e->type));
+            return false;
+    }
+
+    return true;
 }
 
 #define INDENT_STEP 4

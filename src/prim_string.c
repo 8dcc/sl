@@ -9,6 +9,30 @@
 #include "include/util.h"
 #include "include/primitives.h"
 
+Expr* prim_write_to_string(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT_ARG_NUM(e, 1);
+
+    char* str;
+    size_t sz;
+    FILE* fp = open_memstream(&str, &sz);
+
+    const bool success = expr_write(fp, e);
+    fclose(fp);
+
+    if (!success) {
+        free(str);
+        return NULL;
+    }
+
+    Expr* ret  = expr_new(EXPR_STRING);
+    ret->val.s = str;
+    return ret;
+}
+
+/*----------------------------------------------------------------------------*/
+
 #define FORMAT_BUFSZ 100
 
 Expr* prim_format(Env* env, Expr* e) {
@@ -137,6 +161,8 @@ done:
     return ret;
 }
 
+/*----------------------------------------------------------------------------*/
+
 Expr* prim_substring(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
@@ -187,6 +213,8 @@ Expr* prim_substring(Env* env, Expr* e) {
 
     return ret;
 }
+
+/*----------------------------------------------------------------------------*/
 
 Expr* prim_string_matches(Env* env, Expr* e) {
     SL_UNUSED(env);
