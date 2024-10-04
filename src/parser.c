@@ -9,6 +9,36 @@
 #include "include/lexer.h"
 #include "include/parser.h"
 
+static Expr* parse_recur(const Token* tokens, size_t* parsed);
+
+/*
+ * Parse the next expression in `tokens[*parsed]', and wrap it in a list whose
+ * first element is the symbol `func_name'.
+ */
+static Expr* wrap_in_call(const Token* tokens, size_t* parsed,
+                          const char* func_name) {
+    /* Create a list whose `car' is `func_name' */
+    Expr* expr                = expr_new(EXPR_PARENT);
+    expr->val.children        = expr_new(EXPR_SYMBOL);
+    expr->val.children->val.s = sl_safe_strdup(func_name);
+
+    /*
+     * The second element is the actual expression, which might consist of
+     * multiple Tokens.
+     */
+    size_t parsed_in_call    = 0;
+    expr->val.children->next = parse_recur(&tokens[*parsed], &parsed_in_call);
+
+    /*
+     * Add the number of Tokens parsed in the previous call to the
+     * number of parsed in the current one.
+     */
+    SL_ASSERT(parsed_in_call > 0);
+    *parsed += parsed_in_call;
+
+    return expr;
+}
+
 static Expr* parse_recur(const Token* tokens, size_t* parsed) {
     SL_ASSERT(tokens != NULL);
     SL_ASSERT(tokens[0].type != TOKEN_LIST_CLOSE);
@@ -20,10 +50,8 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
      * sub-calls. See the comment on `parse' for more information. */
     *parsed = 1;
 
-    Expr* expr = sl_safe_malloc(sizeof(Expr));
-    expr->next = NULL;
-
     /* Expression type and value should be set on each case */
+    Expr* expr = expr_new(EXPR_ERR);
     switch (tokens[0].type) {
         case TOKEN_NUM_INT: {
             expr->type  = EXPR_NUM_INT;
@@ -78,22 +106,18 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
         } break;
 
         case TOKEN_QUOTE: {
-            /* If the last Token was TOKEN_QUOTE, convert to (quote ...) */
-            expr->type = EXPR_PARENT;
+            /* Wrap the next expression in (quote ...) */
+            expr = wrap_in_call(tokens, parsed, "quote");
+        } break;
 
-            /* First element of the list, "quote" */
-            expr->val.children        = expr_new(EXPR_SYMBOL);
-            expr->val.children->val.s = sl_safe_strdup("quote");
+        case TOKEN_BACKQUOTE: {
+            /* The function for backquoting is called "`". */
+            expr = wrap_in_call(tokens, parsed, "`");
+        } break;
 
-            /* Second element, the actual expression. */
-            size_t parsed_in_call = 0;
-            expr->val.children->next =
-              parse_recur(&tokens[*parsed], &parsed_in_call);
-
-            /* Add the number of Tokens parsed in the previous call to the
-             * number of parsed in the current one. */
-            SL_ASSERT(parsed_in_call > 0);
-            *parsed += parsed_in_call;
+        case TOKEN_COMMA: {
+            /* The function for unquoting is called ",". */
+            expr = wrap_in_call(tokens, parsed, ",");
         } break;
 
         case TOKEN_EOF:

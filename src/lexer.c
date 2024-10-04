@@ -113,6 +113,16 @@ static Token get_token(char** input_ptr) {
             input++;
             goto done;
 
+        case '`':
+            result.type = TOKEN_BACKQUOTE;
+            input++;
+            goto done;
+
+        case ',':
+            result.type = TOKEN_COMMA;
+            input++;
+            goto done;
+
         case '\0':
             result.type = TOKEN_EOF;
             input       = NULL;
@@ -215,6 +225,14 @@ void tokens_print(FILE* fp, Token* arr) {
 
             case TOKEN_QUOTE:
                 fprintf(fp, "QUOTE, ");
+                break;
+
+            case TOKEN_BACKQUOTE:
+                fprintf(fp, "BACKQUOTE, ");
+                break;
+
+            case TOKEN_COMMA:
+                fprintf(fp, "TOKEN_COMMA, ");
                 break;
 
             case TOKEN_EOF:

@@ -75,6 +75,8 @@ void env_init_defaults(Env* env) {
 
     /* Bind primitive C functions */
     BIND_PRIM(env, "quote", quote);
+    BIND_PRIM(env, "`", backquote);
+    BIND_PRIM(env, ",", unquote);
     BIND_PRIM(env, "define", define);
     BIND_PRIM(env, "define-global", define_global);
     BIND_PRIM(env, "lambda", lambda);

@@ -4,6 +4,7 @@
  */
 
 #include <stddef.h>
+#include <string.h>
 
 #include "include/env.h"
 #include "include/expr.h"
@@ -12,16 +13,81 @@
 #include "include/eval.h"
 #include "include/primitives.h"
 
-Expr* prim_quote(Env* env, Expr* e) {
-    SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
-    SL_EXPECT_ARG_NUM(e, 1);
+static inline bool is_unquote_call(const Expr* e) {
+    /* (, ...) */
+    return e->type == EXPR_PARENT && e->val.children != NULL &&
+           e->val.children->type == EXPR_SYMBOL &&
+           strcmp(e->val.children->val.s, ",") == 0;
+}
 
+static Expr* handle_backquote_arg(Env* env, const Expr* e) {
+    SL_ON_ERR(return NULL);
+
+    if (is_unquote_call(e)) {
+        /* We found a call to unquote, evaluate it:
+         *   (, expr) => (eval expr)
+         */
+        Expr* unquote_arg = e->val.children->next;
+        SL_EXPECT(unquote_arg != NULL && unquote_arg->next == NULL,
+                  "Call to unquote expected exactly one argument.");
+        return eval(env, unquote_arg);
+    } else if (e->type == EXPR_PARENT) {
+        /*
+         * Handle each element of the list recursively. This allows calls to
+         * unquote from nested lists. See also `expr_clone_recur'.
+         */
+        Expr dummy_copy;
+        dummy_copy.next = NULL;
+        Expr* cur_copy  = &dummy_copy;
+
+        for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
+            cur_copy->next = handle_backquote_arg(env, cur);
+            cur_copy       = cur_copy->next;
+        }
+
+        Expr* ret         = expr_new(EXPR_PARENT);
+        ret->val.children = dummy_copy.next;
+        return ret;
+    } else {
+        /* Not a list, return unevaluated, just like `quote' */
+        return expr_clone(e);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+Expr* prim_quote(Env* env, Expr* e) {
     /*
      * The special form `quote' simply returns the expression it receives,
      * effectively delaying its evaluation.
      */
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT_ARG_NUM(e, 1);
     return expr_clone_recur(e);
+}
+
+Expr* prim_backquote(Env* env, Expr* e) {
+    /*
+     * The special form `backquote' is similar to `quote', but allows selective
+     * evaluation by wrapping an expression in (, ...). Note that `expr is
+     * converted to (` expr) by the parser.
+     */
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT_ARG_NUM(e, 1);
+    return handle_backquote_arg(env, e);
+}
+
+Expr* prim_unquote(Env* env, Expr* e) {
+    /*
+     * The `unquote' function is only used inside `handle_backquote'. Note that
+     * ,expr is converted to (, expr) by the parser.
+     */
+    SL_UNUSED(env);
+    SL_UNUSED(e);
+    SL_ERR("Invalid use of special form `unquote' outside of `backquote'.");
+    return NULL;
 }
 
 Expr* prim_define(Env* env, Expr* e) {

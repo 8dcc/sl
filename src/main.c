@@ -49,8 +49,10 @@ int main(int argc, char** argv) {
         if (print_prompt)
             printf("\nsl> ");
 
-        /* Allocate string and read an expression. If `read_expr' returned NULL,
-         * it encountered EOF. */
+        /*
+         * Allocate string and read an expression. If `read_expr' returned NULL,
+         * it encountered EOF.
+         */
         char* input = read_expr(input_file);
         if (input == NULL) {
             if (print_prompt)
@@ -61,11 +63,15 @@ int main(int argc, char** argv) {
         /* Tokenize input. We don't need to check for NULL. */
         Token* tokens = tokenize(input);
 
+        tokens_print(stdout, tokens);
+
         /* We are done with the string from `read_expr', free it */
         free(input);
 
         /* Get expression (AST) from token array */
         Expr* expr = parse(tokens);
+
+        expr_print_debug(stdout, expr);
 
         /* We are done with the token array, free it */
         tokens_free(tokens);

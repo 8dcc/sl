@@ -17,8 +17,11 @@ enum ETokenTypes {
     TOKEN_LIST_OPEN,
     TOKEN_LIST_CLOSE,
 
-    /* Indicates that the next expression should be wrapped in (quote ...) */
+    /* Indicates that the next expression should be wrapped in (quote ...),
+     * (backquote ...) or (unquote ...) respectively. */
     TOKEN_QUOTE,
+    TOKEN_BACKQUOTE,
+    TOKEN_COMMA,
 };
 
 typedef struct Token {
