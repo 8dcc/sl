@@ -34,7 +34,8 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
     } else if (e->type == EXPR_PARENT) {
         /*
          * Handle each element of the list recursively. This allows calls to
-         * unquote from nested lists. See also `expr_clone_recur'.
+         * unquote from nested lists. See also `expr_clone_recur' and
+         * `eval_list'.
          */
         Expr dummy_copy;
         dummy_copy.next = NULL;
@@ -43,6 +44,12 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
         for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
             cur_copy->next = handle_backquote_arg(env, cur);
             cur_copy       = cur_copy->next;
+
+            /* Failed to evaluate one argument, stop. */
+            if (cur_copy == NULL) {
+                expr_list_free(dummy_copy.next);
+                return NULL;
+            }
         }
 
         Expr* ret         = expr_new(EXPR_PARENT);
@@ -86,7 +93,7 @@ Expr* prim_unquote(Env* env, Expr* e) {
      */
     SL_UNUSED(env);
     SL_UNUSED(e);
-    SL_ERR("Invalid use of special form `unquote' outside of `backquote'.");
+    SL_ERR("Invalid use of unquote outside of backquote.");
     return NULL;
 }
 
