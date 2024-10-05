@@ -23,8 +23,8 @@
  */
 static bool is_special_form(const Expr* e) {
     static const char* special_form_symbols[] = {
-        "quote", "`",     ",",  "define", "define-global", "lambda",
-        "macro", "begin", "if", "or",     "and",
+        "quote",  "backquote", "`",     ",",  "define", "define-global",
+        "lambda", "macro",     "begin", "if", "or",     "and",
     };
 
     if (e->type != EXPR_SYMBOL || e->val.s == NULL)
