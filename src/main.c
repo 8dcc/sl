@@ -15,6 +15,8 @@
 #include "include/parser.h"
 #include "include/eval.h"
 
+#define STDLIB_PATH "/usr/local/lib/sl/stdlib.lisp"
+
 static FILE* get_input_file(int argc, char** argv) {
     FILE* result = stdin;
 
@@ -22,7 +24,7 @@ static FILE* get_input_file(int argc, char** argv) {
         const char* filename = argv[1];
         result               = fopen(filename, "r");
         if (result == NULL) {
-            fprintf(stderr, "Error opening '%s': %s.", filename,
+            fprintf(stderr, "Error opening '%s': %s.\n", filename,
                     strerror(errno));
             exit(1);
         }
@@ -31,20 +33,8 @@ static FILE* get_input_file(int argc, char** argv) {
     return result;
 }
 
-int main(int argc, char** argv) {
-    FILE* input_file        = get_input_file(argc, argv);
-    const bool print_prompt = input_file == stdin && isatty(0);
-
-    /* Initialize global environment with symbols like "nil" */
-    Env* global_env = env_new();
-    env_init_defaults(global_env);
-
-    /* Set unique random seed, can be overwritten with `prim_set_random_seed' */
-    srand(time(NULL));
-
-    if (print_prompt)
-        puts("Welcome to the Simple Lisp REPL.");
-
+static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
+                           bool print_evaluated) {
     for (;;) {
         if (print_prompt)
             printf("\nsl> ");
@@ -53,7 +43,7 @@ int main(int argc, char** argv) {
          * Allocate string and read an expression. If `read_expr' returned NULL,
          * it encountered EOF.
          */
-        char* input = read_expr(input_file);
+        char* input = read_expr(file);
         if (input == NULL) {
             if (print_prompt)
                 putchar('\n');
@@ -76,7 +66,7 @@ int main(int argc, char** argv) {
             continue;
 
         /* Evaluate expression recursivelly */
-        Expr* evaluated = eval(global_env, expr);
+        Expr* evaluated = eval(env, expr);
 
         /* We are done with the original expression */
         expr_free(expr);
@@ -84,13 +74,41 @@ int main(int argc, char** argv) {
         if (evaluated == NULL)
             continue;
 
-        expr_println(stdout, evaluated);
+        if (print_evaluated)
+            expr_println(stdout, evaluated);
 
         /* Free the evaluated expression */
         expr_free(evaluated);
     }
+}
+
+int main(int argc, char** argv) {
+    FILE* file_input        = get_input_file(argc, argv);
+    const bool print_prompt = (file_input == stdin && isatty(0));
+
+    /* Initialize global environment with symbols like "nil" */
+    Env* global_env = env_new();
+    env_init_defaults(global_env);
+
+    /* Set unique random seed, can be overwritten with `prim_set_random_seed' */
+    srand(time(NULL));
+
+#ifndef SL_NO_STDLIB
+    /* Try to silently load the standard library from the current directory */
+    FILE* file_stdlib = fopen(STDLIB_PATH, "r");
+    if (file_stdlib != NULL) {
+        repl_until_eof(global_env, file_stdlib, false, false);
+        fclose(file_stdlib);
+        fprintf(stderr, "Standard library loaded.\n");
+    }
+#endif
+
+    if (print_prompt)
+        fprintf(stderr, "Welcome to the Simple Lisp REPL.\n");
+
+    repl_until_eof(global_env, file_input, print_prompt, true);
 
     env_free(global_env);
-    fclose(input_file);
+    fclose(file_input);
     return 0;
 }
