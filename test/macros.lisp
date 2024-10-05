@@ -1,6 +1,6 @@
 ;;------------------------------------------------------------------------------
 ;; Features tested in this source:
-;;   - Backquote (`) and unquote (,)
+;;   - Backquote (`), unquote (,) and splice (,@)
 ;;   - Macro definitions
 ;;   - Macro expansion
 ;;   - Macro calls
@@ -23,7 +23,7 @@
 ;;
 (define defmacro
   (macro (name &rest macro-args)
-    `(define ,name ,(cons 'macro macro-args))))
+    `(define ,name (macro ,@macro-args))))
 
 ;; Example usage of `defmacro'. Create a macro that will take a variable and
 ;; re-define it to its value plus one.
@@ -54,7 +54,7 @@
 ;;         (+ 1 n)))
 ;;
 (defmacro defun (name &rest lambda-args)
-  `(define ,name ,(cons 'lambda lambda-args)))
+  `(define ,name (lambda ,@lambda-args)))
 
 ;; Define a simple function using the previous `defun' macro. Wrap the call in:
 ;;

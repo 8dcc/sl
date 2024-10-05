@@ -19,13 +19,13 @@
 ;;                     >      (list '+ 1 var)))
 (define defmacro
   (macro (name &rest macro-args)
-    `(define ,name ,(cons 'macro macro-args))))
+    `(define ,name (macro ,@macro-args))))
 
 ;; (defun my-function (n)  >  (define my-function
 ;;   (+ 1 n))              >    (lambda (n)
 ;;                         >      (+ 1 n)))
 (defmacro defun (name &rest lambda-args)
-  `(define ,name ,(cons 'lambda lambda-args)))
+  `(define ,name (lambda ,@lambda-args)))
 
 ;;------------------------------------------------------------------------------
 ;; List-accessing functions
@@ -82,10 +82,9 @@
 ;;   body2         >   e1 e2 e3)
 ;;   body3)        >
 (defmacro let (definitions &rest body)
-  (cons (cons 'lambda
-              (cons (mapcar car definitions)
-                    body))
-        (mapcar cadr definitions)))
+  `((lambda (mapcar car definitions)
+      ,@body)
+    ,@(mapcar cadr definitions)))
 
 ;;------------------------------------------------------------------------------
 ;; General predicates
