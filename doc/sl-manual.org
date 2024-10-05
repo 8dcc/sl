@@ -832,6 +832,49 @@ symbol =tru=.
   nil
   #+end_src
 
+- Function: < a b &rest rest :: <<lt>>
+
+  Return =tru= if all arguments are monotonically increasing, that is,
+  $a<b<...<n$. Predicates are therefore transitive, that is, $a<c$.
+
+  Just like with equality, two expressions will increase or decrease
+  depending on their type. These are the different conditions required
+  for two expressions to be increasing or decreasing:
+
+  - Two expressions can only increase if they share the same type, so
+    you can't compare integers and floats, or symbols and strings.
+  - Two numbers are increasing or decreasing if the value of second is
+    greater or smaller than the value of the first, respectively.
+  - Two strings are increasing or decreasing if the first differing
+    character in the strings is greater or smaller on the second string
+    than on the first[fn::This is checked using the C function =strcmp=.],
+    respectively.
+  - Symbols are compared just like strings, but they can only be
+    compared against other symbols.
+  - Other expression types can't be compared using this function.
+
+  Some examples:
+
+  #+begin_src lisp
+  (< 1 2)      ; tru
+  (< 10 20 30) ; tru
+  (< 10 20 5)  ; nil
+  #+end_src
+
+- Function: > a b &rest rest :: <<gt>>
+
+  Return =tru= if all arguments are monotonically decreasing, that is,
+  $a>b>...>n$. Predicates are therefore transitive, that is, $a>c$. For
+  more information on this function, see [[lt][=<=]].
+
+  Some examples:
+
+  #+begin_src lisp
+  (> 2 1)      ; tru
+  (> 30 20 10) ; tru
+  (> 30 20 40) ; nil
+  #+end_src
+
 ** String primitives
 
 TODO
