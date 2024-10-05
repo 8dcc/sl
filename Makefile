@@ -7,11 +7,15 @@ SRCS=main.c expr.c env.c lambda.c util.c debug.c read.c lexer.c parser.c eval.c 
 OBJS=$(addprefix obj/, $(addsuffix .o, $(SRCS)))
 
 BIN=sl
-INSTALL_DIR=/usr/local/bin
+LIB=stdlib.lisp
+
+PREFIX=/usr/local
+BINDIR=$(PREFIX)/bin
+LIBDIR=$(PREFIX)/lib/sl
 
 #-------------------------------------------------------------------------------
 
-.PHONY: all clean install doc
+.PHONY: all clean install install-bin install-lib doc
 
 all: $(BIN)
 
@@ -19,9 +23,15 @@ clean:
 	rm -f $(OBJS)
 	rm -f $(BIN)
 
-install: $(BIN)
-	mkdir -p $(INSTALL_DIR)
-	install -m 755 $^ $(INSTALL_DIR)
+install: install-bin install-lib
+
+install-bin: $(BIN)
+	mkdir -p $(BINDIR)
+	install -m 755 $^ $(BINDIR)
+
+install-lib: $(LIB)
+	mkdir -p $(LIBDIR)
+	install -m 644 $^ $(LIBDIR)
 
 doc:
 	make --directory=doc clean all
