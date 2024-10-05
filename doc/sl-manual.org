@@ -235,40 +235,61 @@ and Interpretation of Computer Programs/[fn::
 
 - Special Form: backquote expr :: <<backquote>>
 
-  Return the argument, but allowing selective evaluation. Without using
-  special /unquote/ arguments, described below, it's behavior is identical
-  to =quote=.
+  Return the argument, while allowing selective evaluation. Without
+  using special /unquote/ arguments, described below, it's behavior is
+  identical to =quote=. Note that multiple symbols are bound to the C
+  primitive in the global environment: =backquote= and =`=[fn::That is, the
+  /grave accent/ character (ASCII code 96).].
 
-  The backquote is pretty special, and can be really useful. For one, multiple symbols are
-  bound to it in the environment. To call the backquote primitive, you
-  can use either the =backquote= symbol or the =`= symbol[fn::That is, the
-  /grave accent/ character, ASCII code 96.]. The =backquote= special form
-  also handles other special symbols that are used for /unquoting/, that
-  is, for evaluating parts of its argument.  An expression is unquoted
-  if it's wrapped in a call to the =,= function[fn::That is, the /comma/
-  character, ASCII code 44.]. Note that the symbol =,= is bound in the
-  global environment, but cannot be used outside of a =backquote=
+  As mentioned, the backquote is pretty special because it lets the user
+  evaluate parts of the argument expression. There are two symbols that
+  can be used as a procedure call for specifying which parts should be
+  evaluated. The =,= symbol[fn::That is, the /comma/ character (ASCII code
+  44).] is used for /unquoting/ and the =,@= symbol[fn::That is, the /comma/
+  character (ASCII code 44) followed by the /at sign/ (ASCII code 64).] is
+  used for /splicing/.
+
+  If an expression is /unquoted/ (e.g ~,expr~ or ~(, expr)~), it will be
+  evaluated by =backquote=. If an expression is /spliced/ (e.g ~,@expr~ or ~(,@
+  expr)~), it will be evaluated just like when /unquoting/, but instead of
+  returning the list itself, the /contents/ of the resulting list will be
+  appended to an outer list. Therefore, you can only /splice/ an
+  expression if it evaluates to a list, and if the /splice/ call was made
+  within another list.
+
+  The =,= and =,@= symbols are bound in the global environment to note that
+  they are reserved, but they cannot be used outside of a =backquote=
   argument.
 
-  Again, just like with =quote=, note that =`expr= is just syntactic sugar
-  for =(` expr)=, and =,expr= is syntactic sugar for =(, expr)=. They are all
+  Again, just like with =quote=, note that ~`expr~ is just syntactic sugar
+  for ~(` expr)~, and ~,expr~ is syntactic sugar for ~(, expr)~. They are all
   handled in [[file:parser.c]].
 
   #+begin_src lisp
   > `sym
   sym
 
+  ;; For showing how the parser expands them.
   > (quote `(a ,b c d))
   (` (a (, b) c d))
 
   > (define var 123)
   123
 
-  > `(a ,var c d)
-  (a 123 c d)
+  > `(a ,var b c)
+  (a 123 b c)
 
   > `(a (b ,var) c ,var)
-  (a 123 c d)
+  (a (b 123) c 123)
+
+  > (define my-lst '(1 2 3))
+  (1 2 3)
+
+  > `(a b ,@my-lst c d)
+  (a b 1 2 3 c d)
+
+  > `(a b ,@(list 'X 'Y 'Z) c)
+  (a b X Y Z c)
   #+end_src
 
   Also note that none of this /unquote/ functionality is available inside
