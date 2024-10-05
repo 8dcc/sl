@@ -105,6 +105,11 @@ char* read_expr(FILE* fp) {
             continue;
 
         if (c == '(') {
+            /*
+             * FIXME: On input "123(+ 1 2)", we should only read "123" on the
+             * first call, and "(+ 1 2)" on the second. Refactor this whole
+             * function.
+             */
             nesting_level++;
         } else if (c == ')') {
             /*
