@@ -11,6 +11,7 @@ struct Expr; /* expr.h */
 DECLARE_PRIM(quote);
 DECLARE_PRIM(backquote);
 DECLARE_PRIM(unquote);
+DECLARE_PRIM(splice);
 DECLARE_PRIM(define);
 DECLARE_PRIM(define_global);
 DECLARE_PRIM(lambda);

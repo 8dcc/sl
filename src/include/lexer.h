@@ -4,24 +4,33 @@
 #include <stdio.h> /* FILE */
 
 enum ETokenTypes {
-    /* Used to indicate the end of a Token array */
+    /*
+     * Used to indicate the end of a `Token' array.
+     */
     TOKEN_EOF,
 
-    /* The following make use of Token.val */
+    /*
+     * The following make use of `Token.val'
+     */
     TOKEN_NUM_INT, /* Number (long long) */
     TOKEN_NUM_FLT, /* Number (double) */
     TOKEN_SYMBOL,  /* Symbol (string) */
     TOKEN_STRING,  /* String (string) */
 
-    /* The rest don't make use of Token.val */
+    /*
+     * The rest don't make use of `Token.val'.
+     */
     TOKEN_LIST_OPEN,
     TOKEN_LIST_CLOSE,
 
-    /* Indicates that the next expression should be wrapped in (quote ...),
-     * (backquote ...) or (unquote ...) respectively. */
+    /*
+     * Indicates that the next expression should be wrapped in (quote ...),
+     * (` ...), (, ...) or (,@ ...) respectively.
+     */
     TOKEN_QUOTE,
     TOKEN_BACKQUOTE,
-    TOKEN_COMMA,
+    TOKEN_UNQUOTE,
+    TOKEN_SPLICE,
 };
 
 typedef struct Token {
@@ -35,17 +44,25 @@ typedef struct Token {
 
 /*----------------------------------------------------------------------------*/
 
-/* Allocate and fill an array of Tokens from the input. Must be freed by the
- * caller. */
+/*
+ * Allocate and fill an array of Tokens from the input. Must be freed by the
+ * caller.
+ */
 Token* tokenize(char* input);
 
-/* Free an array of tokens, along with all the memory used by each element */
+/*
+ * Free an array of tokens, along with all the memory used by each element.
+ */
 void tokens_free(Token* arr);
 
-/* Is `c' a token separator? Used by `get_token' and `read_expr'. */
+/*
+ * Is `c' a token separator? Used by `get_token' and `read_expr'.
+ */
 bool is_token_separator(char c);
 
-/* Print all tokens in a Token array terminated by TOKEN_EOF */
+/*
+ * Print all tokens in a Token array terminated by TOKEN_EOF.
+ */
 void tokens_print(FILE* fp, Token* arr);
 
 #endif /* LEXER_H_ */

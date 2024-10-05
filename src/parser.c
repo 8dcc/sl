@@ -117,10 +117,16 @@ static size_t parse_recur(Expr* dst, const Token* tokens) {
             parsed += wrap_in_call(dst, &tokens[parsed], "`");
         } break;
 
-        case TOKEN_COMMA: {
+        case TOKEN_UNQUOTE: {
             /* The function for unquoting is called ",". */
             parsed++;
             parsed += wrap_in_call(dst, &tokens[parsed], ",");
+        } break;
+
+        case TOKEN_SPLICE: {
+            /* The function for splicing is called ",@". */
+            parsed++;
+            parsed += wrap_in_call(dst, &tokens[parsed], ",@");
         } break;
 
         case TOKEN_EOF:

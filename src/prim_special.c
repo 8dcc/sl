@@ -15,8 +15,8 @@
 
 static inline bool is_call_to(const Expr* e, const char* func) {
     /* (func ...) */
-    SL_ASSERT(e->type == EXPR_PARENT);
-    return e->val.children != NULL && e->val.children->type == EXPR_SYMBOL &&
+    return e->type == EXPR_PARENT && e->val.children != NULL &&
+           e->val.children->type == EXPR_SYMBOL &&
            e->val.children->val.s != NULL &&
            strcmp(e->val.children->val.s, func) == 0;
 }
@@ -31,18 +31,16 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
     if (is_call_to(e, ",")) {
         /*
          * We found a call to unquote, evaluate it:
+         *
          *   (, expr) => (eval expr)
          */
         Expr* unquote_arg = e->val.children->next;
         SL_EXPECT(unquote_arg != NULL && unquote_arg->next == NULL,
-                  "Call to unquote expected exactly one argument.");
+                  "Call to unquote (,) expected exactly one argument.");
         return eval(env, unquote_arg);
     }
 
-    /*
-     * TODO: Splice:
-     *   (a b (,@ c d e) f g) => (a b c d e f g)
-     */
+    SL_EXPECT(!is_call_to(e, ",@"), "Can't splice (,@) outside of a list.");
 
     /*
      * Handle each element of the list recursively. This allows calls to
@@ -54,13 +52,50 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
     Expr* cur_copy  = &dummy_copy;
 
     for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
-        cur_copy->next = handle_backquote_arg(env, cur);
-        cur_copy       = cur_copy->next;
+        if (is_call_to(cur, ",@")) {
+            /*
+             * Calls to splice are handled when parsing a list:
+             *
+             *   (a b (,@ expr) c d)
+             *
+             * Is equivalent to:
+             *
+             *   (append '(a b) (eval expr) '(c d))
+             *
+             * Therefore, `expr' must evaluate to a list.
+             */
+            Expr* splice_arg = cur->val.children->next;
+            SL_EXPECT(splice_arg != NULL && splice_arg->next == NULL,
+                      "Call to splice (,@) expected exactly one argument.");
 
-        /* Failed to evaluate one argument, stop. */
-        if (cur_copy == NULL) {
-            expr_list_free(dummy_copy.next);
-            return NULL;
+            Expr* evaluated = eval(env, splice_arg);
+            SL_EXPECT(evaluated->type == EXPR_PARENT,
+                      "Can't splice (,@) a non-list expression. Use unquote "
+                      "(,) instead.");
+
+            if (evaluated->val.children != NULL) {
+                /* Append contents, not the list itself */
+                for (Expr* child = evaluated->val.children; child != NULL;
+                     child       = child->next) {
+                    cur_copy->next = child;
+                    cur_copy       = cur_copy->next;
+                }
+
+                /* Overwrite the children pointer so only the parent is freed */
+                evaluated->val.children = NULL;
+            }
+
+            expr_free(evaluated);
+        } else {
+            /* Not splicing, handle the children and append to final list */
+            cur_copy->next = handle_backquote_arg(env, cur);
+            cur_copy       = cur_copy->next;
+
+            /* Failed to evaluate one argument, stop */
+            if (cur_copy == NULL) {
+                expr_list_free(dummy_copy.next);
+                return NULL;
+            }
         }
     }
 
@@ -96,14 +131,27 @@ Expr* prim_backquote(Env* env, Expr* e) {
 
 Expr* prim_unquote(Env* env, Expr* e) {
     /*
-     * The `unquote' function is only used inside `handle_backquote'. Note that
-     * ,expr is converted to (, expr) by the parser.
+     * The `unquote' function is only used inside `handle_backquote_arg'. Note
+     * that ,expr is converted to (, expr) by the parser.
      */
     SL_UNUSED(env);
     SL_UNUSED(e);
-    SL_ERR("Invalid use of unquote outside of backquote.");
+    SL_ERR("Invalid use of unquote (,) outside of backquote.");
     return NULL;
 }
+
+Expr* prim_splice(Env* env, Expr* e) {
+    /*
+     * The `splice' function is only used inside `handle_backquote_arg'. Note
+     * that ,@expr is converted to (,@ expr) by the parser.
+     */
+    SL_UNUSED(env);
+    SL_UNUSED(e);
+    SL_ERR("Invalid use of splice (,@) outside of backquote.");
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
 
 Expr* prim_define(Env* env, Expr* e) {
     /*
@@ -150,6 +198,8 @@ Expr* prim_define_global(Env* env, Expr* e) {
     return (success) ? evaluated : NULL;
 }
 
+/*----------------------------------------------------------------------------*/
+
 Expr* prim_lambda(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
@@ -193,6 +243,8 @@ Expr* prim_macro(Env* env, Expr* e) {
     return ret;
 }
 
+/*----------------------------------------------------------------------------*/
+
 Expr* prim_begin(Env* env, Expr* e) {
     /*
      * In Scheme, `begin' is a special form for various reasons. When making a
@@ -221,6 +273,8 @@ Expr* prim_begin(Env* env, Expr* e) {
 
     return last_evaluated;
 }
+
+/*----------------------------------------------------------------------------*/
 
 Expr* prim_if(Env* env, Expr* e) {
     SL_ON_ERR(return NULL);

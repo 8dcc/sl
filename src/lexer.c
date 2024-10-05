@@ -119,8 +119,13 @@ static Token get_token(char** input_ptr) {
             goto done;
 
         case ',':
-            result.type = TOKEN_COMMA;
-            input++;
+            if (input[1] == '@') {
+                result.type = TOKEN_SPLICE;
+                input += 2;
+            } else {
+                result.type = TOKEN_UNQUOTE;
+                input++;
+            }
             goto done;
 
         case '\0':
@@ -231,8 +236,12 @@ void tokens_print(FILE* fp, Token* arr) {
                 fprintf(fp, "BACKQUOTE, ");
                 break;
 
-            case TOKEN_COMMA:
-                fprintf(fp, "TOKEN_COMMA, ");
+            case TOKEN_UNQUOTE:
+                fprintf(fp, "TOKEN_UNQUOTE, ");
+                break;
+
+            case TOKEN_SPLICE:
+                fprintf(fp, "TOKEN_SPLICE, ");
                 break;
 
             case TOKEN_EOF:
