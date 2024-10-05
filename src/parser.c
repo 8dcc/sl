@@ -9,113 +9,118 @@
 #include "include/lexer.h"
 #include "include/parser.h"
 
-static Expr* parse_recur(const Token* tokens, size_t* parsed);
+static size_t parse_recur(Expr* dst, const Token* tokens);
 
 /*
  * Parse the next expression in `tokens[*parsed]', and wrap it in a list whose
  * first element is the symbol `func_name'.
  */
-static void wrap_in_call(const Token* tokens, size_t* parsed, Expr* expr,
-                         const char* func_name) {
+static size_t wrap_in_call(Expr* dst, const Token* tokens,
+                           const char* func_name) {
     /* Create a list whose `car' is `func_name' */
-    expr->type                = EXPR_PARENT;
-    expr->val.children        = expr_new(EXPR_SYMBOL);
-    expr->val.children->val.s = sl_safe_strdup(func_name);
+    dst->type                = EXPR_PARENT;
+    dst->val.children        = expr_new(EXPR_SYMBOL);
+    dst->val.children->val.s = sl_safe_strdup(func_name);
 
     /*
      * The second element is the actual expression, which might consist of
      * multiple Tokens.
      */
-    size_t parsed_in_call    = 0;
-    expr->val.children->next = parse_recur(&tokens[*parsed], &parsed_in_call);
+    dst->val.children->next     = expr_new(EXPR_ERR);
+    const size_t parsed_in_call = parse_recur(dst->val.children->next, tokens);
 
-    /*
-     * Add the number of Tokens parsed in the previous call to the
-     * number of parsed in the current one.
-     */
     SL_ASSERT(parsed_in_call > 0);
-    *parsed += parsed_in_call;
+    return parsed_in_call;
 }
 
-static Expr* parse_recur(const Token* tokens, size_t* parsed) {
+static size_t parse_recur(Expr* dst, const Token* tokens) {
     SL_ASSERT(tokens != NULL);
     SL_ASSERT(tokens[0].type != TOKEN_LIST_CLOSE);
 
     if (tokens[0].type == TOKEN_EOF)
-        return NULL;
+        return 0;
 
-    /* Number of parsed Tokens in the current call, including recursive
-     * sub-calls. See the comment on `parse' for more information. */
-    *parsed = 1;
+    size_t parsed = 0;
 
     /* Expression type and value should be set on each case */
-    Expr* expr = expr_new(EXPR_ERR);
     switch (tokens[0].type) {
         case TOKEN_NUM_INT: {
-            expr->type  = EXPR_NUM_INT;
-            expr->val.n = tokens[0].val.n;
+            dst->type  = EXPR_NUM_INT;
+            dst->val.n = tokens[0].val.n;
+            parsed++;
         } break;
 
         case TOKEN_NUM_FLT: {
-            expr->type  = EXPR_NUM_FLT;
-            expr->val.f = tokens[0].val.f;
+            dst->type  = EXPR_NUM_FLT;
+            dst->val.f = tokens[0].val.f;
+            parsed++;
         } break;
 
         case TOKEN_STRING: {
-            expr->type  = EXPR_STRING;
-            expr->val.s = sl_safe_strdup(tokens[0].val.s);
+            dst->type  = EXPR_STRING;
+            dst->val.s = sl_safe_strdup(tokens[0].val.s);
+            parsed++;
         } break;
 
         case TOKEN_SYMBOL: {
-            expr->type  = EXPR_SYMBOL;
-            expr->val.s = sl_safe_strdup(tokens[0].val.s);
+            dst->type  = EXPR_SYMBOL;
+            dst->val.s = sl_safe_strdup(tokens[0].val.s);
+            parsed++;
         } break;
 
         case TOKEN_LIST_OPEN: {
-            expr->type = EXPR_PARENT;
+            dst->type = EXPR_PARENT;
+            parsed++;
 
             /* dummy.next will contain the first children of the list */
             Expr dummy;
-            dummy.next = NULL;
-
+            dummy.next      = NULL;
             Expr* cur_child = &dummy;
-            while (tokens[*parsed].type != TOKEN_LIST_CLOSE &&
-                   tokens[*parsed].type != TOKEN_EOF) {
+
+            while (tokens[parsed].type != TOKEN_LIST_CLOSE &&
+                   tokens[parsed].type != TOKEN_EOF) {
                 SL_ASSERT(cur_child != NULL);
 
-                /* Parse the current children recursively, storing the parsed
-                 * Tokens in that call. */
-                size_t parsed_in_call = 0;
-                cur_child->next =
-                  parse_recur(&tokens[*parsed], &parsed_in_call);
+                /*
+                 * Parse the current children recursively, storing the parsed
+                 * Tokens in that call.
+                 */
+                cur_child->next = expr_new(EXPR_ERR);
+                const size_t parsed_in_call =
+                  parse_recur(cur_child->next, &tokens[parsed]);
                 cur_child = cur_child->next;
 
-                /* Add the number of Tokens parsed in the previous call to the
-                 * number of parsed in the current one. */
+                /*
+                 * Add the number of Tokens parsed in the previous call to the
+                 * number of parsed in the current one.
+                 */
                 SL_ASSERT(parsed_in_call > 0);
-                *parsed += parsed_in_call;
+                parsed += parsed_in_call;
             }
 
             /* Store that we also parsed the LIST_CLOSE or EOF Token */
-            *parsed += 1;
+            parsed += 1;
 
             /* Store the start of the linked list in the parent expression */
-            expr->val.children = dummy.next;
+            dst->val.children = dummy.next;
         } break;
 
         case TOKEN_QUOTE: {
             /* Wrap the next expression in (quote ...) */
-            wrap_in_call(tokens, parsed, expr, "quote");
+            parsed++;
+            parsed += wrap_in_call(dst, &tokens[parsed], "quote");
         } break;
 
         case TOKEN_BACKQUOTE: {
             /* The function for backquoting is called "`". */
-            wrap_in_call(tokens, parsed, expr, "`");
+            parsed++;
+            parsed += wrap_in_call(dst, &tokens[parsed], "`");
         } break;
 
         case TOKEN_COMMA: {
             /* The function for unquoting is called ",". */
-            wrap_in_call(tokens, parsed, expr, ",");
+            parsed++;
+            parsed += wrap_in_call(dst, &tokens[parsed], ",");
         } break;
 
         case TOKEN_EOF:
@@ -124,11 +129,13 @@ static Expr* parse_recur(const Token* tokens, size_t* parsed) {
         }
     }
 
-    return expr;
+    return parsed;
 }
 
 Expr* parse(const Token* tokens) {
     /*
+     * FIXME: Update this comment.
+     *
      * We need another function with another parameter because when it makes a
      * recursive call, the caller needs to know how many Tokens were parsed
      * recursively on that call (to skip over them).
@@ -151,6 +158,7 @@ Expr* parse(const Token* tokens) {
      * Same concept applies when parsing the inner list. We want to continue
      * parsing at the "4", not at the "3".
      */
-    size_t unused;
-    return parse_recur(tokens, &unused);
+    Expr* expr                 = expr_new(EXPR_ERR);
+    const size_t tokens_parsed = parse_recur(expr, tokens);
+    return (tokens_parsed == 0) ? NULL : expr;
 }
