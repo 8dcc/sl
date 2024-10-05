@@ -39,6 +39,10 @@ see https://www.gnu.org/licenses/.
 
 These variables are defined by default in the global environment.
 
+** Constants
+
+These symbols are bound to a constant value, and can't be redefined.
+
 - Variable: `nil' :: <<nil>>
 
   #+begin_comment text
@@ -118,6 +122,11 @@ These variables are defined by default in the global environment.
   > (eval tru)
   tru
   #+end_src
+
+** Debugging variables
+
+These variables are used by the interpreter itself for debugging
+purposes.
 
 - Variable: `*debug-trace*' :: <<*debug-trace*>>
 
