@@ -13,52 +13,60 @@
 #include "include/eval.h"
 #include "include/primitives.h"
 
-static inline bool is_unquote_call(const Expr* e) {
-    /* (, ...) */
-    return e->type == EXPR_PARENT && e->val.children != NULL &&
-           e->val.children->type == EXPR_SYMBOL &&
-           strcmp(e->val.children->val.s, ",") == 0;
+static inline bool is_call_to(const Expr* e, const char* func) {
+    /* (func ...) */
+    SL_ASSERT(e->type == EXPR_PARENT);
+    return e->val.children != NULL && e->val.children->type == EXPR_SYMBOL &&
+           e->val.children->val.s != NULL &&
+           strcmp(e->val.children->val.s, func) == 0;
 }
 
 static Expr* handle_backquote_arg(Env* env, const Expr* e) {
     SL_ON_ERR(return NULL);
 
-    if (is_unquote_call(e)) {
-        /* We found a call to unquote, evaluate it:
+    /* Not a list, return unevaluated, just like `quote' */
+    if (e->type != EXPR_PARENT)
+        return expr_clone(e);
+
+    if (is_call_to(e, ",")) {
+        /*
+         * We found a call to unquote, evaluate it:
          *   (, expr) => (eval expr)
          */
         Expr* unquote_arg = e->val.children->next;
         SL_EXPECT(unquote_arg != NULL && unquote_arg->next == NULL,
                   "Call to unquote expected exactly one argument.");
         return eval(env, unquote_arg);
-    } else if (e->type == EXPR_PARENT) {
-        /*
-         * Handle each element of the list recursively. This allows calls to
-         * unquote from nested lists. See also `expr_clone_recur' and
-         * `eval_list'.
-         */
-        Expr dummy_copy;
-        dummy_copy.next = NULL;
-        Expr* cur_copy  = &dummy_copy;
-
-        for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
-            cur_copy->next = handle_backquote_arg(env, cur);
-            cur_copy       = cur_copy->next;
-
-            /* Failed to evaluate one argument, stop. */
-            if (cur_copy == NULL) {
-                expr_list_free(dummy_copy.next);
-                return NULL;
-            }
-        }
-
-        Expr* ret         = expr_new(EXPR_PARENT);
-        ret->val.children = dummy_copy.next;
-        return ret;
-    } else {
-        /* Not a list, return unevaluated, just like `quote' */
-        return expr_clone(e);
     }
+
+    /*
+     * TODO: Splice:
+     *   (a b (,@ c d e) f g) => (a b c d e f g)
+     */
+
+    /*
+     * Handle each element of the list recursively. This allows calls to
+     * unquote from nested lists. See also `expr_clone_recur' and
+     * `eval_list'.
+     */
+    Expr dummy_copy;
+    dummy_copy.next = NULL;
+    Expr* cur_copy  = &dummy_copy;
+
+    for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
+        cur_copy->next = handle_backquote_arg(env, cur);
+        cur_copy       = cur_copy->next;
+
+        /* Failed to evaluate one argument, stop. */
+        if (cur_copy == NULL) {
+            expr_list_free(dummy_copy.next);
+            return NULL;
+        }
+    }
+
+    Expr* ret         = expr_new(EXPR_PARENT);
+    ret->val.children = dummy_copy.next;
+    return ret;
 }
 
 /*----------------------------------------------------------------------------*/
