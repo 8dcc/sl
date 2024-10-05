@@ -233,6 +233,61 @@ and Interpretation of Computer Programs/[fn::
   Note that ='expr= is just syntactic sugar for =(quote expr)=. This is
   handled in [[file:parser.c]].
 
+- Special Form: backquote expr :: <<backquote>>
+
+  Return the argument, but allowing selective evaluation. Without using
+  special /unquote/ arguments, described below, it's behavior is identical
+  to =quote=.
+
+  The backquote is pretty special, and can be really useful. For one, multiple symbols are
+  bound to it in the environment. To call the backquote primitive, you
+  can use either the =backquote= symbol or the =`= symbol[fn::That is, the
+  /grave accent/ character, ASCII code 96.]. The =backquote= special form
+  also handles other special symbols that are used for /unquoting/, that
+  is, for evaluating parts of its argument.  An expression is unquoted
+  if it's wrapped in a call to the =,= function[fn::That is, the /comma/
+  character, ASCII code 44.]. Note that the symbol =,= is bound in the
+  global environment, but cannot be used outside of a =backquote=
+  argument.
+
+  Again, just like with =quote=, note that =`expr= is just syntactic sugar
+  for =(` expr)=, and =,expr= is syntactic sugar for =(, expr)=. They are all
+  handled in [[file:parser.c]].
+
+  #+begin_src lisp
+  > `sym
+  sym
+
+  > (quote `(a ,b c d))
+  (` (a (, b) c d))
+
+  > (define var 123)
+  123
+
+  > `(a ,var c d)
+  (a 123 c d)
+
+  > `(a (b ,var) c ,var)
+  (a 123 c d)
+  #+end_src
+
+  Also note that none of this /unquote/ functionality is available inside
+  =quote= arguments, just =backquote=.
+
+  #+begin_src lisp
+  > '(,a b (c ,d) e)
+  ((, a) b (c (, d)) e)
+
+  > (define var 123)
+  123
+
+  > (define my-backquote-call '`,var)
+  (` (, var))
+
+  > (eval my-backquote-call)
+  123
+  #+end_src
+
 - Special Form: define symbol expr :: <<define>>
 
   Bind symbol to a value in the current environment.
@@ -405,6 +460,23 @@ and Interpretation of Computer Programs/[fn::
   evaluated, the /symbol/ =some-name= is passed to the macro, not the value
   bound to it. The macro is expanded to the list =(define some-name 123)=,
   and then it's evaluated.
+
+  The special form =backquote= can be really useful in macros. See
+  [[backquote][=backquote=]].
+
+  #+begin_src lisp
+  ;; Without using backquote
+  (defmacro my-macro (x y)
+    (list 'if x
+          (list 'func (list 'quote 'abc))
+          (list '+ '1 '2 y)))
+
+  ;; Using backquote
+  (defmacro my-macro (x y)
+    `(if ,x
+         (func 'abc)
+         (+ 1 2 ,y)))
+  #+end_src
 
   Just like lambdas, macros support the use of the =&rest= keyword in the
   formal argument list.
