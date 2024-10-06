@@ -16,6 +16,11 @@ static void print_trace_number(FILE* fp) {
 }
 
 bool debug_is_traced_function(const Env* env, const Expr* e) {
+    /*
+     * TODO: env_get() is being called way too many times here, specially
+     * considering the symbol is in the top-most environment. We should check
+     * from a C list, and somehow allow the user to add items to it.
+     */
     Expr* debug_trace_list = env_get(env, "*debug-trace*");
     if (debug_trace_list == NULL || debug_trace_list->type != EXPR_PARENT)
         return false;
