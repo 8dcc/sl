@@ -16,15 +16,15 @@ typedef struct Expr Expr;
 typedef Expr* (*PrimitiveFuncPtr)(struct Env*, Expr*);
 
 enum EExprType {
-    EXPR_ERR,
-    EXPR_NUM_INT,
-    EXPR_NUM_FLT,
-    EXPR_SYMBOL,
-    EXPR_STRING,
-    EXPR_PARENT,
-    EXPR_PRIM,
-    EXPR_LAMBDA,
-    EXPR_MACRO,
+    EXPR_ERR     = 0x0,
+    EXPR_NUM_INT = 0x1,
+    EXPR_NUM_FLT = 0x2,
+    EXPR_SYMBOL  = 0x4,
+    EXPR_STRING  = 0x8,
+    EXPR_PARENT  = 0x10,
+    EXPR_PRIM    = 0x20,
+    EXPR_LAMBDA  = 0x40,
+    EXPR_MACRO   = 0x80,
 };
 
 struct Expr {
