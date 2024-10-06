@@ -246,9 +246,11 @@ void env_print(FILE* fp, const Env* env) {
         if (i != 0)
             fprintf(fp, "\n ");
 
-        fprintf(fp, "(\"%s\" ", env->bindings[i].sym);
+        /* Not the same order as the C structure, but prettier */
+        fprintf(fp, "(%X \"%s\" ", env->bindings[i].flags,
+                env->bindings[i].sym);
         expr_print(fp, env->bindings[i].val);
-        fprintf(fp, " %#x)", env->bindings[i].flags);
+        fputc(')', fp);
     }
     fprintf(fp, ")\n");
 }
