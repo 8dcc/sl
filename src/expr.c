@@ -196,8 +196,14 @@ bool expr_equal(const Expr* a, const Expr* b) {
     if (expr_is_nil(a) && expr_is_nil(b))
         return true;
 
+    /*
+     * If they don't share the same type, they can only be compared if they are
+     * both numbers.
+     */
     if (a->type != b->type)
-        return false;
+        return (expr_is_number(a) && expr_is_number(b))
+                 ? (expr_generic_num_val(a) == expr_generic_num_val(b))
+                 : false;
 
     switch (a->type) {
         case EXPR_NUM_INT:
@@ -224,11 +230,19 @@ bool expr_equal(const Expr* a, const Expr* b) {
             return false;
     }
 
-    return true;
+    __builtin_unreachable();
 }
 
 bool expr_lt(const Expr* a, const Expr* b) {
-    if (a == NULL || b == NULL || a->type != b->type)
+    if (a == NULL || b == NULL)
+        return false;
+
+    if (a->type != b->type)
+        return (expr_is_number(a) && expr_is_number(b))
+                 ? (expr_generic_num_val(a) < expr_generic_num_val(b))
+                 : false;
+
+    if (a->type != b->type)
         return false;
 
     switch (a->type) {
@@ -250,12 +264,17 @@ bool expr_lt(const Expr* a, const Expr* b) {
             return false;
     }
 
-    return true;
+    __builtin_unreachable();
 }
 
 bool expr_gt(const Expr* a, const Expr* b) {
-    if (a == NULL || b == NULL || a->type != b->type)
+    if (a == NULL || b == NULL)
         return false;
+
+    if (a->type != b->type)
+        return (expr_is_number(a) && expr_is_number(b))
+                 ? (expr_generic_num_val(a) > expr_generic_num_val(b))
+                 : false;
 
     switch (a->type) {
         case EXPR_NUM_INT:
@@ -276,7 +295,7 @@ bool expr_gt(const Expr* a, const Expr* b) {
             return false;
     }
 
-    return true;
+    __builtin_unreachable();
 }
 
 /*----------------------------------------------------------------------------*/

@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <stdio.h> /* FILE, putchar() */
 
+#include "util.h" /* SL_FATAL() */
+
 struct Env;       /* env.h */
 struct LambdaCtx; /* lambda.h */
 
@@ -227,6 +229,21 @@ static inline const char* exprtype2str(enum EExprType type) {
     /* clang-format on */
 
     __builtin_unreachable();
+}
+
+/*
+ * Get the value of a numerical expression in a generic C type. The expression
+ * should be a number according to `expr_is_number'.
+ */
+static inline double expr_generic_num_val(const Expr* e) {
+    switch (e->type) {
+        case EXPR_NUM_INT:
+            return (double)e->val.n;
+        case EXPR_NUM_FLT:
+            return e->val.f;
+        default:
+            SL_FATAL("Unhandled numerical case (%s).", exprtype2str(e->type));
+    }
 }
 
 /*----------------------------------------------------------------------------*/

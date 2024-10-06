@@ -17,8 +17,10 @@ unbound-error-var  ; Expected: Unbound symbol: unbound-error-var
 (define my-symbol 'my-addition) ; Expected: my-addition
 ((eval my-symbol) var1 var2)    ; Expected: 30
 
-(equal? '(1 2 3) '(1 2 3)) ; Expected: tru
-(equal? '(1 2 3) '(1 2 9)) ; Expected: nil
+(equal? '(1 2 3) '(1 2 3))       ; Expected: tru
+(equal? '(1.0 2 3.0) '(1 2.0 3)) ; Expected: tru
+(equal? '(1 2 3) '(1 2 9))       ; Expected: nil
+(equal? '(1 2 9.00001) '(1 2 9)) ; Expected: nil
 
 ;; Symbol `nil' evaluates to itself, see manual.
 (type-of nil)     ; Expected: List
@@ -26,11 +28,15 @@ unbound-error-var  ; Expected: Unbound symbol: unbound-error-var
 (equal? nil 'nil) ; Expected: tru
 
 (> 1 1) ; Expected: nil
-(< 1 1) ; Expected: nil
 (> 1 2) ; Expected: nil
-(< 1 2) ; Expected: tru
 (> 2 1) ; Expected: tru
+
+(< 1 1) ; Expected: nil
 (< 2 1) ; Expected: nil
+(< 1 2) ; Expected: tru
+
+(< 1.0 2) ; Expected: tru
+(> 2.0 1) ; Expected: tru
 
 (or)                       ; Expected: nil
 (and)                      ; Expected: tru
