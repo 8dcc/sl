@@ -923,6 +923,187 @@ symbol =tru=.
   (> 30 20 40) ; nil
   #+end_src
 
+** Type-checking primitives
+
+These primitives are used for checking the type of an expression. Types
+are usually capitalized and, in the manual, slanted. Note that most of
+these =type?= functions don't /need/ to be primitives, since we could check
+the symbol returned by =type-of=. The primitives in this section are
+defined in [[file:prim_type.c]].
+
+- Function: type-of expr :: <<type-of>>
+
+  Return a symbol representing the type of the specified expression.
+
+  #+begin_src emacs-lisp
+  > (type-of 1)
+  Integer
+
+  > (type-of 1.0)
+  Float
+
+  > (type-of 'foo)
+  Symbol
+
+  > (type-of "Bar")
+  String
+
+  > (type-of '(a b c))
+  List
+
+  > (type-of +)
+  Primitive
+
+  > (type-of (lambda (x) x))
+  Lambda
+
+  > (type-of (macro (x) x))
+  Macro
+  #+end_src
+
+- Function: int? expr :: <<int?>>
+
+  Returns =tru= if the argument is an /Integer/ number, =nil= otherwise.
+
+  #+begin_src emacs-lisp
+  > (int? 1)
+  tru
+
+  > (int? 1.0)
+  nil
+  #+end_src
+
+- Function: flt? expr :: <<flt?>>
+
+  Returns =tru= if the argument is a /Float/ number, =nil= otherwise.
+
+  #+begin_src emacs-lisp
+  > (flt? 1.0)
+  tru
+
+  > (flt? 1)
+  nil
+  #+end_src
+
+- Function: symbol? expr :: <<symbol?>>
+
+  Returns =tru= if the argument is a /Symbol/, =nil= otherwise. Note that,
+  even though the symbol =nil= and the empty list ~()~ are interchangeable,
+  only the former is a symbol according to this function. See [[nil][=nil=]].
+
+  #+begin_comment text
+  FIXME: Improve previous explanation, check how other Lisps deal with
+  it.
+  #+end_comment
+
+  #+begin_src emacs-lisp
+  > (define foo 123)
+  123
+
+  > (symbol? 'foo)
+  tru
+
+  > (symbol? foo) ; 123 is checked
+  nil
+
+  > (symbol? "Bar")
+  nil
+
+  > (symbol? 'nil)
+  tru
+
+  > (symbol? nil) ; NOTE: This might change in the future
+  nil
+  #+end_src
+
+- Function: string? expr :: <<string?>>
+
+  Returns =tru= if the argument is a /String/, =nil= otherwise.
+
+  #+begin_src emacs-lisp
+  > (string? "Foo")
+  tru
+
+  > (string? 'bar)
+  nil
+  #+end_src
+
+- Function: list? expr :: <<list?>>
+
+  Returns =tru= if the argument is a /List/, =nil= otherwise. For more details
+  on how the =nil= symbol is handled, see [[symbol?][=symbol?=]].
+
+  #+begin_src emacs-lisp
+  > (list? '(a b c))
+  tru
+
+  > (list? (+ 1 2)) ; 3 is checked
+  nil
+
+  > (list? nil)
+  tru
+
+  > (list? 'nil) ; NOTE: This might change in the future
+  nil
+  #+end_src
+
+- Function: primitive? expr :: <<primitive?>>
+
+  Returns =tru= if the argument is a C /Primitive/, =nil= otherwise.
+
+  #+begin_src emacs-lisp
+  > (primitive? +)
+  tru
+
+  > (defun foo (x) x)
+  <lambda>
+
+  > (primitive? foo)
+  nil
+  #+end_src
+
+- Function: lambda? expr :: <<lambda?>>
+
+  Returns =tru= if the argument is a /Lambda/ function, =nil= otherwise.
+
+  #+begin_src emacs-lisp
+  > (defun foo (x) x)
+  <lambda>
+
+  > (defmacro bar (x) x)
+  <macro>
+
+  > (lambda? foo)
+  tru
+
+  > (lambda? bar)
+  nil
+
+  > (lambda? +)
+  nil
+  #+end_src
+
+- Function: macro? expr :: <<macro?>>
+
+  Returns =tru= if the argument is a /Macro/ function, =nil= otherwise.
+
+  #+begin_src emacs-lisp
+  > (defun foo (x) x)
+  <lambda>
+
+  > (defmacro bar (x) x)
+  <macro>
+
+  > (lambda? foo)
+  nil
+
+  > (lambda? bar)
+  tru
+
+  > (lambda? +)
+  nil
+  #+end_src
+
 ** String primitives
 
 TODO
