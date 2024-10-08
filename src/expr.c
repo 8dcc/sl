@@ -197,13 +197,12 @@ bool expr_equal(const Expr* a, const Expr* b) {
         return true;
 
     /*
-     * If they don't share the same type, they can only be compared if they are
-     * both numbers.
+     * This function checks for isomorphism, so if they don't share the same
+     * type, they are not equal. For comparing numbers, see `prim_equal_num' or
+     * `expr_lt'.
      */
     if (a->type != b->type)
-        return (expr_is_number(a) && expr_is_number(b))
-                 ? (expr_generic_num_val(a) == expr_generic_num_val(b))
-                 : false;
+        return false;
 
     switch (a->type) {
         case EXPR_NUM_INT:
@@ -237,6 +236,7 @@ bool expr_lt(const Expr* a, const Expr* b) {
     if (a == NULL || b == NULL)
         return false;
 
+    /* See `prim_equal_num' */
     if (a->type != b->type)
         return (expr_is_number(a) && expr_is_number(b))
                  ? (expr_generic_num_val(a) < expr_generic_num_val(b))
