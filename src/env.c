@@ -110,12 +110,6 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "quotient", quotient);
     BIND_PRIM(env, "remainder", remainder);
     BIND_PRIM(env, "floor", floor);
-    BIND_PRIM(env, "int->flt", int2flt);
-    BIND_PRIM(env, "flt->int", flt2int);
-    BIND_PRIM(env, "int->str", int2str);
-    BIND_PRIM(env, "flt->str", flt2str);
-    BIND_PRIM(env, "str->int", str2int);
-    BIND_PRIM(env, "str->flt", str2flt);
     BIND_PRIM(env, "type-of", type_of);
     BIND_PRIM(env, "int?", is_int);
     BIND_PRIM(env, "flt?", is_flt);
@@ -125,6 +119,12 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "primitive?", is_primitive);
     BIND_PRIM(env, "lambda?", is_lambda);
     BIND_PRIM(env, "macro?", is_macro);
+    BIND_PRIM(env, "int->flt", int2flt);
+    BIND_PRIM(env, "flt->int", flt2int);
+    BIND_PRIM(env, "int->str", int2str);
+    BIND_PRIM(env, "flt->str", flt2str);
+    BIND_PRIM(env, "str->int", str2int);
+    BIND_PRIM(env, "str->flt", str2flt);
     BIND_PRIM(env, "bit-and", bit_and);
     BIND_PRIM(env, "bit-or", bit_or);
     BIND_PRIM(env, "bit-xor", bit_xor);
