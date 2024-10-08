@@ -882,7 +882,8 @@ symbol =tru=.
 - Function: < a b &rest rest :: <<lt>>
 
   Return =tru= if all arguments are monotonically increasing, that is,
-  $a<b<...<n$. Predicates are therefore transitive, that is, $a<c$.
+  $a<b<...<n$; =nil= otherwise. Predicates are therefore transitive, that
+  is, $a<c$.
 
   Just like with equality, two expressions will increase or decrease
   depending on their type. These are the different conditions required
@@ -911,8 +912,8 @@ symbol =tru=.
 - Function: > a b &rest rest :: <<gt>>
 
   Return =tru= if all arguments are monotonically decreasing, that is,
-  $a>b>...>n$. Predicates are therefore transitive, that is, $a>c$. For
-  more information on this function, see [[lt][=<=]].
+  $a>b>...>n$; =nil= otherwise. Predicates are therefore transitive, that
+  is, $a>c$. For more information on this function, see [[lt][=<=]].
 
   Some examples:
 
