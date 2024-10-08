@@ -861,9 +861,12 @@ symbol =tru=.
   to a common type.
 
   Specifically, this is how the types are converted:
+
   - If both have the same type, no conversion is made.
   - If one is a /Float/ and the other is an /Integer/, the integer is
     converted into a /Float/, independently of the type order.
+
+  Some examples:
 
   #+begin_src emacs-lisp
   > (= 1 1)
