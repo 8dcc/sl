@@ -45,7 +45,7 @@ DECLARE_PRIM(is_primitive);
 DECLARE_PRIM(is_lambda);
 DECLARE_PRIM(is_macro);
 
-/* Type-conversion (prim_type.c) */
+/* Type conversion (prim_type.c) */
 DECLARE_PRIM(int2flt);
 DECLARE_PRIM(flt2int);
 DECLARE_PRIM(int2str);

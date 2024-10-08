@@ -69,7 +69,7 @@ Expr* prim_is_macro(Env* env, Expr* e) {
 }
 
 /*----------------------------------------------------------------------------*/
-/* Type-conversion primitives */
+/* Type conversion primitives */
 
 Expr* prim_int2flt(Env* env, Expr* e) {
     SL_UNUSED(env);
@@ -93,6 +93,10 @@ Expr* prim_flt2int(Env* env, Expr* e) {
     return ret;
 }
 
+/*
+ * TODO: Are these `x2str' primitives necessary? Why not simply use
+ * `write-to-string'?
+ */
 Expr* prim_int2str(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
