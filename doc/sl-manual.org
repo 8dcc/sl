@@ -1104,6 +1104,84 @@ defined in [[file:prim_type.c]].
   nil
   #+end_src
 
+** Type conversion primitives
+
+These primitives are used for converting between expression types. The
+primitives in this section are defined in [[file:prim_type.c]].
+
+- Function: int->flt expr :: <<int->flt>>
+
+  Converts the specified /Integer/ into a /Float/.
+
+  #+begin_src emacs-lisp
+  > (int->flt 1)
+  1.000000
+  #+end_src
+
+- Function: flt->int expr :: <<flt->int>>
+
+  Converts the specified /Float/ into an /Integer/.
+
+  #+begin_src emacs-lisp
+  > (flt->int 1.0)
+  1
+  #+end_src
+
+- Function: int->str expr :: <<int->str>>
+
+  Converts the specified /Integer/ into a /String/. See also
+  [[write-to-string][=write-to-string=]].
+
+  #+begin_src emacs-lisp
+  > (int->str 1)
+  "1"
+  #+end_src
+
+- Function: flt->str expr :: <<flt->str>>
+
+  Converts the specified /Float/ into a /String/.
+
+  #+begin_src emacs-lisp
+  > (flt->str 1.0)
+  "1.000000"
+  #+end_src
+
+- Function: str->int expr :: <<str->int>>
+
+  Converts the specified /String/ into an /Integer/.
+
+  #+begin_src emacs-lisp
+  > (str->int "1")
+  1
+
+  > (str->int "1abc")
+  1
+
+  > (str->int "abc1") ; Invalid input
+  0
+  #+end_src
+
+- Function: str->flt expr :: <<str->flt>>
+
+  Converts the specified /String/ into a /Float/.
+
+  #+begin_src emacs-lisp
+  > (str->flt "1.0")
+  1.000000
+
+  > (str->flt "1.0abc")
+  1.000000
+
+  > (str->flt "1")
+  1.000000
+
+  > (str->flt "1abc")
+  1.000000
+
+  > (str->flt "abc1") ; Invalid input
+  0.000000
+  #+end_src
+
 ** String primitives
 
 TODO
