@@ -230,7 +230,7 @@ and Interpretation of Computer Programs/[fn::
   (+ 1 2)
   #+end_src
 
-  Note that ='expr= is just syntactic sugar for =(quote expr)=. This is
+  Note that ~'expr~ is just syntactic sugar for ~(quote expr)~. This is
   handled in [[file:parser.c]].
 
 - Special Form: backquote expr :: <<backquote>>
@@ -479,7 +479,7 @@ and Interpretation of Computer Programs/[fn::
   In the previous example, notice how we don't have to quote =some-name=
   when calling =my-macro=. This is because, since macro arguments are not
   evaluated, the /symbol/ =some-name= is passed to the macro, not the value
-  bound to it. The macro is expanded to the list =(define some-name 123)=,
+  bound to it. The macro is expanded to the list ~(define some-name 123)~,
   and then it's evaluated.
 
   The special form =backquote= can be really useful in macros. See
@@ -988,7 +988,7 @@ defined in [[file:prim_type.c]].
 - Function: symbol? expr :: <<symbol?>>
 
   Returns =tru= if the argument is a /Symbol/, =nil= otherwise. Note that,
-  even though the symbol =nil= and the empty list ~()~ are interchangeable,
+  even though the symbol =nil= and the empty list =()= are interchangeable,
   only the former is a symbol according to this function. See [[nil][=nil=]].
 
   #+begin_comment text
