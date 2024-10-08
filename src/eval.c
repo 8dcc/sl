@@ -152,6 +152,8 @@ Expr* eval(Env* env, Expr* e) {
     switch (e->type) {
         case EXPR_PARENT: {
             /* `nil' evaluates to itself */
+            /* TODO: Move outside of EXPR_PARENT case so it's not converted to
+             * List. */
             if (expr_is_nil(e))
                 return expr_clone(e);
 
