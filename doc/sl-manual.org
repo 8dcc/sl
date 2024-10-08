@@ -809,13 +809,13 @@ symbol =tru=.
     elements, and if each expression in the first list is equal to the
     corresponding expression in the second list, according to this
     function =equal?=.
-  - Two numbers are equal if they share the same type, and if they have
-    the same value. See also [[=][===]].
-  - For symbols are equal if they have the same length, and if all of
+  - Two numbers are equal according to this function if they share the
+    same type, and if they have the same value. General numerical
+    equality can be checked with [[=][===]].
+  - Two strings are equal if they have the same length, and if all of
     their characters match.
-  - Strings are handled just like symbols, but note that, since they
-    have different expression types, they are not equal according to
-    this function.
+  - Symbols are handled just like strings, but comparing the two types
+    will always returns =nil=.
   - Two expressions of type /Primitive/ are equal if they point to the
     same C function in memory.
   - Two lambda functions are equal if they have the same number of
@@ -853,6 +853,29 @@ symbol =tru=.
   nil
   #+end_src
 
+- Function: = a b &rest rest :: <<=>>
+
+  Returns =tru= if the value of /all/ numerical arguments is equal, =nil=
+  otherwise. The value of two numerical expressions is equal, according
+  to this function, if their values are the same after being converted
+  to a common type.
+
+  Specifically, this is how the types are converted:
+  - If both have the same type, no conversion is made.
+  - If one is a /Float/ and the other is an /Integer/, the integer is
+    converted into a /Float/, independently of the type order.
+
+  #+begin_src emacs-lisp
+  > (= 1 1)
+  tru
+
+  > (= 1 1.0)
+  tru
+
+  > (= 1 1.0 2)
+  nil
+  #+end_src
+
 - Function: < a b &rest rest :: <<lt>>
 
   Return =tru= if all arguments are monotonically increasing, that is,
@@ -862,16 +885,16 @@ symbol =tru=.
   depending on their type. These are the different conditions required
   for two expressions to be increasing or decreasing:
 
-  - Two expressions can only increase if they share the same type, so
-    you can't compare integers and floats, or symbols and strings.
   - Two numbers are increasing or decreasing if the value of second is
-    greater or smaller than the value of the first, respectively.
+    greater or smaller than the value of the first,
+    respectively. Numbers can be compared if they don't share the same
+    type, but will be converted to a common one, just like with [[=][===]].
   - Two strings are increasing or decreasing if the first differing
     character in the strings is greater or smaller on the second string
     than on the first[fn::This is checked using the C function =strcmp=.],
     respectively.
-  - Symbols are compared just like strings, but they can only be
-    compared against other symbols.
+  - Symbols are handled just like strings, but comparing the two types
+    will always returns =nil=.
   - Other expression types can't be compared using this function.
 
   Some examples:
@@ -907,14 +930,6 @@ TODO
 * Standard library
 
 TODO
-
-** Logical functions
-
-TODO
-
-- Function: = num &rest rest :: <<=>>
-
-  TODO
 
 ** Debugging
 
