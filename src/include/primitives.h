@@ -30,6 +30,7 @@ DECLARE_PRIM(set_random_seed);
 
 /* Logical (prim_logic.c) */
 DECLARE_PRIM(equal);
+DECLARE_PRIM(equal_num);
 DECLARE_PRIM(lt);
 DECLARE_PRIM(gt);
 

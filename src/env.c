@@ -132,6 +132,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "shr", shr);
     BIND_PRIM(env, "shl", shl);
     BIND_PRIM(env, "equal?", equal);
+    BIND_PRIM(env, "=", equal_num);
     BIND_PRIM(env, "<", lt);
     BIND_PRIM(env, ">", gt);
     BIND_PRIM(env, "read", read);

@@ -18,9 +18,11 @@ unbound-error-var  ; Expected: Unbound symbol: unbound-error-var
 ((eval my-symbol) var1 var2)    ; Expected: 30
 
 (equal? '(1 2 3) '(1 2 3))       ; Expected: tru
-(equal? '(1.0 2 3.0) '(1 2.0 3)) ; Expected: tru
 (equal? '(1 2 3) '(1 2 9))       ; Expected: nil
-(equal? '(1 2 9.00001) '(1 2 9)) ; Expected: nil
+
+(equal? 1 1.0) ; Expected: nil
+(= 1 1.0)      ; Expected: tru
+(= 1 1.000001) ; Expected: nil
 
 ;; Symbol `nil' evaluates to itself, see manual.
 (type-of nil)     ; Expected: List

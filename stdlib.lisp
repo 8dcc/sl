@@ -119,18 +119,6 @@
       (lambda?    expr)
       (macro?     expr)))
 
-(defun = (num &rest rest)
-  (defun unify-number-type (n)
-    (cond ((int? n) (int->flt n))
-          ((flt? n) n)
-          (tru (error "Unexpected numeric type."))))
-  (cond ((null? rest) tru)
-        ((and (number? num)
-              (equal? (unify-number-type num)
-                      (unify-number-type (car rest))))
-         (apply = (cdr rest)))
-        (tru nil)))
-
 ;;------------------------------------------------------------------------------
 ;; Debugging
 ;;------------------------------------------------------------------------------
