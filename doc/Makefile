@@ -1,4 +1,6 @@
 
+HTMLFLAGS=--no-split --css-ref="./texinfo-style.css"
+
 DOCNAME=sl-manual
 TEXI=$(addsuffix .texi, $(DOCNAME))
 PDF=$(addsuffix .pdf, $(DOCNAME))
@@ -12,7 +14,7 @@ html: $(HTML)
 
 clean:
 	rm -f $(PDF) $(HTML)
-	rm -f *.aux *.fn *.fns *.ky *.log *.toc
+	rm -f *.aux *.fn *.fns *.ky *.log *.vr *.vrs *.toc
 
 #-------------------------------------------------------------------------------
 
@@ -20,4 +22,4 @@ $(PDF): $(TEXI)
 	makeinfo --pdf -o $@ $^
 
 $(HTML): $(TEXI)
-	makeinfo --no-split --html -o $@ $^
+	makeinfo --html -o $@ $(HTMLFLAGS) $^
