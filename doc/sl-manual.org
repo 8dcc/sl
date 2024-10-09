@@ -282,10 +282,10 @@ and Interpretation of Computer Programs/[fn::
   > `(a (b ,var) c ,var)
   (a (b 123) c 123)
 
-  > (define my-lst '(1 2 3))
+  > (define my-list '(1 2 3))
   (1 2 3)
 
-  > `(a b ,@my-lst c d)
+  > `(a b ,@my-list c d)
   (a b 1 2 3 c d)
 
   > `(a b ,@(list 'X 'Y 'Z) c)
