@@ -84,6 +84,8 @@ input, button, textarea, select {
  * Copied from version 1.49 of GNU's <style.css>, found here:
  * http://web.cvs.savannah.gnu.org/viewvc/www/www/style.css?view=log
  *
+ * Slightly modified by me.
+ *
  * -- 8dcc, 2024-10-09
  */
 
@@ -97,7 +99,7 @@ html, body {
 html { background-color: #e7e7e7; }
 
 body {
-   max-width: 74.92em;
+   max-width: 50em;
    margin: 0 auto;
    padding: .5em 1em 1em 1em;
    background-color: white;
@@ -108,7 +110,7 @@ body {
 
 /* Size and positioning */
 
-p, pre, li, dt, dd, table, code, address { line-height: 1.3em; }
+p, pre, li, dt, dd, table, code, address { line-height: unset; }
 
 h1 { font-size: 2em; margin: 1em 0 }
 h2 { font-size: 1.50em; margin: 1.0em 0 0.87em 0; }
@@ -232,8 +234,8 @@ table.cartouche td { padding: 1.5em; }
 div.display, div.lisp, div.smalldisplay,
  div.smallexample, div.smalllisp { margin-left: 3%; }
 
-div.example { padding: .8em 1.2em .4em; }
-pre.example { padding: .8em 1.2em; }
+div.example { padding: .2em 1em; }
+pre.example { padding: .8em 1em; }
 div.example, pre.example {
    margin: 1em 0 1em 3% ;
    -webkit-border-radius: .3em;
