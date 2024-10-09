@@ -1182,6 +1182,146 @@ primitives in this section are defined in [[file:prim_type.c]].
   0.000000
   #+end_src
 
+** List-related primitives
+
+These primitives are related to the construction, the modification and
+information of lists.
+
+- Function: list &rest exprs ::
+
+  Construct a list from the specified arguments. All elements remain in
+  the top level, even if they are other lists.
+
+  #+begin_src lisp
+  > (list 1 2 3)
+  (1 2 3)
+
+  > (list 'a '(b c) 'd)
+  (a (b c) d)
+
+  > (list 'a 'b '() nil)
+  (a b nil nil)
+  #+end_src
+
+- Function: cons expr lst ::
+
+  #+begin_comment org
+  TODO: If =cons= is updated, update =cons=, =car= and =cdr= sections. Perhaps
+  even add a separate section for /cons pairs/.
+  #+end_comment
+
+  Prepend =expr= to the beginning of the list =lst=[fn::For more information
+  on the history of =cons=, see [[https://www-formal.stanford.edu/jmc/history/lisp/node2.html][John McCarthy (1979) /History of Lisp/]]].
+
+  Note that lists are currently not implemented as multiple =cons= pairs,
+  but as a simple linked list instead. I think this is more
+  memory-efficient, but this *will probably change* in the
+  future. Therefore, the =cons= implementation is a bit different that
+  most other Lisps.
+
+  #+begin_src lisp
+  > (cons 'a '(b c d))
+  (a b c d)
+
+  > (cons '(a b) '(c d))
+  ((a b) c d)
+
+  > (cons 'a nil)
+  (a)
+
+  > (cons 'a 'b) ; NOTE: Not yet implemented
+  Error: Expected expression of type 'List', got 'Symbol'.
+  #+end_src
+
+- Function: car pair ::
+
+  Return the first element of the specified /cons pair/[fn::For historical
+  reasons, =car= stands for "Contents of the Address (part) of
+  Register".]. Therefore, since ~(car (cons a b))~ is always ~a~, the =car= of
+  a list is its first element.
+
+  The =car= of =nil= is always =nil=, even though it represents a list with no
+  elements.
+
+  #+begin_src lisp
+  > (car '(a b c))
+  a
+
+  > (car '((a b) c d))
+  (a b)
+
+  > (car nil) ; Special case
+  nil
+  #+end_src
+
+- Function: cdr pair ::
+
+  Return the second element of the specified /cons pair/[fn::For
+  historical reasons, =cdr= stands for "Contents of the Decrement (part)
+  of Register".]. Therefore, since ~(cdr (cons a b))~ is always ~b~, the =cdr=
+  of a list is the part of the list that follows the first element (the
+  =car=).
+
+  The =cdr= of =nil= is always =nil=, even though it represents a list with no
+  elements.
+
+  #+begin_src lisp
+  > (cdr '(a b c))
+  (b c)
+
+  > (cdr '((a b) c d))
+  (c d)
+
+  > (cdr '(a (b c) d))
+  ((b c) d)
+
+  > (cdr nil) ; Special case
+  nil
+  #+end_src
+
+- Function: length sequence ::
+
+  Return the number of elements in a sequence, that is, a /List/ or
+  /String/.
+
+  #+begin_src lisp
+  > (length '(a b c))
+  3
+
+  > (length "abc")
+  3
+
+  > (length nil)
+  0
+
+  > (length "")
+  0
+  #+end_src
+
+- Function: append &rest sequences ::
+
+  Attach one sequence to another, that is, a /List/ or /String/. Note that
+  all arguments must share the same type, so you can't append a list to
+  a string.
+
+  #+begin_src lisp
+  > (append '(1 2 3) '(a b c) '(4 5 6))
+  (1 2 3 a b c 4 5 6)
+
+  > (append '(a b c))
+  (a b c)
+
+  > (append "foo" "bar")
+  "foobar"
+  #+end_src
+
+  When called with no arguments, =append= returns =nil=.
+
+  #+begin_src lisp
+  > (append)
+  nil
+  #+end_src
+
 ** String primitives
 
 TODO
