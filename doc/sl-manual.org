@@ -868,7 +868,7 @@ symbol =tru=.
 
   Some examples:
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (= 1 1)
   tru
 
@@ -935,7 +935,7 @@ defined in [[file:prim_type.c]].
 
   Return a symbol representing the type of the specified expression.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (type-of 1)
   Integer
 
@@ -965,7 +965,7 @@ defined in [[file:prim_type.c]].
 
   Returns =tru= if the argument is an /Integer/ number, =nil= otherwise.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (int? 1)
   tru
 
@@ -977,7 +977,7 @@ defined in [[file:prim_type.c]].
 
   Returns =tru= if the argument is a /Float/ number, =nil= otherwise.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (flt? 1.0)
   tru
 
@@ -996,7 +996,7 @@ defined in [[file:prim_type.c]].
   it.
   #+end_comment
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (define foo 123)
   123
 
@@ -1020,7 +1020,7 @@ defined in [[file:prim_type.c]].
 
   Returns =tru= if the argument is a /String/, =nil= otherwise.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (string? "Foo")
   tru
 
@@ -1033,7 +1033,7 @@ defined in [[file:prim_type.c]].
   Returns =tru= if the argument is a /List/, =nil= otherwise. For more details
   on how the =nil= symbol is handled, see [[symbol?][=symbol?=]].
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (list? '(a b c))
   tru
 
@@ -1051,7 +1051,7 @@ defined in [[file:prim_type.c]].
 
   Returns =tru= if the argument is a C /Primitive/, =nil= otherwise.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (primitive? +)
   tru
 
@@ -1066,7 +1066,7 @@ defined in [[file:prim_type.c]].
 
   Returns =tru= if the argument is a /Lambda/ function, =nil= otherwise.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (defun foo (x) x)
   <lambda>
 
@@ -1087,7 +1087,7 @@ defined in [[file:prim_type.c]].
 
   Returns =tru= if the argument is a /Macro/ function, =nil= otherwise.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (defun foo (x) x)
   <lambda>
 
@@ -1113,7 +1113,7 @@ primitives in this section are defined in [[file:prim_type.c]].
 
   Converts the specified /Integer/ into a /Float/.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (int->flt 1)
   1.000000
   #+end_src
@@ -1122,7 +1122,7 @@ primitives in this section are defined in [[file:prim_type.c]].
 
   Converts the specified /Float/ into an /Integer/.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (flt->int 1.0)
   1
   #+end_src
@@ -1132,7 +1132,7 @@ primitives in this section are defined in [[file:prim_type.c]].
   Converts the specified /Integer/ into a /String/. See also
   [[write-to-string][=write-to-string=]].
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (int->str 1)
   "1"
   #+end_src
@@ -1141,7 +1141,7 @@ primitives in this section are defined in [[file:prim_type.c]].
 
   Converts the specified /Float/ into a /String/.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (flt->str 1.0)
   "1.000000"
   #+end_src
@@ -1150,7 +1150,7 @@ primitives in this section are defined in [[file:prim_type.c]].
 
   Converts the specified /String/ into an /Integer/.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (str->int "1")
   1
 
@@ -1165,7 +1165,7 @@ primitives in this section are defined in [[file:prim_type.c]].
 
   Converts the specified /String/ into a /Float/.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (str->flt "1.0")
   1.000000
 
