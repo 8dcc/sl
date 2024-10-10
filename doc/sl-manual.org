@@ -790,9 +790,9 @@ symbol =tru=.
 
   Return =tru= if the structure of /all/ arguments is equal, =nil=
   otherwise. In other words, if they are isomorphic. As a rule of thumb,
-  two expressions are isomorphic if =write-to-string= returns the same
-  string for both of them (see [[write-to-string][=write-to-string=]]). Isomorphism for
-  different types will be expanded below.
+  two expressions are isomorphic if =write-to-str= returns the same string
+  for both of them (see [[write-to-str][=write-to-str=]]). Isomorphism for different types
+  will be expanded below.
 
   The primitive doesn't /require/ arguments of the same type, but the
   equality will usually fail if they don't share a common one.
@@ -1129,8 +1129,7 @@ primitives in this section are defined in [[file:prim_type.c]].
 
 - Function: int->str expr :: <<int->str>>
 
-  Converts the specified /Integer/ into a /String/. See also
-  [[write-to-string][=write-to-string=]].
+  Converts the specified /Integer/ into a /String/. See also [[write-to-str][=write-to-str=]].
 
   #+begin_src lisp
   > (int->str 1)
@@ -1332,13 +1331,16 @@ information of strings. The primitives in this section are defined in
 Note that some functions in [[*List-related primitives][List-related primitives]] operate on /sequences/
 in general, not just /lists/, so they can be used with strings.
 
-- Function: write-to-string expr :: <<write-to-string>>
+- Function: write-to-str expr :: <<write-to-str>>
 
   Returns a string that represents the specified expression. The format
   of the returned string must contain enough information to be parsed
-  into the original expression using =read= and a parsing function.
+  into the original expression using =read= and a parsing function (see
+  [[read][=read=]]).
 
   #+begin_comment org
+  TODO: Add =read-from-str=, add section and replace in here. Note
+  differences with =read-str.=
   TODO: Add a parsing function that converts a string to an =Expr=. Find
   conventional name, update this section.
   #+end_comment
@@ -1346,26 +1348,26 @@ in general, not just /lists/, so they can be used with strings.
   See also [[write][=write=]].
 
   #+begin_src lisp
-  > (write-to-string 1)
+  > (write-to-str 1)
   "1"
 
-  > (write-to-string 'hello)
+  > (write-to-str 'hello)
   "hello"
 
-  > (write-to-string (lambda (x) (* x 2)))
+  > (write-to-str (lambda (x) (* x 2)))
   "(lambda (x) (* x 2))"
 
-  > (write-to-string "Hello, world\n")
+  > (write-to-str "Hello, world\n")
   "\"Hello, world\\n\""
   #+end_src
 
-  Note that string arguments are escaped by =write-to-string=, but also by
+  Note that string arguments are escaped by =write-to-str=, but also by
   the REPL itself, so the real output of the function can be seen with
-  something like =print-str=:
+  something like [[print-str][=print-str=]].
 
   #+begin_src lisp
   > (begin
-     (print-str (write-to-string "Hello, world\n"))
+     (print-str (write-to-str "Hello, world\n"))
      (print-str "\n")
      (print-str "\"Hello, world\\n\"") ; Returned
      (print-str "\n")
@@ -1379,7 +1381,7 @@ in general, not just /lists/, so they can be used with strings.
 
 TODO
 
-- Function: read expr :: <<read>>
+- Function: read :: <<read>>
 
   TODO
 
@@ -1387,7 +1389,23 @@ TODO
 
   TODO
 
-  For more information, see [[write-to-string][=write-to-string=]].
+  For more information, see [[write-to-str][=write-to-str=]].
+
+- Function: read-str string :: <<read-str>>
+
+  #+begin_comment org
+  TODO: Rename to something like =get-str= to avoid confusion with =read=.
+  #+end_comment
+
+  TODO
+
+- Function: print-str string :: <<print-str>>
+
+  TODO
+
+- Function: error string :: <<error>>
+
+  TODO
 
 * Standard library
 
