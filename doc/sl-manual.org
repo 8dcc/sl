@@ -1184,10 +1184,11 @@ primitives in this section are defined in [[file:prim_type.c]].
 
 ** List-related primitives
 
-These primitives are related to the construction, the modification and
-information of lists.
+These primitives are related to the construction, modification and
+information of lists. The primitives in this section are defined in
+[[file:prim_list.c]].
 
-- Function: list &rest exprs ::
+- Function: list &rest exprs :: <<list>>
 
   Construct a list from the specified arguments. All elements remain in
   the top level, even if they are other lists.
@@ -1203,7 +1204,7 @@ information of lists.
   (a b nil nil)
   #+end_src
 
-- Function: cons expr lst ::
+- Function: cons expr lst :: <<cons>>
 
   #+begin_comment org
   TODO: If =cons= is updated, update =cons=, =car= and =cdr= sections. Perhaps
@@ -1233,7 +1234,7 @@ information of lists.
   Error: Expected expression of type 'List', got 'Symbol'.
   #+end_src
 
-- Function: car pair ::
+- Function: car pair :: <<car>>
 
   Return the first element of the specified /cons pair/[fn::For historical
   reasons, =car= stands for "Contents of the Address (part) of
@@ -1254,7 +1255,7 @@ information of lists.
   nil
   #+end_src
 
-- Function: cdr pair ::
+- Function: cdr pair :: <<cdr>>
 
   Return the second element of the specified /cons pair/[fn::For
   historical reasons, =cdr= stands for "Contents of the Decrement (part)
@@ -1279,7 +1280,7 @@ information of lists.
   nil
   #+end_src
 
-- Function: length sequence ::
+- Function: length sequence :: <<length>>
 
   Return the number of elements in a sequence, that is, a /List/ or
   /String/.
@@ -1298,7 +1299,7 @@ information of lists.
   0
   #+end_src
 
-- Function: append &rest sequences ::
+- Function: append &rest sequences :: <<append>>
 
   Attach one sequence to another, that is, a /List/ or /String/. Note that
   all arguments must share the same type, so you can't append a list to
