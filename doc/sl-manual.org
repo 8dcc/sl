@@ -1325,11 +1325,69 @@ information of lists. The primitives in this section are defined in
 
 ** String primitives
 
-TODO
+These primitives are related to the construction, modification and
+information of strings. The primitives in this section are defined in
+[[file:prim_string.c]].
+
+Note that some functions in [[*List-related primitives][List-related primitives]] operate on /sequences/
+in general, not just /lists/, so they can be used with strings.
 
 - Function: write-to-string expr :: <<write-to-string>>
 
+  Returns a string that represents the specified expression. The format
+  of the returned string must contain enough information to be parsed
+  into the original expression using =read= and a parsing function.
+
+  #+begin_comment org
+  TODO: Add a parsing function that converts a string to an =Expr=. Find
+  conventional name, update this section.
+  #+end_comment
+
+  See also [[write][=write=]].
+
+  #+begin_src lisp
+  > (write-to-string 1)
+  "1"
+
+  > (write-to-string 'hello)
+  "hello"
+
+  > (write-to-string (lambda (x) (* x 2)))
+  "(lambda (x) (* x 2))"
+
+  > (write-to-string "Hello, world\n")
+  "\"Hello, world\\n\""
+  #+end_src
+
+  Note that string arguments are escaped by =write-to-string=, but also by
+  the REPL itself, so the real output of the function can be seen with
+  something like =print-str=:
+
+  #+begin_src lisp
+  > (begin
+     (print-str (write-to-string "Hello, world\n"))
+     (print-str "\n")
+     (print-str "\"Hello, world\\n\"") ; Returned
+     (print-str "\n")
+     'done)
+  "Hello, world\n"
+  "Hello, world\n"
+  done
+  #+end_src
+
+** Input/Output primitives
+
+TODO
+
+- Function: read expr :: <<read>>
+
   TODO
+
+- Function: write expr :: <<write>>
+
+  TODO
+
+  For more information, see [[write-to-string][=write-to-string=]].
 
 * Standard library
 
