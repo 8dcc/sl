@@ -9,7 +9,7 @@
 #include "include/util.h"
 #include "include/primitives.h"
 
-Expr* prim_write_to_string(Env* env, Expr* e) {
+Expr* prim_write_to_str(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
@@ -30,6 +30,11 @@ Expr* prim_write_to_string(Env* env, Expr* e) {
     ret->val.s = str;
     return ret;
 }
+
+/*
+ * TODO: Add `read-from-string' function, similar to `read', but from a string.
+ * Not related to `read-str'.
+ */
 
 /*----------------------------------------------------------------------------*/
 

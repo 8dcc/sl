@@ -95,7 +95,7 @@ Expr* prim_flt2int(Env* env, Expr* e) {
 
 /*
  * TODO: Are these `x2str' primitives necessary? Why not simply use
- * `write-to-string'?
+ * `write-to-str'?
  */
 Expr* prim_int2str(Env* env, Expr* e) {
     SL_UNUSED(env);

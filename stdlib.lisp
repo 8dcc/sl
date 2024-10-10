@@ -126,7 +126,7 @@
 (defmacro assert (predicate)
   `(if ,predicate ,predicate
        (error (append "Assertion `"
-                      (write-to-string (quote ,predicate))
+                      (write-to-str (quote ,predicate))
                       "' failed."))))
 
 ;; TODO: Toggle by removing `func' if it's already in `*debug-trace*'
