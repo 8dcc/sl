@@ -10,15 +10,19 @@
 #include "include/primitives.h"
 
 /* Used in `env_init_defaults' */
-#define BIND_PRIM(ENV, SYM, FUNC)                        \
-    do {                                                 \
-        Expr FUNC##_expr = {                             \
-            .type     = EXPR_PRIM,                       \
-            .val.prim = prim_##FUNC,                     \
-            .next     = NULL,                            \
-        };                                               \
-        env_bind(ENV, SYM, &FUNC##_expr, ENV_FLAG_NONE); \
+#define BIND_PRIM_FLAGS(ENV, SYM, FUNC, FLAGS)   \
+    do {                                         \
+        Expr FUNC##_expr = {                     \
+            .type     = EXPR_PRIM,               \
+            .val.prim = prim_##FUNC,             \
+            .next     = NULL,                    \
+        };                                       \
+        env_bind(ENV, SYM, &FUNC##_expr, FLAGS); \
     } while (0)
+
+#define BIND_PRIM(ENV, SYM, FUNC) BIND_PRIM_FLAGS(ENV, SYM, FUNC, ENV_FLAG_NONE)
+#define BIND_SPECIAL(ENV, SYM, FUNC) \
+    BIND_PRIM_FLAGS(ENV, SYM, FUNC, ENV_FLAG_CONST | ENV_FLAG_SPECIAL)
 
 /*----------------------------------------------------------------------------*/
 /* Global constants */
@@ -73,20 +77,22 @@ void env_init_defaults(Env* env) {
     };
     env_bind(env, "*debug-trace*", &debug_trace_list, ENV_FLAG_NONE);
 
-    /* Bind primitive C functions */
-    BIND_PRIM(env, "quote", quote);
-    BIND_PRIM(env, "`", backquote);
-    BIND_PRIM(env, "backquote", backquote);
-    BIND_PRIM(env, ",", unquote);
-    BIND_PRIM(env, ",@", splice);
-    BIND_PRIM(env, "define", define);
-    BIND_PRIM(env, "define-global", define_global);
-    BIND_PRIM(env, "lambda", lambda);
-    BIND_PRIM(env, "macro", macro);
-    BIND_PRIM(env, "begin", begin);
-    BIND_PRIM(env, "if", if);
-    BIND_PRIM(env, "or", or);
-    BIND_PRIM(env, "and", and);
+    /* Special forms */
+    BIND_SPECIAL(env, "quote", quote);
+    BIND_SPECIAL(env, "`", backquote);
+    BIND_SPECIAL(env, "backquote", backquote);
+    BIND_SPECIAL(env, ",", unquote);
+    BIND_SPECIAL(env, ",@", splice);
+    BIND_SPECIAL(env, "define", define);
+    BIND_SPECIAL(env, "define-global", define_global);
+    BIND_SPECIAL(env, "lambda", lambda);
+    BIND_SPECIAL(env, "macro", macro);
+    BIND_SPECIAL(env, "begin", begin);
+    BIND_SPECIAL(env, "if", if);
+    BIND_SPECIAL(env, "or", or);
+    BIND_SPECIAL(env, "and", and);
+
+    /* Other primitives */
     BIND_PRIM(env, "eval", eval);
     BIND_PRIM(env, "apply", apply);
     BIND_PRIM(env, "macroexpand", macroexpand);
@@ -189,6 +195,10 @@ bool env_bind(Env* env, const char* sym, const Expr* val,
      *
      * Otherwise, reallocate the `bindings' array, add a clone of the symbol
      * string, a clone of the value expression, and the flags we received.
+     *
+     * NOTE: This method overwrites symbols in parent environments, ignoring
+     * their flags. In other words, you can overwrite special forms if you are
+     * not in the global environment.
      */
     for (size_t i = 0; i < env->size; i++) {
         if (strcmp(env->bindings[i].sym, sym) == 0) {

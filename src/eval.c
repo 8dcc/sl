@@ -21,20 +21,9 @@
 /*
  * Is this expression a special form symbol?
  */
-static bool is_special_form(const Expr* e) {
-    static const char* special_form_symbols[] = {
-        "quote",  "backquote", "`",     ",",  "define", "define-global",
-        "lambda", "macro",     "begin", "if", "or",     "and",
-    };
-
-    if (e->type != EXPR_SYMBOL || e->val.s == NULL)
-        return false;
-
-    for (int i = 0; i < LENGTH(special_form_symbols); i++)
-        if (strcmp(e->val.s, special_form_symbols[i]) == 0)
-            return true;
-
-    return false;
+static inline bool is_special_form(const Env* env, const Expr* e) {
+    return (e->type == EXPR_SYMBOL && e->val.s != NULL &&
+            (env_get_flags(env, e->val.s) & ENV_FLAG_SPECIAL) != 0);
 }
 
 /*
@@ -80,7 +69,7 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* cdr = e->val.children->next;
 
     /* Check if the function is a special form symbol, before evaluating it */
-    const bool got_special_form = is_special_form(car);
+    const bool got_special_form = is_special_form(env, car);
 
     /*
      * Evaluate the expression representing the function. If the evaluation

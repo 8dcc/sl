@@ -17,6 +17,7 @@ enum EEnvBindingFlags {
     ENV_FLAG_INVALID = -1,
     ENV_FLAG_NONE    = 0x0,
     ENV_FLAG_CONST   = 0x1,
+    ENV_FLAG_SPECIAL = 0x2,
 };
 
 /*
