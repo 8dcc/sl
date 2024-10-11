@@ -13,19 +13,20 @@ typedef struct EnvBinding EnvBinding;
 /*
  * Possible flags for each `EnvBinding' structure. They can be OR'd together.
  */
-enum EEnvBindingFlag {
-    ENV_FLAG_NONE  = 0x0,
-    ENV_FLAG_CONST = 0x1,
+enum EEnvBindingFlags {
+    ENV_FLAG_INVALID = -1,
+    ENV_FLAG_NONE    = 0x0,
+    ENV_FLAG_CONST   = 0x1,
 };
 
 /*
  * An `EnvBinding' structure is used to bind a symbol to its expression, with
- * some specified flags from the `EEnvBindingFlag' enum.
+ * some specified flags from the `EEnvBindingFlags' enum.
  */
 struct EnvBinding {
     char* sym;
     struct Expr* val;
-    enum EEnvBindingFlag flags;
+    enum EEnvBindingFlags flags;
 };
 
 /*
@@ -71,14 +72,14 @@ void env_free(Env* env);
  * specified `flags'.
  */
 bool env_bind(Env* env, const char* sym, const struct Expr* val,
-              enum EEnvBindingFlag flags);
+              enum EEnvBindingFlags flags);
 
 /*
  * Bind the symbol `sym' to the expression `val' in the top-most parent of
  * environment `env', with the specified `flags'.
  */
 bool env_bind_global(Env* env, const char* sym, const struct Expr* val,
-                     enum EEnvBindingFlag flags);
+                     enum EEnvBindingFlags flags);
 
 /*
  * Get a copy of the expression associated to the symbol `sym' in environment
@@ -88,6 +89,12 @@ bool env_bind_global(Env* env, const char* sym, const struct Expr* val,
  * Returns NULL if the expression is not found.
  */
 struct Expr* env_get(const Env* env, const char* sym);
+
+/*
+ * Get the flags of the specified symbol in the specified environment. Returns
+ * ENV_FLAG_INVALID if the symbol is not bound.
+ */
+enum EEnvBindingFlags env_get_flags(const Env* env, const char* sym);
 
 /*
  * Print environment in Lisp list format.

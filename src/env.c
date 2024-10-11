@@ -176,7 +176,7 @@ void env_free(Env* env) {
 /*----------------------------------------------------------------------------*/
 
 bool env_bind(Env* env, const char* sym, const Expr* val,
-              enum EEnvBindingFlag flags) {
+              enum EEnvBindingFlags flags) {
     SL_ASSERT(env != NULL);
     SL_ASSERT(sym != NULL);
     SL_ON_ERR(return false);
@@ -213,29 +213,55 @@ bool env_bind(Env* env, const char* sym, const Expr* val,
 }
 
 bool env_bind_global(Env* env, const char* sym, const Expr* val,
-                     enum EEnvBindingFlag flags) {
+                     enum EEnvBindingFlags flags) {
     while (env->parent != NULL)
         env = env->parent;
     return env_bind(env, sym, val, flags);
 }
 
-Expr* env_get(const Env* env, const char* sym) {
+/*----------------------------------------------------------------------------*/
+
+/*
+ * Return a pointer to the binding for the specified symbol in the specified
+ * environment.
+ */
+static const EnvBinding* env_get_binding(const Env* env, const char* sym) {
     SL_ASSERT(env != NULL);
     SL_ASSERT(sym != NULL);
 
     /*
      * Iterate the symbol list until we find the one we are looking for, then
-     * return a copy of the value.
+     * return the binding.
      */
     for (size_t i = 0; i < env->size; i++)
         if (strcmp(env->bindings[i].sym, sym) == 0)
-            return expr_clone_recur(env->bindings[i].val);
+            return &env->bindings[i];
 
     /*
      * We didn't find a value associated to that symbol. If there is a parent
      * environment, search in there.
      */
-    return (env->parent == NULL) ? NULL : env_get(env->parent, sym);
+    return (env->parent == NULL) ? NULL : env_get_binding(env->parent, sym);
+}
+
+Expr* env_get(const Env* env, const char* sym) {
+    /* Search for this symbol in the environment */
+    const EnvBinding* binding = env_get_binding(env, sym);
+    if (binding == NULL)
+        return NULL;
+
+    /* Return a copy of its value */
+    return expr_clone_recur(binding->val);
+}
+
+enum EEnvBindingFlags env_get_flags(const Env* env, const char* sym) {
+    /* Search for this symbol in the environment */
+    const EnvBinding* binding = env_get_binding(env, sym);
+    if (binding == NULL)
+        return ENV_FLAG_INVALID;
+
+    /* Return its flags */
+    return binding->flags;
 }
 
 /*----------------------------------------------------------------------------*/
