@@ -1339,8 +1339,7 @@ in general, not just /lists/, so they can be used with strings.
   [[read][=read=]]).
 
   #+begin_comment org
-  TODO: Add =read-from-str=, add section and replace in here. Note
-  differences with =read-str.=
+  TODO: Add =read-from-str=, add section and replace in here.
   TODO: Add a parsing function that converts a string to an =Expr=. Find
   conventional name, update this section.
   #+end_comment
@@ -1391,11 +1390,7 @@ TODO
 
   For more information, see [[write-to-str][=write-to-str=]].
 
-- Function: read-str string :: <<read-str>>
-
-  #+begin_comment org
-  TODO: Rename to something like =get-str= to avoid confusion with =read=.
-  #+end_comment
+- Function: scan-str :: <<scan-str>>
 
   TODO
 
