@@ -33,7 +33,6 @@ Expr* prim_write_to_str(Env* env, Expr* e) {
 
 /*
  * TODO: Add `read-from-string' function, similar to `read', but from a string.
- * Not related to `read-str'.
  */
 
 /*----------------------------------------------------------------------------*/

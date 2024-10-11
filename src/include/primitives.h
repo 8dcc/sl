@@ -88,7 +88,7 @@ DECLARE_PRIM(shl);
 /* Input/Output (prim_io.c) */
 DECLARE_PRIM(read);
 DECLARE_PRIM(write);
-DECLARE_PRIM(read_str);
+DECLARE_PRIM(scan_str);
 DECLARE_PRIM(print_str);
 DECLARE_PRIM(error);
 

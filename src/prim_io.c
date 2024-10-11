@@ -42,15 +42,15 @@ Expr* prim_write(Env* env, Expr* e) {
     return (success) ? expr_clone(tru) : NULL;
 }
 
-Expr* prim_read_str(Env* env, Expr* e) {
+Expr* prim_scan_str(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
 
     /*
-     * (read-str &optional delimiters)
+     * (scan-str &optional delimiters)
      *
-     * The `read-string' primitive reads characters from `stdin' until one of
-     * the following is encountered:
+     * The `scan-str' primitive reads characters from `stdin' until one of the
+     * following is encountered:
      *   - End-of-file (EOF)
      *   - Null character ('\0')
      *   - A character in the string DELIMITERS.

@@ -137,7 +137,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, ">", gt);
     BIND_PRIM(env, "read", read);
     BIND_PRIM(env, "write", write);
-    BIND_PRIM(env, "read-str", read_str);
+    BIND_PRIM(env, "scan-str", scan_str);
     BIND_PRIM(env, "print-str", print_str);
     BIND_PRIM(env, "error", error);
 }
