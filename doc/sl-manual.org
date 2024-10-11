@@ -1335,13 +1335,10 @@ in general, not just /lists/, so they can be used with strings.
 
   Returns a string that represents the specified expression. The format
   of the returned string must contain enough information to be parsed
-  into the original expression using =read= and a parsing function (see
-  [[read][=read=]]).
+  into the original expression using [[read][=read=]].
 
   #+begin_comment org
   TODO: Add =read-from-str=, add section and replace in here.
-  TODO: Add a parsing function that converts a string to an =Expr=. Find
-  conventional name, update this section.
   #+end_comment
 
   See also [[write][=write=]].
@@ -1382,7 +1379,31 @@ TODO
 
 - Function: read :: <<read>>
 
-  TODO
+  Read a single expression from =stdin=, parse it, and return it as a Lisp
+  expression.
+
+  #+begin_src emacs-lisp
+  > (read)
+  ;; Input: foo bar
+  foo
+
+  > (type-of (read))
+  ;; Input: foo
+  Symbol
+
+  > (read)
+  ;; Input: "Hello\nWorld\n"
+  "Hello\nWorld\n"
+
+  > (print-str (read))
+  ;; Input: "Hello\nWorld\n"
+  Hello
+  World
+
+  > (eval (read))
+  ;; Input: (+ 1 2)
+  3
+  #+end_src
 
 - Function: write expr :: <<write>>
 
