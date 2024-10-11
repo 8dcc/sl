@@ -8,6 +8,8 @@
 #include "include/expr.h"
 #include "include/util.h"
 #include "include/read.h"
+#include "include/lexer.h"
+#include "include/parser.h"
 #include "include/primitives.h"
 
 static bool is_char_in_str(char c, const char* str) {
@@ -28,9 +30,13 @@ Expr* prim_read(Env* env, Expr* e) {
     char* str = read_expr(stdin);
     SL_EXPECT(str != NULL, "Error reading expression.");
 
-    Expr* ret  = expr_new(EXPR_STRING);
-    ret->val.s = str;
-    return ret;
+    Token* tokens = tokenize(str);
+    free(str);
+
+    Expr* expr = parse(tokens);
+    tokens_free(tokens);
+
+    return expr;
 }
 
 Expr* prim_write(Env* env, Expr* e) {
