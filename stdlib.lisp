@@ -5,6 +5,10 @@
 ;; TODO:
 ;;   - `let*'
 ;;   - `nth'
+;;   - `assoc'
+;;   - `find'
+;;   - `filter'
+;;   - `reduce'
 ;;   - `member' (return arg0 when car is arg1)
 ;;   - `member?' (is arg1 in arg0?)
 ;;   - `string-split' using regex
