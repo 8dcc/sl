@@ -11,6 +11,12 @@
    "Add an Org dedicated target to the next description list item.")
 #+end_comment
 
+#+begin_comment org
+We should avoid using =⇒= and =→= directly, it would be good if we could use
+Texinfo's =@result{}=. See:
+https://www.gnu.org/savannah-checkouts/gnu/texinfo/manual/texinfo/html_node/_0040result.html
+#+end_comment
+
 #+TOC: headlines 2
 
 Manual for [[https://github.com/8dcc/sl][8dcc/sl]].
@@ -57,19 +63,19 @@ These symbols are bound to a constant value, and can't be redefined.
 
   #+begin_src lisp
   nil
-  => nil
+    ⇒ nil
 
   '()
-  => nil
+    ⇒ nil
 
   ()  ; Special case, not treated as function call
-  => nil
+    ⇒ nil
 
   (eval nil)
-  => nil
+    ⇒ nil
 
   (cons 1 (cons 2 nil))
-  => (1 2)
+    ⇒ (1 2)
   #+end_src
 
   This symbol is very special, since it represents the empty list =()=
@@ -79,16 +85,16 @@ These symbols are bound to a constant value, and can't be redefined.
 
   #+begin_src lisp
   (type-of nil)
-  => List
+    ⇒ List
 
   (type-of 'nil)
-  => Symbol
+    ⇒ Symbol
 
   (null? 'nil)
-  => tru
+    ⇒ tru
 
   (equal? 'nil nil)
-  => tru
+    ⇒ tru
   #+end_src
 
   Note that this exception only applies to the symbol =nil=, it doesn't
@@ -96,16 +102,16 @@ These symbols are bound to a constant value, and can't be redefined.
 
   #+begin_src lisp
   (define var nil)
-  => nil
+    ⇒ nil
 
   (type-of 'var)
-  => Symbol
+    ⇒ Symbol
 
   (null? 'var)
-  => nil
+    ⇒ nil
 
   (null? var)
-  => tru
+    ⇒ tru
   #+end_src
 
 - Variable: `tru' :: <<tru>>
@@ -117,10 +123,10 @@ These symbols are bound to a constant value, and can't be redefined.
 
   #+begin_src lisp
   tru
-  => tru
+    ⇒ tru
 
   (eval tru)
-  => tru
+    ⇒ tru
   #+end_src
 
 ** Debugging variables
@@ -151,7 +157,7 @@ purposes.
         2: 1
       1: 2
     0: 6
-  => 6
+    ⇒ 6
   #+end_src
 
   In the previous example, notice how the function itself is added to
@@ -161,19 +167,19 @@ purposes.
 
   #+begin_src lisp
   (defun identity (e) e)
-  => <lambda>
+    ⇒ <lambda>
 
   > (equal? identity
             (lambda (e) e))
-  => tru
+    ⇒ tru
 
   (trace (lambda (e) e))
-  => "Trace enabled."
+    ⇒ "Trace enabled."
 
   (identity 5)
     0: (identity 5)
     0: 5
-  => 5
+    ⇒ 5
   #+end_src
 
 * Primitive Procedures
@@ -217,13 +223,13 @@ and Interpretation of Computer Programs/[fn::
 
   #+begin_src lisp
   (quote x)
-  => x
+    ⇒ x
 
   'x
-  => x
+    ⇒ x
 
   (quote (+ 1 2))
-  => (+ 1 2)
+    ⇒ (+ 1 2)
   #+end_src
 
   Note that ~'expr~ is just syntactic sugar for ~(quote expr)~. This is
@@ -263,29 +269,29 @@ and Interpretation of Computer Programs/[fn::
 
   #+begin_src lisp
   `sym
-  => sym
+    ⇒ sym
 
   ;; For showing how the parser expands them.
   (quote `(a ,b c d))
-  => (` (a (, b) c d))
+    ⇒ (` (a (, b) c d))
 
   (define var 123)
-  => 123
+    ⇒ 123
 
   `(a ,var b c)
-  => (a 123 b c)
+    ⇒ (a 123 b c)
 
   `(a (b ,var) c ,var)
-  => (a (b 123) c 123)
+    ⇒ (a (b 123) c 123)
 
   (define my-list '(1 2 3))
-  => (1 2 3)
+    ⇒ (1 2 3)
 
   `(a b ,@my-list c d)
-  => (a b 1 2 3 c d)
+    ⇒ (a b 1 2 3 c d)
 
   `(a b ,@(list 'X 'Y 'Z) c)
-  => (a b X Y Z c)
+    ⇒ (a b X Y Z c)
   #+end_src
 
   Also note that none of this /unquote/ functionality is available inside
@@ -293,16 +299,16 @@ and Interpretation of Computer Programs/[fn::
 
   #+begin_src lisp
   '(,a b (c ,d) e)
-  => ((, a) b (c (, d)) e)
+    ⇒ ((, a) b (c (, d)) e)
 
   (define var 123)
-  => 123
+    ⇒ 123
 
   (define my-backquote-call '`,var)
-  => (` (, var))
+    ⇒ (` (, var))
 
   (eval my-backquote-call)
-  => 123
+    ⇒ 123
   #+end_src
 
 - Special Form: define symbol expr :: <<define>>
@@ -314,20 +320,20 @@ and Interpretation of Computer Programs/[fn::
 
   #+begin_src lisp
   n
-  => Unbound symbol: `n'.
+    ⇒ Unbound symbol: `n'.
 
   (define n 123)
-  => 123
+    ⇒ 123
 
   n
-  => 123
+    ⇒ 123
   #+end_src
 
   As mentioned, it only operates on the /current/ environment.
 
   #+begin_src lisp
   (define n 123)
-  => 123
+    ⇒ 123
 
   (define f
     (lambda ()
@@ -335,10 +341,10 @@ and Interpretation of Computer Programs/[fn::
       (list "Finished:" n)))
 
   (f)
-  => ("Finished:" 999)
+    ⇒ ("Finished:" 999)
 
   n
-  => 123
+    ⇒ 123
   #+end_src
 
   It is a special form because the first argument is not evaluated. This
@@ -351,7 +357,7 @@ and Interpretation of Computer Programs/[fn::
 
   #+begin_src lisp
   (define n 123)
-  => 123
+    ⇒ 123
 
   (define f
     (lambda ()
@@ -359,10 +365,10 @@ and Interpretation of Computer Programs/[fn::
       (list "Finished:" n)))
 
   (f)
-  => ("Finished:" 999)
+    ⇒ ("Finished:" 999)
 
   n
-  => 999
+    ⇒ 999
   #+end_src
 
 - Special Form: lambda formals body... :: <<lambda>>
@@ -380,18 +386,18 @@ and Interpretation of Computer Programs/[fn::
   #+begin_src lisp
   (lambda (x)
     (* x 3))
-  => <lambda>
+    ⇒ <lambda>
 
   ((lambda (x) (* x 3)) 5)
-  => 15
+    ⇒ 15
 
   (define f
     (lambda (x)
       (+ x 5)))
-  => <lambda>
+    ⇒ <lambda>
 
   (f 3)
-  => 8
+    ⇒ 8
   #+end_src
 
   A keyword symbol =&rest= followed by a single symbol /S/, can be used in
@@ -404,10 +410,10 @@ and Interpretation of Computer Programs/[fn::
   (define f
     (lambda (a b &rest other)
       (list a b other)))
-  => <lambda>
+    ⇒ <lambda>
 
   (f 1 2 3 4 5)
-  => (1 2 (3 4 5))
+    ⇒ (1 2 (3 4 5))
   #+end_src
 
 - Special Form: macro formals body... :: <<macro>>
@@ -454,20 +460,20 @@ and Interpretation of Computer Programs/[fn::
 
   #+begin_src lisp
   (macro (name) (list 'define name 123))
-  => <macro>
+    ⇒ <macro>
 
   (define my-macro
     (macro (name) (list 'define name 123)))
-  => <macro>
+    ⇒ <macro>
 
   (my-macro some-name)
-  => 123
+    ⇒ 123
 
   (macroexpand '(my-macro some-name))
-  => (define some-name 123)
+    ⇒ (define some-name 123)
 
   some-name
-  => 123
+    ⇒ 123
   #+end_src
 
   In the previous example, notice how we don't have to quote =some-name=
@@ -514,19 +520,19 @@ and Interpretation of Computer Programs/[fn::
   (begin
    (define n 123)
    (+ 1 2))
-  => 3
+    ⇒ 3
 
   n
-  => 123
+    ⇒ 123
 
   ;; Arguments not evaluated because the list is quoted.
   (apply begin
          '((define n 456)
            (+ 1 2)))
-  => 3
+    ⇒ 3
 
   n
-  => 456
+    ⇒ 456
   #+end_src
 
   Furthermore, it could be defined as a macro using =lambda=, with some
@@ -537,16 +543,16 @@ and Interpretation of Computer Programs/[fn::
   #+begin_src lisp
   (defmacro my-begin (&rest exprs)
     (list (cons* 'lambda '() exprs)))
-  => <macro>
+    ⇒ <macro>
 
   (my-begin
    (define my-var 123) ; Only defined in body
    'ignored-sym
    (+ 1 2 3))
-  => 6
+    ⇒ 6
 
   my-var
-  => Unbound symbol: `my-var'.
+    ⇒ Unbound symbol: `my-var'.
   #+end_src
 
 - Special Form: if predicate consequent alternative :: <<if>>
@@ -557,15 +563,15 @@ and Interpretation of Computer Programs/[fn::
 
   #+begin_src lisp
   (if tru 'abc 'xyz)
-  => abc
+    ⇒ abc
 
   (if nil 'abc 'xyz)
-  => xyz
+    ⇒ xyz
 
   (if (> 5 3)
       (+ 10 20)
       (- 60 50))
-  => 30
+    ⇒ 30
   #+end_src
 
   Note that the /predicate/ is always evaluated, but only the /consequent/
@@ -581,13 +587,13 @@ and Interpretation of Computer Programs/[fn::
 
   #+begin_src lisp
   (or (> 1 2) (> 3 4) (> 5 6))
-  => nil
+    ⇒ nil
 
   (or (> 1 2) (> 3 4) 'hello)
-  => hello
+    ⇒ hello
 
   (or)
-  => nil
+    ⇒ nil
   #+end_src
 
   Note that this primitive does not need to be a special form, since it
@@ -615,13 +621,13 @@ and Interpretation of Computer Programs/[fn::
 
   #+begin_src lisp
   (and (> 1 2) (> 3 4) (> 5 6))
-  => nil
+    ⇒ nil
 
   (and (> 4 3) (> 2 1) 'hello)
-  => hello
+    ⇒ hello
 
   (and)
-  => tru
+    ⇒ tru
   #+end_src
 
   Just like with =or=, this primitive does not need to be a special form:
@@ -697,10 +703,10 @@ These primitives don't fit into other categories. They are defined in
 
   #+begin_src lisp
   (apply '+ '(1 2 3))
-  => Error: Expected a procedure as the first argument, got 'Symbol'.
+    ⇒ Error: Expected a procedure as the first argument, got 'Symbol'.
 
   (apply + '(1 2 3))
-  => 6
+    ⇒ 6
   #+end_src
 
   Just like with =eval=, the C /primitive/ is called =prim_apply=, but it's
@@ -721,13 +727,13 @@ These primitives don't fit into other categories. They are defined in
   #+begin_src lisp
   (defmacro inc (sym)
     (list 'define sym (list '+ sym 1)))
-  => <macro>
+    ⇒ <macro>
 
   (define my-var 5)
-  => 5
+    ⇒ 5
 
   (macroexpand '(inc my-var))
-  => (define my-var (+ my-var 1))
+    ⇒ (define my-var (+ my-var 1))
   #+end_src
 
   Notice how the macro body just returns a list. That is the macro
@@ -741,16 +747,16 @@ These primitives don't fit into other categories. They are defined in
 
   #+begin_src lisp
   (random 5)
-  => 4
+    ⇒ 4
 
   (random 5.0)
-  => 2.261398
+    ⇒ 2.261398
 
   (type-of (random 1))
-  => Integer
+    ⇒ Integer
 
   (type-of (random 1.0))
-  => Float
+    ⇒ Float
   #+end_src
 
 - Function: set-random-seed seed :: <<set-random-seed>>
@@ -759,16 +765,16 @@ These primitives don't fit into other categories. They are defined in
 
   #+begin_src lisp
   (set-random-seed 1337)
-  => tru
+    ⇒ tru
 
   (random 1000)
-  => 136
+    ⇒ 136
 
   (set-random-seed 1337)
-  => tru
+    ⇒ tru
 
   (random 1000)
-  => 136
+    ⇒ 136
   #+end_src
 
 ** Logical primitives
@@ -823,28 +829,28 @@ symbol =tru=.
 
   #+begin_src lisp
   (equal? 123 123)
-  => tru
+    ⇒ tru
 
   (equal? 5 5.0)
-  => nil
+    ⇒ nil
 
   (equal? 'abc "abc")
-  => nil
+    ⇒ nil
 
   (defun foo (x) x)
-  => <lambda>
+    ⇒ <lambda>
 
   (equal? foo (lambda (x) x))
-  => tru
+    ⇒ tru
 
   (equal? foo (lambda (y) y))
-  => nil
+    ⇒ nil
 
   (defmacro bar (x) x)
-  => <macro>
+    ⇒ <macro>
 
   (equal? foo bar)
-  => nil
+    ⇒ nil
   #+end_src
 
 - Function: = a b &rest rest :: <<=>>
@@ -864,13 +870,13 @@ symbol =tru=.
 
   #+begin_src lisp
   (= 1 1)
-  => tru
+    ⇒ tru
 
   (= 1 1.0)
-  => tru
+    ⇒ tru
 
   (= 1 1.0 2)
-  => nil
+    ⇒ nil
   #+end_src
 
 - Function: < a b &rest rest :: <<lt>>
@@ -931,28 +937,28 @@ defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (type-of 1)
-  => Integer
+    ⇒ Integer
 
   (type-of 1.0)
-  => Float
+    ⇒ Float
 
   (type-of 'foo)
-  => Symbol
+    ⇒ Symbol
 
   (type-of "Bar")
-  => String
+    ⇒ String
 
   (type-of '(a b c))
-  => List
+    ⇒ List
 
   (type-of +)
-  => Primitive
+    ⇒ Primitive
 
   (type-of (lambda (x) x))
-  => Lambda
+    ⇒ Lambda
 
   (type-of (macro (x) x))
-  => Macro
+    ⇒ Macro
   #+end_src
 
 - Function: int? expr :: <<int?>>
@@ -961,10 +967,10 @@ defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (int? 1)
-  => tru
+    ⇒ tru
 
   (int? 1.0)
-  => nil
+    ⇒ nil
   #+end_src
 
 - Function: flt? expr :: <<flt?>>
@@ -973,10 +979,10 @@ defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (flt? 1.0)
-  => tru
+    ⇒ tru
 
   (flt? 1)
-  => nil
+    ⇒ nil
   #+end_src
 
 - Function: symbol? expr :: <<symbol?>>
@@ -992,22 +998,22 @@ defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (define foo 123)
-  => 123
+    ⇒ 123
 
   (symbol? 'foo)
-  => tru
+    ⇒ tru
 
   (symbol? foo) ; 123 is checked
-  => nil
+    ⇒ nil
 
   (symbol? "Bar")
-  => nil
+    ⇒ nil
 
   (symbol? 'nil)
-  => tru
+    ⇒ tru
 
   (symbol? nil) ; NOTE: This might change in the future
-  => nil
+    ⇒ nil
   #+end_src
 
 - Function: string? expr :: <<string?>>
@@ -1016,10 +1022,10 @@ defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (string? "Foo")
-  => tru
+    ⇒ tru
 
   (string? 'bar)
-  => nil
+    ⇒ nil
   #+end_src
 
 - Function: list? expr :: <<list?>>
@@ -1029,16 +1035,16 @@ defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (list? '(a b c))
-  => tru
+    ⇒ tru
 
   (list? (+ 1 2)) ; 3 is checked
-  => nil
+    ⇒ nil
 
   (list? nil)
-  => tru
+    ⇒ tru
 
   (list? 'nil) ; NOTE: This might change in the future
-  => nil
+    ⇒ nil
   #+end_src
 
 - Function: primitive? expr :: <<primitive?>>
@@ -1047,13 +1053,13 @@ defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (primitive? +)
-  => tru
+    ⇒ tru
 
   (defun foo (x) x)
-  => <lambda>
+    ⇒ <lambda>
 
   (primitive? foo)
-  => nil
+    ⇒ nil
   #+end_src
 
 - Function: lambda? expr :: <<lambda?>>
@@ -1062,19 +1068,19 @@ defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (defun foo (x) x)
-  => <lambda>
+    ⇒ <lambda>
 
   (defmacro bar (x) x)
-  => <macro>
+    ⇒ <macro>
 
   (lambda? foo)
-  => tru
+    ⇒ tru
 
   (lambda? bar)
-  => nil
+    ⇒ nil
 
   (lambda? +)
-  => nil
+    ⇒ nil
   #+end_src
 
 - Function: macro? expr :: <<macro?>>
@@ -1083,19 +1089,19 @@ defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (defun foo (x) x)
-  => <lambda>
+    ⇒ <lambda>
 
   (defmacro bar (x) x)
-  => <macro>
+    ⇒ <macro>
 
   (lambda? foo)
-  => nil
+    ⇒ nil
 
   (lambda? bar)
-  => tru
+    ⇒ tru
 
   (lambda? +)
-  => nil
+    ⇒ nil
   #+end_src
 
 ** Type conversion primitives
@@ -1109,7 +1115,7 @@ primitives in this section are defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (int->flt 1)
-  => 1.000000
+    ⇒ 1.000000
   #+end_src
 
 - Function: flt->int expr :: <<flt->int>>
@@ -1118,7 +1124,7 @@ primitives in this section are defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (flt->int 1.0)
-  => 1
+    ⇒ 1
   #+end_src
 
 - Function: int->str expr :: <<int->str>>
@@ -1127,7 +1133,7 @@ primitives in this section are defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (int->str 1)
-  => "1"
+    ⇒ "1"
   #+end_src
 
 - Function: flt->str expr :: <<flt->str>>
@@ -1136,7 +1142,7 @@ primitives in this section are defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (flt->str 1.0)
-  => "1.000000"
+    ⇒ "1.000000"
   #+end_src
 
 - Function: str->int expr :: <<str->int>>
@@ -1145,13 +1151,13 @@ primitives in this section are defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (str->int "1")
-  => 1
+    ⇒ 1
 
   (str->int "1abc")
-  => 1
+    ⇒ 1
 
   (str->int "abc1") ; Invalid input
-  => 0
+    ⇒ 0
   #+end_src
 
 - Function: str->flt expr :: <<str->flt>>
@@ -1160,19 +1166,19 @@ primitives in this section are defined in [[file:prim_type.c]].
 
   #+begin_src lisp
   (str->flt "1.0")
-  => 1.000000
+    ⇒ 1.000000
 
   (str->flt "1.0abc")
-  => 1.000000
+    ⇒ 1.000000
 
   (str->flt "1")
-  => 1.000000
+    ⇒ 1.000000
 
   (str->flt "1abc")
-  => 1.000000
+    ⇒ 1.000000
 
   (str->flt "abc1") ; Invalid input
-  => 0.000000
+    ⇒ 0.000000
   #+end_src
 
 ** List-related primitives
@@ -1188,13 +1194,13 @@ information of lists. The primitives in this section are defined in
 
   #+begin_src lisp
   (list 1 2 3)
-  => (1 2 3)
+    ⇒ (1 2 3)
 
   (list 'a '(b c) 'd)
-  => (a (b c) d)
+    ⇒ (a (b c) d)
 
   (list 'a 'b '() nil)
-  => (a b nil nil)
+    ⇒ (a b nil nil)
   #+end_src
 
 - Function: cons expr lst :: <<cons>>
@@ -1215,16 +1221,16 @@ information of lists. The primitives in this section are defined in
 
   #+begin_src lisp
   (cons 'a '(b c d))
-  => (a b c d)
+    ⇒ (a b c d)
 
   (cons '(a b) '(c d))
-  => ((a b) c d)
+    ⇒ ((a b) c d)
 
   (cons 'a nil)
-  => (a)
+    ⇒ (a)
 
   (cons 'a 'b) ; NOTE: Not yet implemented
-  => Error: Expected expression of type 'List', got 'Symbol'.
+    ⇒ Error: Expected expression of type 'List', got 'Symbol'.
   #+end_src
 
 - Function: car pair :: <<car>>
@@ -1239,13 +1245,13 @@ information of lists. The primitives in this section are defined in
 
   #+begin_src lisp
   (car '(a b c))
-  => a
+    ⇒ a
 
   (car '((a b) c d))
-  => (a b)
+    ⇒ (a b)
 
   (car nil) ; Special case
-  => nil
+    ⇒ nil
   #+end_src
 
 - Function: cdr pair :: <<cdr>>
@@ -1261,16 +1267,16 @@ information of lists. The primitives in this section are defined in
 
   #+begin_src lisp
   (cdr '(a b c))
-  => (b c)
+    ⇒ (b c)
 
   (cdr '((a b) c d))
-  => (c d)
+    ⇒ (c d)
 
   (cdr '(a (b c) d))
-  => ((b c) d)
+    ⇒ ((b c) d)
 
   (cdr nil) ; Special case
-  => nil
+    ⇒ nil
   #+end_src
 
 - Function: length sequence :: <<length>>
@@ -1280,16 +1286,16 @@ information of lists. The primitives in this section are defined in
 
   #+begin_src lisp
   (length '(a b c))
-  => 3
+    ⇒ 3
 
   (length "abc")
-  => 3
+    ⇒ 3
 
   (length nil)
-  => 0
+    ⇒ 0
 
   (length "")
-  => 0
+    ⇒ 0
   #+end_src
 
 - Function: append &rest sequences :: <<append>>
@@ -1300,20 +1306,20 @@ information of lists. The primitives in this section are defined in
 
   #+begin_src lisp
   (append '(1 2 3) '(a b c) '(4 5 6))
-  => (1 2 3 a b c 4 5 6)
+    ⇒ (1 2 3 a b c 4 5 6)
 
   (append '(a b c))
-  => (a b c)
+    ⇒ (a b c)
 
   (append "foo" "bar")
-  => "foobar"
+    ⇒ "foobar"
   #+end_src
 
   When called with no arguments, =append= returns =nil=.
 
   #+begin_src lisp
   (append)
-  => nil
+    ⇒ nil
   #+end_src
 
 ** String primitives
@@ -1339,16 +1345,16 @@ in general, not just /lists/, so they can be used with strings.
 
   #+begin_src lisp
   (write-to-str 1)
-  => "1"
+    ⇒ "1"
 
   (write-to-str 'hello)
-  => "hello"
+    ⇒ "hello"
 
   (write-to-str (lambda (x) (* x 2)))
-  => "(lambda (x) (* x 2))"
+    ⇒ "(lambda (x) (* x 2))"
 
   (write-to-str "Hello, world\n")
-  => "\"Hello, world\\n\""
+    ⇒ "\"Hello, world\\n\""
   #+end_src
 
   Note that string arguments are escaped by =write-to-str=, but also by
@@ -1362,9 +1368,9 @@ in general, not just /lists/, so they can be used with strings.
    (print-str "\"Hello, world\\n\"") ; Returned
    (print-str "\n")
    'done)
-  -> "Hello, world\n"
-  -> "Hello, world\n"
-  => done
+    → "Hello, world\n"
+    → "Hello, world\n"
+    ⇒ done
   #+end_src
 
 - Function: format format-string &rest exprs :: <<format>>
@@ -1398,10 +1404,10 @@ in general, not just /lists/, so they can be used with strings.
 
   #+begin_src lisp
   (format "%s, %s!" "Hello" "world")
-  => "Hello, world!"
+    ⇒ "Hello, world!"
 
   (format "%d / %d = %d (%f)" 5 2 (quotient 5 2) (/ 5 2))
-  => "5 / 2 = 2 (2.500000)"
+    ⇒ "5 / 2 = 2 (2.500000)"
   #+end_src
 
 ** Input/Output primitives
@@ -1415,25 +1421,25 @@ TODO
 
   #+begin_src lisp
   (read)
-  ;; Input: foo bar
-  => foo
+    ;; Input: foo bar
+    ⇒ foo
 
   (type-of (read))
-  ;; Input: foo
-  => Symbol
+    ;; Input: foo
+    ⇒ Symbol
 
   (read)
-  ;; Input: "Hello\nWorld\n"
-  => "Hello\nWorld\n"
+    ;; Input: "Hello\nWorld\n"
+    ⇒ "Hello\nWorld\n"
 
   (print-str (read))
-  ;; Input: "Hello\nWorld\n"
-  -> Hello
-  -> World
+    ;; Input: "Hello\nWorld\n"
+    → Hello
+    → World
 
   (eval (read))
-  ;; Input: (+ 1 2)
-  => 3
+    ;; Input: (+ 1 2)
+    ⇒ 3
   #+end_src
 
 - Function: write expr :: <<write>>
