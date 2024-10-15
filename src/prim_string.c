@@ -181,7 +181,7 @@ Expr* prim_substring(Env* env, Expr* e) {
     long long end_idx       = str_len;
 
     /* Second argument, start index */
-    if (arg_num >= 2) {
+    if (arg_num >= 2 && !expr_is_nil(e->next)) {
         SL_EXPECT_TYPE(e->next, EXPR_NUM_INT);
         start_idx = e->next->val.n;
         if (start_idx < 0)
@@ -189,7 +189,8 @@ Expr* prim_substring(Env* env, Expr* e) {
     }
 
     /* Third argument, end index */
-    if (arg_num >= 3) {
+    if (arg_num >= 3 && !expr_is_nil(e->next->next)) {
+        /* FIXME: If nil, set to str_len */
         SL_EXPECT_TYPE(e->next->next, EXPR_NUM_INT);
         end_idx = e->next->next->val.n;
         if (end_idx < 0)
