@@ -1373,6 +1373,43 @@ in general, not just /lists/, so they can be used with strings.
   done
   #+end_src
 
+- Function: format format-string &rest exprs :: <<format>>
+
+  Returns a string with the specified format. This function is similar
+  to C's =sprintf(3)=.
+
+  The =format= function produces a string from the =format-string=, copying
+  all characters literally, except the percent sign =%=, which is used to
+  indicate the start of a /format specifier/. Format specifiers are used
+  to indicate how its corresponding expression (obtained from the =exprs=
+  list) should be converted and appended to the final string.
+
+  This function expects the number of =exprs= to match the format
+  specifiers in the =format-string=; the function will fail if the user
+  didn't supply enough arguments, but /will not/ check if the user
+  supplied more. Furthermore, the function will make sure that each
+  supplied argument matches the type required by the format specifier.
+
+  These are the currently supported format specifiers:
+
+  - =s= :: Format a expression of type /String/. Each character is printed
+    literally, nothing is escaped, similar to =print-str=.
+  - =d= :: Format a expression of type /Integer/.
+  - =f= :: Format a expression of type /Float/.
+  - =%= :: Used to represent the literal percent sign =%=. This format
+    specifier does not need a matching expression in the =exprs= list.
+
+  The function will fail if the user supplied an unknown format
+  specifier.
+
+  #+begin_src lisp
+  > (format "%s, %s!" "Hello" "world")
+  "Hello, world!"
+
+  > (format "%d / %d = %d (%f)" 5 2 (quotient 5 2) (/ 5 2))
+  "5 / 2 = 2 (2.500000)"
+  #+end_src
+
 ** Input/Output primitives
 
 TODO
@@ -1382,7 +1419,7 @@ TODO
   Read a single expression from =stdin=, parse it, and return it as a Lisp
   expression.
 
-  #+begin_src emacs-lisp
+  #+begin_src lisp
   > (read)
   ;; Input: foo bar
   foo
