@@ -1410,6 +1410,45 @@ in general, not just /lists/, so they can be used with strings.
     ⇒ "5 / 2 = 2 (2.500000)"
   #+end_src
 
+- Function: substring string &optional from to :: <<substring>>
+
+  Return a new string whose contents are a substring of
+  =string=. Paraphrasing the Emacs Lisp manual:
+
+  #+begin_quote
+  The returned string consists of the characters between index =from=
+  (inclusive) and index =to= (exclusive) of =string=. The =from= and =to=
+  arguments are zero-indexed: 0 means the first character of =string=.
+
+  Negative values are counted from the end of =string=, so -1 represents
+  the last character in the string.
+
+  If =from= is nil, the substring starts at index 0; and if =to= is nil, the
+  substring runs to the end of =string=.
+  #+end_quote
+
+  Some examples:
+
+  #+begin_src lisp
+  (substring "abcdef")
+    ⇒ "abcdef"
+
+  (substring "abcdef" 0 2)
+    ⇒ "ab"
+
+  (substring "abcdef" 1 nil)
+    ⇒ "bcdef"
+
+  (substring "abcdef" -1 nil)
+    ⇒ "f"
+
+  (substring "abcdef" 1 -1)
+    ⇒ "bcde"
+
+  (substring "abcdef" -3 -1)
+    ⇒ "de"
+  #+end_src
+
 ** Input/Output primitives
 
 TODO
