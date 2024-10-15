@@ -191,25 +191,22 @@ if needed. The C primitives for this section are defined in
 [[file:prim_special.c]].
 
 A list is interpreted as a special form call when its first element is a
-special form symbol. The list of special form symbols is defined in
-[[file:eval.c]], so they are hard-coded into the interpreter.
+special form symbol. Special form symbols are specified by an
+environment flag that can't be currently set by the user. Special form
+symbols are also constant, so they can't be redefined.
 
 #+begin_src lisp
-(define special-form-symbols
-    (list ...))
+(defun special-form-symbol? (sym)
+  ;; TODO: Check the symbol's flags in the environment.
+  ...)
 
-(defun is-special-form (e)
+(defun special-form? (e)
   ;; Non-empty list whose first element is a special symbol.
   (and (list? e)
        (not (null? e))
        (symbol? (car e))
-       (member? (car e) special-form-symbol)))
+       (special-form-symbol? (car e))))
 #+end_src
-
-However, since the actual functions corresponding to the special form
-symbols are retrieved normally from the current environment, it is
-/technically/ possible to overwrite the symbols with new functions
-(e.g. using =define=), but it's highly discouraged.
 
 For more information on special forms, see Section 4.1.1 of /Structure
 and Interpretation of Computer Programs/[fn::
