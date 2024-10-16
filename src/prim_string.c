@@ -190,7 +190,6 @@ Expr* prim_substring(Env* env, Expr* e) {
 
     /* Third argument, end index */
     if (arg_num >= 3 && !expr_is_nil(e->next->next)) {
-        /* FIXME: If nil, set to str_len */
         SL_EXPECT_TYPE(e->next->next, EXPR_NUM_INT);
         end_idx = e->next->next->val.n;
         if (end_idx < 0)
