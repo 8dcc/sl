@@ -34,11 +34,14 @@ supported." ; Expected: "Multi-line\nstrings\nsupported."
 (substring "--Testing substrings--" 10)
 (substring "--Testing substrings--" -12)
 
-(string-matches "Testing regular" "Testing regular expressions... 123")
-(string-matches "testing regular" "Testing regular expressions... 123" tru)
-(string-matches "^Testing\\.*$" "Testing regular expressions... 123")
-(string-matches "^INVALID\\.*$" "Testing regular expressions... 123")
-(string-matches "^(.+) ([[:digit:]]+)$" "Testing regular expressions... 123")
+(defmacro test-regexp (regexp ignore-case)
+  `(string-matches ,regexp "Testing regular expressions... 123" ,ignore-case))
+
+(test-regexp "Testing regular" nil)       ; Expected: ((0 15))
+(test-regexp "testing REGULAR" tru)       ; Expected: ((0 15))
+(test-regexp "^(Testing).*$" nil)         ; Expected: ((0 34) (0 7))
+(test-regexp "^INVALID.*$" nil)           ; Expected: nil
+(test-regexp "^(.+) ([[:digit:]]+)$" nil) ; Expected: ((0 34) (0 30) (31 34))
 
 (equal?
  "All printed strings
