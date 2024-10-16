@@ -86,7 +86,7 @@
 ;;   body2         >   e1 e2 e3)
 ;;   body3)        >
 (defmacro let (definitions &rest body)
-  `((lambda (mapcar car definitions)
+  `((lambda ,(mapcar car definitions)
       ,@body)
     ,@(mapcar cadr definitions)))
 
