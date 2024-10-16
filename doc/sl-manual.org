@@ -1449,6 +1449,66 @@ in general, not just /lists/, so they can be used with strings.
     ⇒ "de"
   #+end_src
 
+- Function: string-matches regexp string &optional ignore-case :: <<string-matches>>
+
+  Return a list of the sub-expression matches found in =string=. The first
+  match of the returned list corresponds to the whole =regexp=, and the
+  rest correspond to the parenthesized sub-expressions, if any. Each
+  /match/ in the returned list is a list with the form ~(START END)~, which
+  contains the /start/ and /end/ indexes where the match occurred in =string=,
+  as integers.
+
+  #+begin_comment org
+  TODO: After implementing proper =cons=, return a list of =(START . END)=
+  pairs, not a list of two-element lists.
+  #+end_comment
+
+  If the optional argument =ignore-case= is non-nil, the search is
+  case-insensitive.
+
+  Some examples:
+
+  #+begin_src lisp
+  (define str "abc XYZ 123")
+
+  (string-matches "abc" str)
+    ⇒ ((0 3))
+
+  (string-matches "xyz" str)
+    ⇒ nil
+
+  (string-matches "xyz" str tru)
+    ⇒ ((4 7))
+
+  (string-matches "^(abc) ([A-Z]+) ([[:digit:]]+)$" str)
+    ⇒ ((0 11) (0 3) (4 7) (8 11))
+  #+end_src
+
+  Note that this function only returns information about the first match
+  in =string=, not about all possible matches of =regexp=:
+
+  #+begin_comment org
+  TODO: Rename =string-matches= function? Add another function that
+  returns all matches of a general pattern, such as:
+    (f "a" "aaa") => ((0 1) (1 2) (2 3))
+  Mention alternative here.
+  #+end_comment
+
+  #+begin_src lisp
+  ;; Not ((0 1) (1 2) (2 3))
+  (string-matches "a" "aaa")
+    ⇒ ((0 1))
+  #+end_src
+
+  Also note that, since any non-nil argument can be used for the
+  =ignore-case= parameter, sometimes it's better to use a more descriptive
+  value:
+
+  #+begin_src lisp
+  (string-matches "abc" "ABC" 'ignore-case)
+    ⇒ ((0 3))
+  #+end_src
+
 ** Input/Output primitives
 
 TODO
