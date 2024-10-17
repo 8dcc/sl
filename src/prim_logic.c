@@ -48,10 +48,10 @@ Expr* prim_equal_num(Env* env, Expr* e) {
 
     bool result = true;
 
-    /* (A == B == ...) */
+    /* (N1 == N2 == ...) */
     for (Expr* arg = e; arg->next != NULL; arg = arg->next) {
         SL_EXPECT(expr_is_number(arg), "Unexpected non-numerical argument.");
-        if (expr_generic_num_val(arg) != expr_generic_num_val(arg->next)) {
+        if (expr_get_generic_num(arg) != expr_get_generic_num(arg->next)) {
             result = false;
             break;
         }

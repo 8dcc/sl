@@ -28,9 +28,10 @@
 struct Env;       /* env.h */
 struct LambdaCtx; /* lambda.h */
 
-typedef struct Expr Expr;
+/*----------------------------------------------------------------------------*/
 
-typedef Expr* (*PrimitiveFuncPtr)(struct Env*, Expr*);
+/* Pointer to a primitive C function. */
+typedef struct Expr* (*PrimitiveFuncPtr)(struct Env*, struct Expr*);
 
 enum EExprType {
     EXPR_ERR     = 0x0,
@@ -44,6 +45,7 @@ enum EExprType {
     EXPR_MACRO   = 0x80,
 };
 
+typedef struct Expr Expr;
 struct Expr {
     /* Type and value of the expression */
     enum EExprType type;
@@ -248,16 +250,33 @@ static inline const char* exprtype2str(enum EExprType type) {
     __builtin_unreachable();
 }
 
+/*----------------------------------------------------------------------------*/
+
+/*
+ * Generic numerical type, used by `expr_set_generic_num' and
+ * `expr_get_generic_num'.
+ */
+typedef double GenericNum;
+#define EXPR_NUM_GENERIC EXPR_NUM_FLT
+
+/*
+ * Set the value and type of an expression of type EXPR_NUM_GENERIC.
+ */
+static inline void expr_set_generic_num(Expr* e, GenericNum num) {
+    /* NOTE: This should change if `GenericNum' changes. */
+    e->val.f = num;
+}
+
 /*
  * Get the value of a numerical expression in a generic C type. The expression
  * should be a number according to `expr_is_number'.
  */
-static inline double expr_generic_num_val(const Expr* e) {
+static inline GenericNum expr_get_generic_num(const Expr* e) {
     switch (e->type) {
         case EXPR_NUM_INT:
-            return (double)e->val.n;
+            return (GenericNum)e->val.n;
         case EXPR_NUM_FLT:
-            return e->val.f;
+            return (GenericNum)e->val.f;
         default:
             SL_FATAL("Unhandled numerical case (%s).", exprtype2str(e->type));
     }
