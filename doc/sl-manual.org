@@ -1449,63 +1449,68 @@ in general, not just /lists/, so they can be used with strings.
     ⇒ "de"
   #+end_src
 
-- Function: string-matches regexp string &optional ignore-case :: <<string-matches>>
+- Function: re-match-groups regexp string &optional ignore-case :: <<re-match-groups>>
 
-  Return a list of the sub-expression matches found in =string=. The first
-  match of the returned list corresponds to the whole =regexp=, and the
-  rest correspond to the parenthesized sub-expressions, if any. Each
-  /match/ in the returned list is a list with the form ~(START END)~, which
-  contains the /start/ and /end/ indexes where the match occurred in =string=,
-  as integers.
+  Try to match every group in =regexp= against =string=, and return a list
+  with the matches. The first match in the returned list corresponds to
+  the whole =regexp=, and the remaining elements correspond to each
+  parenthesized group, if any. If the =regexp= didn't match =string=, the
+  function returns =nil=.
+
+  Each /match/ in the returned list is a list with the form ~(START END)~,
+  where =START= and =END= are integers that indicate the /start/ and /end/ index
+  of the match inside =string=, respectively.
 
   #+begin_comment org
   TODO: After implementing proper =cons=, return a list of =(START . END)=
   pairs, not a list of two-element lists.
   #+end_comment
 
-  If the optional argument =ignore-case= is non-nil, the search is
-  case-insensitive.
+  By default, the search is case-sensitive, but this can be overwritten
+  by specifying a non-nil argument for the optional parameter
+  =ignore-case=[fn::When non-nil, the C function =regcomp= is called with
+  the =REG_ICASE= flag. For more information, see [[https://pubs.opengroup.org/onlinepubs/009695399/functions/regcomp.html][the manual page for
+  =regcomp=]].].
+
+  The function uses POSIX regular expression syntax, more specifically
+  /Extended Regular Expression/ (ERE) syntax[fn::For more information, see
+  IEEE Std 1003.1, Section 9, [[https://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap09.html][/Regular Expressions/]]; and the =sed= manual,
+  [[https://www.gnu.org/software/sed/manual/html_node/ERE-syntax.html][/Overview of extended regular expression syntax/]] as well as [[https://www.gnu.org/software/sed/manual/html_node/Character-Classes-and-Bracket-Expressions.html][/Character
+  Classes and Bracket Expressions/]].].
 
   Some examples:
 
   #+begin_src lisp
   (define str "abc XYZ 123")
 
-  (string-matches "abc" str)
+  (re-match-groups "abc" str)
     ⇒ ((0 3))
 
-  (string-matches "xyz" str)
+  (re-match-groups "xyz" str)
     ⇒ nil
 
-  (string-matches "xyz" str tru)
+  (re-match-groups "xyz" str tru)
     ⇒ ((4 7))
 
-  (string-matches "^(abc) ([A-Z]+) ([[:digit:]]+)$" str)
+  (re-match-groups "^(abc) ([A-Z]+) ([[:digit:]]+)$" str)
     ⇒ ((0 11) (0 3) (4 7) (8 11))
   #+end_src
 
-  Note that this function only returns information about the first match
-  in =string=, not about all possible matches of =regexp=:
-
-  #+begin_comment org
-  TODO: Rename =string-matches= function? Add another function that
-  returns all matches of a general pattern, such as:
-    (f "a" "aaa") => ((0 1) (1 2) (2 3))
-  Mention alternative here.
-  #+end_comment
+  Note that this function only returns information about the /first match/
+  of =regexp= in =string=, not about all the possible matches:
 
   #+begin_src lisp
   ;; Not ((0 1) (1 2) (2 3))
-  (string-matches "a" "aaa")
+  (re-match-groups "a" "aaa")
     ⇒ ((0 1))
   #+end_src
 
   Also note that, since any non-nil argument can be used for the
-  =ignore-case= parameter, sometimes it's better to use a more descriptive
-  value:
+  =ignore-case= parameter, sometimes it might be a good idea to use a more
+  descriptive value:
 
   #+begin_src lisp
-  (string-matches "abc" "ABC" 'ignore-case)
+  (re-match-groups "abc" "ABC" 'ignore-case)
     ⇒ ((0 3))
   #+end_src
 
