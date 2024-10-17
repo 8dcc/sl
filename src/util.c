@@ -137,22 +137,8 @@ void print_escaped_str(FILE* fp, const char* s) {
 
 /*----------------------------------------------------------------------------*/
 
-bool sl_regex_matches(const char* pat, const char* str, bool ignore_case,
-                      size_t* nmatch, regmatch_t** pmatch) {
-    /*
-     * TODO: Don't use POSIX regex syntax.
-     * For example:
-     *
-     *   "([[:alpha:]]{2,3}) ([[:space:][:digit:]]+)"
-     *
-     * Instead of:
-     *
-     *   "([a-z]{2,3}) ([\s\d+])"
-     *
-     * Even though "[[:CLASS:]]" is supported in a lot of RE flavors.
-     *
-     * TODO: If the syntax changes, update comments in `prim_string_matches'.
-     */
+bool sl_regex_match_groups(const char* pat, const char* str, bool ignore_case,
+                           size_t* nmatch, regmatch_t** pmatch) {
     static regex_t r;
 
     int cflags = REG_EXTENDED;

@@ -3,7 +3,7 @@
 ;;   - String evaluation (single-line and multi-line)
 ;;   - Common list primitives: `length', `append'
 ;;   - String creation: `write-to-str', `format', `substring'
-;;   - String matching: `string-matches'
+;;   - String matching: `re-match-groups'
 ;;   - String predicates: `equal?', `<', `>'
 ;;------------------------------------------------------------------------------
 
@@ -34,14 +34,14 @@ supported." ; Expected: "Multi-line\nstrings\nsupported."
 (substring "--Testing substrings--" 10)
 (substring "--Testing substrings--" -12)
 
-(defmacro test-regexp (regexp ignore-case)
-  `(string-matches ,regexp "Testing regular expressions... 123" ,ignore-case))
+(defmacro test-re-groups (regexp ignore-case)
+  `(re-match-groups ,regexp "Testing regular expressions... 123" ,ignore-case))
 
-(test-regexp "Testing regular" nil)       ; Expected: ((0 15))
-(test-regexp "testing REGULAR" tru)       ; Expected: ((0 15))
-(test-regexp "^(Testing).*$" nil)         ; Expected: ((0 34) (0 7))
-(test-regexp "^INVALID.*$" nil)           ; Expected: nil
-(test-regexp "^(.+) ([[:digit:]]+)$" nil) ; Expected: ((0 34) (0 30) (31 34))
+(test-re-groups "Testing regular" nil)       ; Expected: ((0 15))
+(test-re-groups "testing REGULAR" tru)       ; Expected: ((0 15))
+(test-re-groups "^(Testing).*$" nil)         ; Expected: ((0 34) (0 7))
+(test-re-groups "^INVALID.*$" nil)           ; Expected: nil
+(test-re-groups "^(.+) ([[:digit:]]+)$" nil) ; Expected: ((0 34) (0 30) (31 34))
 
 (equal?
  "All printed strings

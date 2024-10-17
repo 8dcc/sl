@@ -107,7 +107,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "write-to-str", write_to_str);
     BIND_PRIM(env, "format", format);
     BIND_PRIM(env, "substring", substring);
-    BIND_PRIM(env, "string-matches", string_matches);
+    BIND_PRIM(env, "re-match-groups", re_match_groups);
     BIND_PRIM(env, "+", add);
     BIND_PRIM(env, "-", sub);
     BIND_PRIM(env, "*", mul);

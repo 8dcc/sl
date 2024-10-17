@@ -220,7 +220,7 @@ Expr* prim_substring(Env* env, Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
-Expr* prim_string_matches(Env* env, Expr* e) {
+Expr* prim_re_match_groups(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
 
@@ -238,7 +238,7 @@ Expr* prim_string_matches(Env* env, Expr* e) {
     /*
      * Argument syntax: (regexp string &optional ignore-case)
      *
-     * The `string-matches' function returns a list of matches. The first match
+     * The `re-match-groups' function returns a list of matches. The first match
      * corresponds to the entire regular expression, and the rest correspond to
      * each parenthesized sub-expression.  Only the matches are included in the
      * returned list, so `nil' means that no match was found for the entire
@@ -256,7 +256,7 @@ Expr* prim_string_matches(Env* env, Expr* e) {
 
     size_t nmatch;
     regmatch_t* pmatch;
-    if (!sl_regex_matches(pattern, string, ignore_case, &nmatch, &pmatch)) {
+    if (!sl_regex_match_groups(pattern, string, ignore_case, &nmatch, &pmatch)) {
         ret->val.children = NULL;
         return ret;
     }

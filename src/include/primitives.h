@@ -65,7 +65,7 @@ DECLARE_PRIM(append);
 DECLARE_PRIM(write_to_str);
 DECLARE_PRIM(format);
 DECLARE_PRIM(substring);
-DECLARE_PRIM(string_matches);
+DECLARE_PRIM(re_match_groups);
 
 /* Arithmetic (prim_arith.c) */
 DECLARE_PRIM(add);

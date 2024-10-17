@@ -161,8 +161,8 @@ void print_escaped_str(FILE* fp, const char* s);
  * a match. If (and only if) true is returned, the caller is responsible for
  * freeing `pmatch'.
  */
-bool sl_regex_matches(const char* pat, const char* str, bool ignore_case,
-                      size_t* nmatch, regmatch_t** pmatch);
+bool sl_regex_match_groups(const char* pat, const char* str, bool ignore_case,
+                           size_t* nmatch, regmatch_t** pmatch);
 
 /*----------------------------------------------------------------------------*/
 
