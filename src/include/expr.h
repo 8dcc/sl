@@ -282,6 +282,20 @@ static inline GenericNum expr_get_generic_num(const Expr* e) {
     }
 }
 
+static inline void expr_negate_num_val(Expr* e) {
+    switch (e->type) {
+        case EXPR_NUM_INT:
+            e->val.n *= -1;
+            break;
+        case EXPR_NUM_FLT:
+            e->val.f *= -1;
+            break;
+        default:
+            SL_FATAL("Tried negating a non-numerical expression (%s).",
+                     exprtype2str(e->type));
+    }
+}
+
 /*----------------------------------------------------------------------------*/
 
 #endif /* EXPR_H_ */

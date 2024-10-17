@@ -27,75 +27,108 @@
 Expr* prim_add(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_has_only_numbers(e),
+    SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
               "Unexpected non-numerical argument.");
 
-    if (expr_list_has_type(e, EXPR_NUM_FLT)) {
-        double total = 0;
-        for (Expr* arg = e; arg != NULL; arg = arg->next)
-            total += (arg->type == EXPR_NUM_FLT) ? arg->val.f : arg->val.n;
+    /*
+     * If there are no arguments, return zero.
+     *   (+) => 0
+     * If arguments don't share the same type, operate on generic numbers.
+     *   (+ 9 5.0 1) => 15.0
+     * Otherwise, add in order.
+     *   (+ 5)           => -5
+     *   (+ 9 5 1)       => 15
+     *   (+ 9.0 5.0 1.0) => 15.0
+     */
+    Expr* ret;
+    if (e == NULL) {
+        ret        = expr_new(EXPR_NUM_INT);
+        ret->val.n = 0;
+    } else if (!expr_list_is_homogeneous(e)) {
+        GenericNum total = expr_get_generic_num(e);
+        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
+            total += expr_get_generic_num(arg);
 
-        Expr* ret  = expr_new(EXPR_NUM_FLT);
-        ret->val.f = total;
-        return ret;
-    } else {
-        long long total = 0;
-        for (Expr* arg = e; arg != NULL; arg = arg->next)
+        ret = expr_new(EXPR_NUM_GENERIC);
+        expr_set_generic_num(ret, total);
+    } else if (e->type == EXPR_NUM_INT) {
+        long long total = e->val.n;
+        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
             total += arg->val.n;
 
-        Expr* ret  = expr_new(EXPR_NUM_INT);
+        ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = total;
-        return ret;
+    } else if (e->type == EXPR_NUM_FLT) {
+        double total = e->val.f;
+        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
+            total += arg->val.f;
+
+        ret        = expr_new(EXPR_NUM_FLT);
+        ret->val.n = total;
+    } else {
+        SL_FATAL("Unhandled numerical type (%s).", exprtype2str(e->type));
     }
+
+    return ret;
 }
 
 Expr* prim_sub(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_has_only_numbers(e),
+    SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
               "Unexpected non-numerical argument.");
 
     /*
-     * If there is only one argument, negate. Otherwise subtract in order.
-     *   (- 5)       ===> -5
-     *   (- 5.0)     ===> -5.0
-     *   (- 9 5 1)   ===> 3
-     *   (- 9 5.0 1) ===> 3.0
+     * If there are no arguments, return zero.
+     *   (-) => 0
+     * If there is only one argument, negate.
+     *   (- 5)   => -5
+     *   (- 5.0) => -5.0
+     * If arguments don't share the same type, operate on generic numbers.
+     *   (- 9 5.0 1) => 3.0
+     * Otherwise, subtract in order.
+     *   (- 9 5 1)       => 3
+     *   (- 9.0 5.0 1.0) => 3.0
      */
-    if (expr_list_has_type(e, EXPR_NUM_FLT)) {
-        double total = (e->type == EXPR_NUM_FLT) ? e->val.f : (double)e->val.n;
-        if (e->next == NULL) {
-            total = -total;
-        } else {
-            for (Expr* arg = e->next; arg != NULL; arg = arg->next)
-                total -= (arg->type == EXPR_NUM_FLT) ? arg->val.f : arg->val.n;
-        }
+    Expr* ret;
+    if (e == NULL) {
+        ret        = expr_new(EXPR_NUM_INT);
+        ret->val.n = 0;
+    } else if (e->next == NULL) {
+        ret = expr_clone(e);
+        expr_negate_num_val(ret);
+    } else if (!expr_list_is_homogeneous(e)) {
+        GenericNum total = expr_get_generic_num(e);
+        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
+            total -= expr_get_generic_num(arg);
 
-        Expr* ret  = expr_new(EXPR_NUM_FLT);
-        ret->val.f = total;
-        return ret;
-    } else {
+        ret = expr_new(EXPR_NUM_GENERIC);
+        expr_set_generic_num(ret, total);
+    } else if (e->type == EXPR_NUM_INT) {
         long long total = e->val.n;
-        if (e->next == NULL) {
-            total = -total;
-        } else {
-            for (Expr* arg = e->next; arg != NULL; arg = arg->next)
-                total -= arg->val.n;
-        }
+        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
+            total -= arg->val.n;
 
-        Expr* ret  = expr_new(EXPR_NUM_INT);
+        ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = total;
-        return ret;
+    } else if (e->type == EXPR_NUM_FLT) {
+        double total = e->val.f;
+        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
+            total -= arg->val.f;
+
+        ret        = expr_new(EXPR_NUM_FLT);
+        ret->val.f = total;
+    } else {
+        SL_FATAL("Unhandled numerical type (%s).", exprtype2str(e->type));
     }
+
+    return ret;
 }
 
 Expr* prim_mul(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT(expr_list_has_only_numbers(e),
+    SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
               "Unexpected non-numerical argument.");
 
     if (expr_list_has_type(e, EXPR_NUM_FLT)) {
@@ -115,46 +148,78 @@ Expr* prim_mul(Env* env, Expr* e) {
         ret->val.n = total;
         return ret;
     }
+
+    /*
+     * If there are no arguments, return one.
+     *   (*) => 1
+     * If there is only one argument, negate.
+     *   (* 5)   => -5
+     *   (* 5.0) => -5.0
+     * If arguments don't share the same type, operate on generic numbers.
+     *   (* 9 5.0 1) => 3.0
+     * Otherwise, subtract in order.
+     *   (* 9 5 1)       => 3
+     *   (* 9.0 5.0 1.0) => 3.0
+     */
+    Expr* ret;
+    if (e == NULL) {
+        ret        = expr_new(EXPR_NUM_INT);
+        ret->val.n = 1;
+    } else if (!expr_list_is_homogeneous(e)) {
+        GenericNum total = expr_get_generic_num(e);
+        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
+            total *= expr_get_generic_num(arg);
+
+        ret = expr_new(EXPR_NUM_GENERIC);
+        expr_set_generic_num(ret, total);
+    } else if (e->type == EXPR_NUM_INT) {
+        long long total = e->val.n;
+        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
+            total *= arg->val.n;
+
+        ret        = expr_new(EXPR_NUM_INT);
+        ret->val.n = total;
+    } else if (e->type == EXPR_NUM_FLT) {
+        double total = e->val.f;
+        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
+            total *= arg->val.f;
+
+        ret        = expr_new(EXPR_NUM_FLT);
+        ret->val.n = total;
+    } else {
+        SL_FATAL("Unhandled numerical type (%s).", exprtype2str(e->type));
+    }
+
+    return ret;
 }
 
 Expr* prim_div(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL, "Missing arguments.");
+    SL_EXPECT(e != NULL, "Expected at least one argument.");
     SL_EXPECT(expr_list_has_only_numbers(e),
               "Unexpected non-numerical argument.");
 
     /*
-     * The `div' primitive always returns a double result. For integer division,
-     * use `quotient'.
+     * The `div' primitive always returns a `GenericNum' result. For integer
+     * division, use `quotient'.
      */
-    double total = (e->type == EXPR_NUM_FLT) ? e->val.f : (double)e->val.n;
+    GenericNum total = expr_get_generic_num(e);
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
-        switch (arg->type) {
-            case EXPR_NUM_INT:
-                SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
-                total /= arg->val.n;
-                break;
-
-            case EXPR_NUM_FLT:
-                SL_EXPECT(arg->val.f != 0, "Trying to divide by zero.");
-                total /= arg->val.f;
-                break;
-
-            default:
-                SL_FATAL("Unhandled numeric type.");
-        }
+        const GenericNum n = expr_get_generic_num(arg);
+        SL_EXPECT(n != 0, "Trying to divide by zero.");
+        total /= n;
     }
 
-    Expr* ret  = expr_new(EXPR_NUM_FLT);
-    ret->val.f = total;
+    Expr* ret = expr_new(EXPR_NUM_GENERIC);
+    expr_set_generic_num(ret, total);
     return ret;
 }
 
 Expr* prim_mod(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL, "Missing arguments.");
+    SL_EXPECT(e != NULL, "Expected at least one argument.");
     SL_EXPECT(expr_list_has_only_numbers(e),
               "Unexpected non-numerical argument.");
 
@@ -171,43 +236,30 @@ Expr* prim_mod(Env* env, Expr* e) {
      * Note that, although the behavior of `mod' in SL is the same as in Elisp,
      * the `floor' and `/' functions are not.
      */
-    double total = (e->type == EXPR_NUM_FLT) ? e->val.f : (double)e->val.n;
+    GenericNum total = expr_get_generic_num(e);
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
-        switch (arg->type) {
-            case EXPR_NUM_INT:
-                SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
-                total = fmod(total, arg->val.n);
-                if (arg->val.n < 0 ? total > 0 : total < 0)
-                    total += arg->val.n;
-                break;
-
-            case EXPR_NUM_FLT:
-                SL_EXPECT(arg->val.f != 0, "Trying to divide by zero.");
-                total = fmod(total, arg->val.f);
-                if (arg->val.f < 0 ? total > 0 : total < 0)
-                    total += arg->val.f;
-                break;
-
-            default:
-                SL_FATAL("Unhandled numeric type.");
-        }
+        const GenericNum num = expr_get_generic_num(arg);
+        SL_EXPECT(num != 0, "Trying to divide by zero.");
+        fmod(total, num);
+        if (num < 0 ? total > 0 : total < 0)
+            total += num;
     }
 
-    Expr* ret  = expr_new(EXPR_NUM_FLT);
-    ret->val.f = total;
+    Expr* ret = expr_new(EXPR_NUM_GENERIC);
+    expr_set_generic_num(ret, total);
     return ret;
 }
 
 Expr* prim_quotient(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
-    SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT_TYPE(e, EXPR_NUM_INT);
+    SL_EXPECT(e != NULL, "Expected at least one argument.");
 
     /*
      * The `quotient' function is just like `/', but it only operates with
      * integers.
      */
+    SL_EXPECT_TYPE(e, EXPR_NUM_INT);
     long long total = e->val.n;
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
@@ -224,7 +276,6 @@ Expr* prim_remainder(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT_TYPE(e, EXPR_NUM_INT);
 
     /*
      * The `remainder' function is just like `mod', but it only operates with
@@ -233,6 +284,7 @@ Expr* prim_remainder(Env* env, Expr* e) {
      *   (+ (remainder dividend divisor)
      *      (* (quotient dividend divisor) divisor))
      */
+    SL_EXPECT_TYPE(e, EXPR_NUM_INT);
     long long total = e->val.n;
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
