@@ -41,6 +41,39 @@ A copy of the license should be included along with the manual. If not,
 see https://www.gnu.org/licenses/.
 #+end_quote
 
+* General concepts
+
+This section will explain some important concepts about the Lisp syntax,
+and about the interpreter itself.
+
+** Types
+
+All expressions have a single type that determines the kind of value it
+is currently storing. Types are usually capitalized and, in the manual,
+slanted.
+
+See also [[*Type-checking primitives][Type-checking primitives]] and [[*Type conversion primitives][Type conversion primitives]].
+
+*** Generic numeric type
+
+Some functions accept multiple numeric types, so in order to operate on
+them, they need to be internally converted to a /generic numeric
+type/. Depending on the types and the values being converted, some
+information might be lost in the process.
+
+Currently, the generic numeric type is /Float/. For example, most
+arithmetic function accept arguments of any numeric type, so if the list
+of arguments is not homogeneous, they are converted and a generic
+numeric type is returned.
+
+#+begin_src lisp
+(+ 5 2.0)
+  ⇒ 7.0
+#+end_src
+
+The C functions for handling generic numbers are defined as =inline= in
+the [[file:expr.h]] header.
+
 * Variables
 
 These variables are defined by default in the global environment.
@@ -948,11 +981,12 @@ symbol =tru=.
 
 ** Type-checking primitives
 
-These primitives are used for checking the type of an expression. Types
-are usually capitalized and, in the manual, slanted. Note that most of
-these =type?= functions don't /need/ to be primitives, since we could check
-the symbol returned by =type-of=. The primitives in this section are
-defined in [[file:prim_type.c]].
+These primitives are used for checking the type of an expression. Note
+that most of these =type?= functions don't /need/ to be primitives, since we
+could check the symbol returned by =type-of=. The primitives in this
+section are defined in [[file:prim_type.c]].
+
+See also [[*Types][Types]].
 
 - Function: type-of expr :: <<type-of>>
 
