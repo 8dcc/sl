@@ -54,25 +54,26 @@ slanted.
 
 See also [[*Type-checking primitives][Type-checking primitives]] and [[*Type conversion primitives][Type conversion primitives]].
 
-*** Generic numeric type
+*** Generic Number Type
 
 Some functions accept multiple numeric types, so in order to operate on
-them, they need to be internally converted to a /generic numeric
-type/. Depending on the types and the values being converted, some
-information might be lost in the process.
+them, they need to be internally converted to a /Generic Number
+Type/. Depending on the types and the values being converted, some
+information might be lost in the process (e.g. when converting really
+big integers).
 
-Currently, the generic numeric type is /Float/. For example, most
-arithmetic function accept arguments of any numeric type, so if the list
-of arguments is not homogeneous, they are converted and a generic
-numeric type is returned.
+Currently, the generic number type is /Float/, that is, a C =double=. For
+example, most arithmetic function accept arguments of any numeric type,
+so if the list of arguments is not homogeneous, they are converted, and
+a Generic Number Type is returned.
 
 #+begin_src lisp
 (+ 5 2.0)
   ⇒ 7.0
 #+end_src
 
-The C functions for handling generic numbers are defined as =inline= in
-the [[file:expr.h]] header.
+The C functions for handling Generic Number Types are defined as =inline=
+in the [[file:expr.h]] header.
 
 * Variables
 
@@ -799,7 +800,7 @@ These primitives don't fit into other categories. They are defined in
 - Function: random limit :: <<random>>
 
   Return a random number between zero and =limit=. The argument type must
-  be numerical, and the returned number will share the same type.
+  be numeric, and the returned number will share the same type.
 
   #+begin_src lisp
   (random 5)
@@ -866,8 +867,8 @@ symbol =tru=.
     corresponding expression in the second list, according to this
     function =equal?=.
   - Two numbers are equal according to this function if they share the
-    same type, and if they have the same value. General numerical
-    equality can be checked with [[=][===]].
+    same type, and if they have the same value. General numeric equality
+    can be checked with [[=][===]].
   - Two strings are equal if they have the same length, and if all of
     their characters match.
   - Symbols are handled just like strings, but comparing the two types
@@ -911,16 +912,10 @@ symbol =tru=.
 
 - Function: = a b &rest rest :: <<=>>
 
-  Returns =tru= if the value of /all/ numerical arguments is equal, =nil=
-  otherwise. The value of two numerical expressions is equal, according
-  to this function, if their values are the same after being converted
-  to a common type.
-
-  Specifically, this is how the types are converted:
-
-  - If both have the same type, no conversion is made.
-  - If one is a /Float/ and the other is an /Integer/, the integer is
-    converted into a /Float/, independently of the type order.
+  Returns =tru= if the value of /all/ numeric arguments is equal, =nil=
+  otherwise. The value of two numeric expressions is equal, according to
+  this function, if their values are the same after being converted to a
+  /Generic Number Type/. See [[*Generic Number Type][Generic Number Type]].
 
   Some examples:
 
@@ -948,7 +943,8 @@ symbol =tru=.
   - Two numbers are increasing or decreasing if the value of second is
     greater or smaller than the value of the first,
     respectively. Numbers can be compared if they don't share the same
-    type, but will be converted to a common one, just like with [[=][===]].
+    type, but will be converted to a Generic Number Type, just like with
+    ===.
   - Two strings are increasing or decreasing if the first differing
     character in the strings is greater or smaller on the second string
     than on the first[fn::This is checked using the C function =strcmp=.],
