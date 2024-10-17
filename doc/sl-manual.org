@@ -276,7 +276,6 @@ and Interpretation of Computer Programs/[fn::
     ⇒ (` (a (, b) c d))
 
   (define var 123)
-    ⇒ 123
 
   `(a ,var b c)
     ⇒ (a 123 b c)
@@ -285,7 +284,6 @@ and Interpretation of Computer Programs/[fn::
     ⇒ (a (b 123) c 123)
 
   (define my-list '(1 2 3))
-    ⇒ (1 2 3)
 
   `(a b ,@my-list c d)
     ⇒ (a b 1 2 3 c d)
@@ -294,8 +292,25 @@ and Interpretation of Computer Programs/[fn::
     ⇒ (a b X Y Z c)
   #+end_src
 
+  Since the backquote evaluates each unquoted expression normally, you
+  can nest backquotes without any special syntax:
+
+  #+begin_src lisp
+  `(hi               ; "hi" quoted by the outer backquote.
+    ,(if (< var 30)  ; "if" Evaluated by the outer backquote.
+         (+ 100 var) ; "+" evaluated depending on the "if".
+         `(abc       ; "abc" quoted by the inner backquote.
+           ,var      ; "var" evaluated by the inner backquote.
+           xyz))     ; "xyz" quoted by the inner backquote.
+    bye)             ; "bye" quoted by the outer backquote.
+  #+end_src
+
+  In the previous example, if =var= was ~7~, the backquote would return
+  ~(hi 107 bye)~, but if =var= was ~35~, it would return
+  ~(hi (abc 35 xyz) bye)~.
+
   Also note that none of this /unquote/ functionality is available inside
-  =quote= arguments, just =backquote=.
+  =quote= arguments, just =backquote=:
 
   #+begin_src lisp
   '(,a b (c ,d) e)
@@ -542,7 +557,7 @@ and Interpretation of Computer Programs/[fn::
 
   #+begin_src lisp
   (defmacro my-begin (&rest exprs)
-    (list (cons* 'lambda '() exprs)))
+    `((lambda () ,@exprs)))
     ⇒ <macro>
 
   (my-begin
@@ -604,12 +619,12 @@ and Interpretation of Computer Programs/[fn::
     (if (null? exprs)
         nil
         ;; TODO: Don't overwrite "result", generate unique symbol.
-        (list (list 'lambda (list 'result)
-                    (list 'if
-                          'result
-                          'result
-                          (cons 'my-or (cdr exprs))))
-              (car exprs))))
+        ;; NOTE: We could also use the `let' macro.
+        `((lambda (result)
+            (if result
+                result
+                (my-or ,@(cdr exprs))))
+          ,(car exprs))))
   #+end_src
 
 - Special Form: and &rest exprs :: <<and>>
@@ -637,15 +652,18 @@ and Interpretation of Computer Programs/[fn::
     (if (null? exprs)
         tru
         ;; TODO: Don't overwrite "result", generate unique symbol.
-        (list (list 'lambda (list 'result)
-                    (list 'if
-                          'result
-                          (if (null? (cdr exprs))
-                              'result
-                              (cons 'my-and (cdr exprs)))
-                          nil))
-              (car exprs))))
+        ;; NOTE: We could also use the `let' macro.
+        `((lambda (result)
+            (if result
+                ,(if (null? (cdr exprs))
+                     'result
+                     `(my-and ,@(cdr exprs)))
+                nil))
+          ,(car exprs))))
   #+end_src
+
+  If you have trouble understanding the nested backquotes, see
+  [[backquote][=backquote=]].
 
 ** General Primitives
 
@@ -727,6 +745,11 @@ These primitives don't fit into other categories. They are defined in
   #+begin_src lisp
   (defmacro inc (sym)
     (list 'define sym (list '+ sym 1)))
+    ⇒ <macro>
+
+  ;; Alternative, using backquote
+  (defmacro inc (sym)
+    `(define ,sym (+ ,sym 1)))
     ⇒ <macro>
 
   (define my-var 5)
