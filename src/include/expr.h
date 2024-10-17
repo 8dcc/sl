@@ -253,7 +253,7 @@ static inline const char* exprtype2str(enum EExprType type) {
 /*----------------------------------------------------------------------------*/
 
 /*
- * Generic numerical type, used by `expr_set_generic_num' and
+ * Generic numeric type, used by `expr_set_generic_num' and
  * `expr_get_generic_num'.
  */
 typedef double GenericNum;
@@ -268,7 +268,7 @@ static inline void expr_set_generic_num(Expr* e, GenericNum num) {
 }
 
 /*
- * Get the value of a numerical expression in a generic C type. The expression
+ * Get the value of a numeric expression in a generic C type. The expression
  * should be a number according to `expr_is_number'.
  */
 static inline GenericNum expr_get_generic_num(const Expr* e) {
@@ -278,7 +278,7 @@ static inline GenericNum expr_get_generic_num(const Expr* e) {
         case EXPR_NUM_FLT:
             return (GenericNum)e->val.f;
         default:
-            SL_FATAL("Unhandled numerical case (%s).", exprtype2str(e->type));
+            SL_FATAL("Unhandled numeric case (%s).", exprtype2str(e->type));
     }
 }
 
@@ -291,7 +291,7 @@ static inline void expr_negate_num_val(Expr* e) {
             e->val.f *= -1;
             break;
         default:
-            SL_FATAL("Tried negating a non-numerical expression (%s).",
+            SL_FATAL("Tried negating a non-numeric expression (%s).",
                      exprtype2str(e->type));
     }
 }

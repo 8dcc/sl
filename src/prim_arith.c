@@ -28,7 +28,7 @@ Expr* prim_add(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
-              "Unexpected non-numerical argument.");
+              "Unexpected non-numeric argument.");
 
     /*
      * If there are no arguments, return zero.
@@ -66,7 +66,7 @@ Expr* prim_add(Env* env, Expr* e) {
         ret        = expr_new(EXPR_NUM_FLT);
         ret->val.n = total;
     } else {
-        SL_FATAL("Unhandled numerical type (%s).", exprtype2str(e->type));
+        SL_FATAL("Unhandled numeric type (%s).", exprtype2str(e->type));
     }
 
     return ret;
@@ -76,7 +76,7 @@ Expr* prim_sub(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
-              "Unexpected non-numerical argument.");
+              "Unexpected non-numeric argument.");
 
     /*
      * If there are no arguments, return zero.
@@ -119,7 +119,7 @@ Expr* prim_sub(Env* env, Expr* e) {
         ret        = expr_new(EXPR_NUM_FLT);
         ret->val.f = total;
     } else {
-        SL_FATAL("Unhandled numerical type (%s).", exprtype2str(e->type));
+        SL_FATAL("Unhandled numeric type (%s).", exprtype2str(e->type));
     }
 
     return ret;
@@ -129,7 +129,7 @@ Expr* prim_mul(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
     SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
-              "Unexpected non-numerical argument.");
+              "Unexpected non-numeric argument.");
 
     if (expr_list_has_type(e, EXPR_NUM_FLT)) {
         double total = 1;
@@ -187,7 +187,7 @@ Expr* prim_mul(Env* env, Expr* e) {
         ret        = expr_new(EXPR_NUM_FLT);
         ret->val.n = total;
     } else {
-        SL_FATAL("Unhandled numerical type (%s).", exprtype2str(e->type));
+        SL_FATAL("Unhandled numeric type (%s).", exprtype2str(e->type));
     }
 
     return ret;
@@ -198,7 +198,7 @@ Expr* prim_div(Env* env, Expr* e) {
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Expected at least one argument.");
     SL_EXPECT(expr_list_has_only_numbers(e),
-              "Unexpected non-numerical argument.");
+              "Unexpected non-numeric argument.");
 
     /*
      * The `div' primitive always returns a `GenericNum' result. For integer
@@ -221,7 +221,7 @@ Expr* prim_mod(Env* env, Expr* e) {
     SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Expected at least one argument.");
     SL_EXPECT(expr_list_has_only_numbers(e),
-              "Unexpected non-numerical argument.");
+              "Unexpected non-numeric argument.");
 
     /*
      * The `mod' operation allows floating-point and negative inputs.
