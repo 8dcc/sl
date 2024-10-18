@@ -131,24 +131,6 @@ Expr* prim_mul(Env* env, Expr* e) {
     SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
               "Unexpected non-numeric argument.");
 
-    if (expr_list_has_type(e, EXPR_NUM_FLT)) {
-        double total = 1;
-        for (Expr* arg = e; arg != NULL; arg = arg->next)
-            total *= (arg->type == EXPR_NUM_FLT) ? arg->val.f : arg->val.n;
-
-        Expr* ret  = expr_new(EXPR_NUM_FLT);
-        ret->val.f = total;
-        return ret;
-    } else {
-        long long total = 1;
-        for (Expr* arg = e; arg != NULL; arg = arg->next)
-            total *= arg->val.n;
-
-        Expr* ret  = expr_new(EXPR_NUM_INT);
-        ret->val.n = total;
-        return ret;
-    }
-
     /*
      * If there are no arguments, return one.
      *   (*) => 1
