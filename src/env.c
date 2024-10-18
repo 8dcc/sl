@@ -157,7 +157,10 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "mod", mod);
     BIND_PRIM(env, "quotient", quotient);
     BIND_PRIM(env, "remainder", remainder);
+    BIND_PRIM(env, "round", round);
     BIND_PRIM(env, "floor", floor);
+    BIND_PRIM(env, "ceiling", ceiling);
+    BIND_PRIM(env, "truncate", truncate);
 
     BIND_PRIM(env, "bit-and", bit_and);
     BIND_PRIM(env, "bit-or", bit_or);

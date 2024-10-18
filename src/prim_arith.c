@@ -279,6 +279,26 @@ Expr* prim_remainder(Env* env, Expr* e) {
     return ret;
 }
 
+Expr* prim_round(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT(expr_is_number(e), "Expected numeric argument.");
+
+    Expr* ret = expr_new(e->type);
+    switch (e->type) {
+        case EXPR_NUM_INT:
+            ret->val.n = e->val.n;
+            break;
+        case EXPR_NUM_FLT:
+            ret->val.f = round(e->val.f);
+            break;
+        default:
+            SL_FATAL("Unhandled numeric type.");
+    }
+    return ret;
+}
+
 Expr* prim_floor(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_ON_ERR(return NULL);
@@ -296,6 +316,45 @@ Expr* prim_floor(Env* env, Expr* e) {
         default:
             SL_FATAL("Unhandled numeric type.");
     }
+    return ret;
+}
 
+Expr* prim_ceiling(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT(expr_is_number(e), "Expected numeric argument.");
+
+    Expr* ret = expr_new(e->type);
+    switch (e->type) {
+        case EXPR_NUM_INT:
+            ret->val.n = e->val.n;
+            break;
+        case EXPR_NUM_FLT:
+            ret->val.f = ceil(e->val.f);
+            break;
+        default:
+            SL_FATAL("Unhandled numeric type.");
+    }
+    return ret;
+}
+
+Expr* prim_truncate(Env* env, Expr* e) {
+    SL_UNUSED(env);
+    SL_ON_ERR(return NULL);
+    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT(expr_is_number(e), "Expected numeric argument.");
+
+    Expr* ret = expr_new(e->type);
+    switch (e->type) {
+        case EXPR_NUM_INT:
+            ret->val.n = e->val.n;
+            break;
+        case EXPR_NUM_FLT:
+            ret->val.f = trunc(e->val.f);
+            break;
+        default:
+            SL_FATAL("Unhandled numeric type.");
+    }
     return ret;
 }

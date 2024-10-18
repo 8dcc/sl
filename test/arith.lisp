@@ -21,6 +21,12 @@
           (f -9.5  2.5)
           (f -9.5 -2.5))))
 
+(define test-round-func
+  (lambda (f)
+    (list (list (f 5) (f 5.0) (f -5.0))
+          (list (f  5.4) (f  5.5) (f  5.6))
+          (list (f -5.4) (f -5.5) (f -5.6)))))
+
 (define assert-type-conversion
   (lambda (val func inverse)
     (list val
@@ -66,6 +72,11 @@
 (test-signed-integers quotient)         ; Expected: (4 -4 -4 4)
 (test-signed-integers remainder)        ; Expected: (1 1 -1 -1)
 (test-signed-integers assert-remainder) ; Expected: (tru tru tru tru)
+
+(test-round-func round)    ; ((5 5.0 -5.0) (5.0 6.0 6.0) (-5.0 -6.0 -6.0))
+(test-round-func floor)    ; ((5 5.0 -5.0) (5.0 5.0 5.0) (-6.0 -6.0 -6.0))
+(test-round-func ceiling)  ; ((5 5.0 -5.0) (6.0 6.0 6.0) (-5.0 -5.0 -5.0))
+(test-round-func truncate) ; ((5 5.0 -5.0) (5.0 5.0 5.0) (-5.0 -5.0 -5.0))
 
 ;; TODO: Add `format' primitive, wrap these in calls.
 (bit-and 0x123456 0xFF00FF) ; Expected: 1179734 (0x120056)

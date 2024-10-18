@@ -92,7 +92,10 @@ DECLARE_PRIM(div);
 DECLARE_PRIM(mod);
 DECLARE_PRIM(quotient);
 DECLARE_PRIM(remainder);
+DECLARE_PRIM(round);
 DECLARE_PRIM(floor);
+DECLARE_PRIM(ceiling);
+DECLARE_PRIM(truncate);
 
 /* Bit-wise (prim_bitwise.c) */
 DECLARE_PRIM(bit_and);
