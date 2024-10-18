@@ -64,7 +64,7 @@ Expr* prim_add(Env* env, Expr* e) {
             total += arg->val.f;
 
         ret        = expr_new(EXPR_NUM_FLT);
-        ret->val.n = total;
+        ret->val.f = total;
     } else {
         SL_FATAL("Unhandled numeric type (%s).", exprtype2str(e->type));
     }
@@ -167,7 +167,7 @@ Expr* prim_mul(Env* env, Expr* e) {
             total *= arg->val.f;
 
         ret        = expr_new(EXPR_NUM_FLT);
-        ret->val.n = total;
+        ret->val.f = total;
     } else {
         SL_FATAL("Unhandled numeric type (%s).", exprtype2str(e->type));
     }
@@ -222,7 +222,7 @@ Expr* prim_mod(Env* env, Expr* e) {
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         const GenericNum num = expr_get_generic_num(arg);
         SL_EXPECT(num != 0, "Trying to divide by zero.");
-        fmod(total, num);
+        total = fmod(total, num);
         if (num < 0 ? total > 0 : total < 0)
             total += num;
     }
