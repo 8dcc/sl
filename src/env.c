@@ -115,24 +115,12 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "macroexpand", macroexpand);
     BIND_PRIM(env, "random", random);
     BIND_PRIM(env, "set-random-seed", set_random_seed);
-    BIND_PRIM(env, "list", list);
-    BIND_PRIM(env, "cons", cons);
-    BIND_PRIM(env, "car", car);
-    BIND_PRIM(env, "cdr", cdr);
-    BIND_PRIM(env, "length", length);
-    BIND_PRIM(env, "append", append);
-    BIND_PRIM(env, "write-to-str", write_to_str);
-    BIND_PRIM(env, "format", format);
-    BIND_PRIM(env, "substring", substring);
-    BIND_PRIM(env, "re-match-groups", re_match_groups);
-    BIND_PRIM(env, "+", add);
-    BIND_PRIM(env, "-", sub);
-    BIND_PRIM(env, "*", mul);
-    BIND_PRIM(env, "/", div);
-    BIND_PRIM(env, "mod", mod);
-    BIND_PRIM(env, "quotient", quotient);
-    BIND_PRIM(env, "remainder", remainder);
-    BIND_PRIM(env, "floor", floor);
+
+    BIND_PRIM(env, "equal?", equal);
+    BIND_PRIM(env, "=", equal_num);
+    BIND_PRIM(env, "<", lt);
+    BIND_PRIM(env, ">", gt);
+
     BIND_PRIM(env, "type-of", type_of);
     BIND_PRIM(env, "int?", is_int);
     BIND_PRIM(env, "flt?", is_flt);
@@ -142,22 +130,42 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "primitive?", is_primitive);
     BIND_PRIM(env, "lambda?", is_lambda);
     BIND_PRIM(env, "macro?", is_macro);
+
     BIND_PRIM(env, "int->flt", int2flt);
     BIND_PRIM(env, "flt->int", flt2int);
     BIND_PRIM(env, "int->str", int2str);
     BIND_PRIM(env, "flt->str", flt2str);
     BIND_PRIM(env, "str->int", str2int);
     BIND_PRIM(env, "str->flt", str2flt);
+
+    BIND_PRIM(env, "list", list);
+    BIND_PRIM(env, "cons", cons);
+    BIND_PRIM(env, "car", car);
+    BIND_PRIM(env, "cdr", cdr);
+    BIND_PRIM(env, "length", length);
+    BIND_PRIM(env, "append", append);
+
+    BIND_PRIM(env, "write-to-str", write_to_str);
+    BIND_PRIM(env, "format", format);
+    BIND_PRIM(env, "substring", substring);
+    BIND_PRIM(env, "re-match-groups", re_match_groups);
+
+    BIND_PRIM(env, "+", add);
+    BIND_PRIM(env, "-", sub);
+    BIND_PRIM(env, "*", mul);
+    BIND_PRIM(env, "/", div);
+    BIND_PRIM(env, "mod", mod);
+    BIND_PRIM(env, "quotient", quotient);
+    BIND_PRIM(env, "remainder", remainder);
+    BIND_PRIM(env, "floor", floor);
+
     BIND_PRIM(env, "bit-and", bit_and);
     BIND_PRIM(env, "bit-or", bit_or);
     BIND_PRIM(env, "bit-xor", bit_xor);
     BIND_PRIM(env, "bit-not", bit_not);
     BIND_PRIM(env, "shr", shr);
     BIND_PRIM(env, "shl", shl);
-    BIND_PRIM(env, "equal?", equal);
-    BIND_PRIM(env, "=", equal_num);
-    BIND_PRIM(env, "<", lt);
-    BIND_PRIM(env, ">", gt);
+
     BIND_PRIM(env, "read", read);
     BIND_PRIM(env, "write", write);
     BIND_PRIM(env, "scan-str", scan_str);
