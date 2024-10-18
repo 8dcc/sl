@@ -1162,7 +1162,7 @@ See also [[*Types][Types]].
 These primitives are used for converting between expression types. The
 primitives in this section are defined in [[file:prim_type.c]].
 
-- Function: int->flt expr :: <<int->flt>>
+- Function: int->flt expr :: <<int-to-flt>>
 
   Converts the specified /Integer/ into a /Float/.
 
@@ -1171,7 +1171,7 @@ primitives in this section are defined in [[file:prim_type.c]].
     ⇒ 1.000000
   #+end_src
 
-- Function: flt->int expr :: <<flt->int>>
+- Function: flt->int expr :: <<flt-to-int>>
 
   Converts the specified /Float/ into an /Integer/.
 
@@ -1180,7 +1180,7 @@ primitives in this section are defined in [[file:prim_type.c]].
     ⇒ 1
   #+end_src
 
-- Function: int->str expr :: <<int->str>>
+- Function: int->str expr :: <<int-to-str>>
 
   Converts the specified /Integer/ into a /String/. See also [[write-to-str][=write-to-str=]].
 
@@ -1189,7 +1189,7 @@ primitives in this section are defined in [[file:prim_type.c]].
     ⇒ "1"
   #+end_src
 
-- Function: flt->str expr :: <<flt->str>>
+- Function: flt->str expr :: <<flt-to-str>>
 
   Converts the specified /Float/ into a /String/.
 
@@ -1198,7 +1198,7 @@ primitives in this section are defined in [[file:prim_type.c]].
     ⇒ "1.000000"
   #+end_src
 
-- Function: str->int expr :: <<str->int>>
+- Function: str->int expr :: <<str-to-int>>
 
   Converts the specified /String/ into an /Integer/.
 
@@ -1213,7 +1213,7 @@ primitives in this section are defined in [[file:prim_type.c]].
     ⇒ 0
   #+end_src
 
-- Function: str->flt expr :: <<str->flt>>
+- Function: str->flt expr :: <<str-to-flt>>
 
   Converts the specified /String/ into a /Float/.
 
