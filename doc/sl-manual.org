@@ -1761,6 +1761,35 @@ numbers. The primitives in this section are defined in
     ⇒ 1.000000
   #+end_src
 
+- Function: round number :: <<round>>
+
+  Round =number= to nearest integer. Halfway cases are rounded /away/ from
+  zero. The type of the returned value always matches the type of the
+  input.
+
+  #+begin_src lisp
+  (round 5)
+    ⇒ 5
+
+  (round 5.3)
+    ⇒ 5.000000
+
+  (round 5.5)
+    ⇒ 6.000000
+
+  (round 5.6)
+    ⇒ 6.000000
+
+  (round -5.3)
+    ⇒ -5.000000
+
+  (round -5.5)
+    ⇒ -6.000000
+
+  (round -5.6)
+    ⇒ -6.000000
+  #+end_src
+
 - Function: floor number :: <<floor>>
 
   Return the largest integral value not greater than =number=. In other
@@ -1771,29 +1800,66 @@ numbers. The primitives in this section are defined in
   (floor 5)
     ⇒ 5
 
-  (floor 5.000000)
+  (floor 5.0)
     ⇒ 5.000000
 
-  (floor 5.700000)
+  (floor 5.7)
     ⇒ 5.000000
 
-  (floor -5.000000)
+  (floor -5.0)
     ⇒ -5.000000
 
-  (floor -5.700000)
+  (floor -5.7)
     ⇒ -6.000000
   #+end_src
 
-  Note how =floor= /does not/ round towards zero, but towards negative
-  infinity. See also [[truncate][=truncate=]].
+  Note how =floor= does /not/ round towards zero for negative values. See also [[truncate][=truncate=]].
 
 - Function: ceiling number :: <<ceiling>>
 
-  TODO: Implement
+  Return the smallest integral value not less than =number=. In other
+  words, round the specified =number= towards positive infinity. The type
+  of the returned value always matches the type of the input.
+
+  #+begin_src lisp
+  (ceiling 5)
+    ⇒ 5
+
+  (ceiling 5.0)
+    ⇒ 5.000000
+
+  (ceiling 5.3)
+    ⇒ 6.000000
+
+  (ceiling -5.0)
+    ⇒ -5.000000
+
+  (ceiling -5.3)
+    ⇒ -5.000000
+  #+end_src
 
 - Function: truncate number :: <<truncate>>
 
-  TODO: Implement
+  Round the specified =number= to an integer, towards zero. In other
+  words, return the =number= with the fractional part set to zero. The
+  type of the returned value always matches the type of the input.
+
+  #+begin_src lisp
+  (truncate 5)
+    ⇒ 5
+
+  (truncate 5.3)
+    ⇒ 5.000000
+
+  (truncate 5.6)
+    ⇒ 5.000000
+
+  (truncate -5.3)
+    ⇒ -5.000000
+
+  (truncate -5.6)
+    ⇒ -5.000000
+  #+end_src
 
 ** Bit-wise primitives
 
