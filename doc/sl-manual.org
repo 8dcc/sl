@@ -1670,7 +1670,8 @@ numbers. The primitives in this section are defined in
   #+end_src
 
   Note that, although the behavior of the =mod= function is the same in SL
-  and in Emacs Lisp, the behavior of the =floor= and =/= functions is not.
+  and in Emacs Lisp, the behavior of the =floor= and =/= functions is
+  not. See [[floor][=floor=]].
 
   Some examples of =mod=:
 
@@ -1733,7 +1734,7 @@ numbers. The primitives in this section are defined in
   #+end_src
 
   Again, note the difference between ~(floor (/ ...))~ and
-  ~(quotient ...)~. See [[quotient][=quotient=]].
+  ~(quotient ...)~. See [[quotient][=quotient=]] and [[floor][=floor=]].
 
   Some examples of =remainder=:
 
@@ -1762,7 +1763,37 @@ numbers. The primitives in this section are defined in
 
 - Function: floor number :: <<floor>>
 
-  TODO
+  Return the largest integral value not greater than =number=. In other
+  words, round the specified =number= towards negative infinity. The type
+  of the returned value always matches the type of the input.
+
+  #+begin_src lisp
+  (floor 5)
+    ⇒ 5
+
+  (floor 5.000000)
+    ⇒ 5.000000
+
+  (floor 5.700000)
+    ⇒ 5.000000
+
+  (floor -5.000000)
+    ⇒ -5.000000
+
+  (floor -5.700000)
+    ⇒ -6.000000
+  #+end_src
+
+  Note how =floor= /does not/ round towards zero, but towards negative
+  infinity. See also [[truncate][=truncate=]].
+
+- Function: ceiling number :: <<ceiling>>
+
+  TODO: Implement
+
+- Function: truncate number :: <<truncate>>
+
+  TODO: Implement
 
 ** Bit-wise primitives
 
