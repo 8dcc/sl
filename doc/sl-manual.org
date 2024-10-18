@@ -1567,6 +1567,207 @@ in general, not just /lists/, so they can be used with strings.
     ⇒ ((0 3))
   #+end_src
 
+** Arithmetic primitives
+
+These primitives are used for performing arithmetical operations on
+numbers. The primitives in this section are defined in
+[[file:prim_arith.c]]. See also [[*Bit-wise primitives][Bit-wise primitives]].
+
+- Function: + &rest numbers :: <<+>>
+
+  Add the specified numbers. If the arguments don't share a common type,
+  they are converted to a common type (see [[*Generic Number Type][Generic Number Type]]). Returns
+  0 when called with no arguments.
+
+  #+begin_src lisp
+  (+)
+    ⇒ 0
+
+  (+ 1 2 3)
+    ⇒ 6
+
+  (+ 1 2.0 3)
+    ⇒ 6.000000
+  #+end_src
+
+- Function: - &rest numbers :: <<->>
+
+  Subtract the specified numbers in order. If the arguments don't share
+  a common type, they are converted to a common type (see [[*Generic Number Type][Generic Number
+  Type]]). When called with just one argument, it's negated. Returns 0
+  when called with no arguments.
+
+  #+begin_src lisp
+  (-)
+    ⇒ 0
+
+  (- 5)
+    ⇒ -5
+
+  (- 5 2 1)
+    ⇒ 2
+
+  (- 5 2.0 1)
+    ⇒ 2.000000
+  #+end_src
+
+- Function: * &rest numbers :: <<*>>
+
+  Multiply the specified numbers. If the arguments don't share a common
+  type, they are converted to a [[*Generic Number Type][Generic Number Type]]. Returns 1 when
+  called with no arguments.
+
+  #+begin_src lisp
+  (*)
+    ⇒ 1
+
+  (* 1 2 3)
+    ⇒ 6
+
+  (* 1 2.0 3)
+    ⇒ 6.000000
+  #+end_src
+
+- Function: / dividend &rest divisors :: <</>>
+
+  Divide the =dividend= by each divisor in order. The arguments are /always/
+  converted to a common type, even if the arguments share a common type
+  (see [[*Generic Number Type][Generic Number Type]]). For integer division, see
+  [[quotient][=quotient=]]. Trying to divide by zero results in an error.
+
+  #+begin_src lisp
+  (/ 10)
+    ⇒ 10.000000
+
+  (/ 10 2)
+    ⇒ 5.000000
+
+  (/ 10 0)
+    ⇒ Error: Trying to divide by zero.
+
+  (/ 10 3)
+    ⇒ 3.333333
+
+  (/ 10 2 2)
+    ⇒ 2.500000
+  #+end_src
+
+- Function: mod dividend &rest divisors :: <<mod>>
+
+  Return the modulus of =dividend= by each divisor in order. Just like =/=,
+  this function converts all arguments to a common type before operating
+  on them (see [[*Generic Number Type][Generic Number Type]]). This function allows floating-point
+  and negative inputs[fn::For more details on a possible implementation
+  of a floating-point =mod=, see [[https://8dcc.github.io/programming/fmod.html][the article on my blog]].]. Trying to
+  divide by zero results in an error.
+
+  Similarly to how the Emacs Lisp manual describes =mod=, the following
+  expression should be equal to the =dividend=:
+
+  #+begin_src lisp
+  (+ (mod dividend divisor)
+     (* (floor (/ dividend divisor)) divisor))
+  #+end_src
+
+  Note that, although the behavior of the =mod= function is the same in SL
+  and in Emacs Lisp, the behavior of the =floor= and =/= functions is not.
+
+  Some examples of =mod=:
+
+  #+begin_src lisp
+  (mod 10)
+    ⇒ 10.000000
+
+  (mod 10 2)
+    ⇒ 0.000000
+
+  (mod 10 3)
+    ⇒ 1.000000
+  #+end_src
+
+- Function: quotient dividend &rest divisors :: <<quotient>>
+
+  Divide the =dividend= by each divisor in order. Unlike =/=, this function
+  /only/ operates with integers. Trying to divide by zero results in an
+  error.
+
+  #+begin_src lisp
+  (quotient 10)
+    ⇒ 10
+
+  (quotient 10 2)
+    ⇒ 5
+
+  (quotient 10 0)
+    ⇒ Error: Trying to divide by zero.
+
+  (quotient 10 3)
+    ⇒ 3
+  #+end_src
+
+  The behavior is identical to integer division in C, that is, the
+  result is always truncated towards zero; in other words, rounded
+  towards the smallest absolute value. Dividing using =quotient= is /not/
+  the same as using =floor= on a floating point =/= division:
+
+  #+begin_src lisp
+  (floor (/ -5 2))
+    ⇒ -3.000000
+
+  (quotient -5 2)
+    ⇒ -2
+  #+end_src
+
+- Function: remainder dividend &rest divisors :: <<remainder>>
+
+  Return the remainder of =dividend= by each divisor in order. Unlike =mod=,
+  this function /only/ operates with integers. Trying to divide by zero
+  results in an error.
+
+  The =remainder= function in SL works like the =remainder= function in
+  Scheme. The following expression should be equal to the =dividend=:
+
+  #+begin_src lisp
+  (+ (remainder dividend divisor)
+     (* (quotient dividend divisor) divisor))
+  #+end_src
+
+  Again, note the difference between ~(floor (/ ...))~ and
+  ~(quotient ...)~. See [[quotient][=quotient=]].
+
+  Some examples of =remainder=:
+
+  #+begin_src lisp
+  (remainder 10)
+  ⇒ 10
+
+  (remainder 10 2)
+  ⇒ 0
+
+  (remainder 10 3)
+  ⇒ 1
+  #+end_src
+
+  The behavior of this function is identical to the =%= operator in
+  C. Note that, in SL, the /remainder/ and the /modulo/ of two numbers is
+  not the same:
+
+  #+begin_src lisp
+  (remainder -5 2)
+    ⇒ -1
+
+  (mod -5 2)
+    ⇒ 1.000000
+  #+end_src
+
+- Function: floor number :: <<floor>>
+
+  TODO
+
+** Bit-wise primitives
+
+TODO
+
 ** Input/Output primitives
 
 TODO
