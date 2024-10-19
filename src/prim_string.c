@@ -110,6 +110,16 @@ Expr* prim_format(Env* env, Expr* e) {
                 expr_type = EXPR_NUM_INT;
                 break;
 
+            case 'u':
+                c_format  = "%llu";
+                expr_type = EXPR_NUM_INT;
+                break;
+
+            case 'x':
+                c_format  = "%#llx";
+                expr_type = EXPR_NUM_INT;
+                break;
+
             case 'f':
                 c_format  = "%f";
                 expr_type = EXPR_NUM_FLT;
