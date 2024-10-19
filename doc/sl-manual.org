@@ -1455,10 +1455,13 @@ in general, not just /lists/, so they can be used with strings.
 
   These are the currently supported format specifiers:
 
-  - =s= :: Format a expression of type /String/. Each character is printed
+  - =s= :: Format an expression of type /String/. Each character is printed
     literally, nothing is escaped, similar to =print-str=.
-  - =d= :: Format a expression of type /Integer/.
-  - =f= :: Format a expression of type /Float/.
+  - =d= :: Format an expression of type /Integer/.
+  - =u= :: Format an expression of type /Integer/ as unsigned.
+  - =x= :: Format an expression of type /Integer/ as unsigned, in
+    hexadecimal format with a =0x= prefix.
+  - =f= :: Format an expression of type /Float/.
   - =%= :: Used to represent the literal percent sign =%=. This format
     specifier does not need a matching expression in the =exprs= list.
 
