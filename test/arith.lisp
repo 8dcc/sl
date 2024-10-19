@@ -7,43 +7,40 @@
 ;;   - Type-conversion primitives: `int->flt', `flt->int'
 ;;------------------------------------------------------------------------------
 
-(define test-signed-integers
-  (lambda (f)
-    (list (f  9  2)
-          (f  9 -2)
-          (f -9  2)
-          (f -9 -2))))
+(defun test-signed-integers (f)
+  (list (f  9  2)
+        (f  9 -2)
+        (f -9  2)
+        (f -9 -2)))
 
-(define test-signed-floats
-  (lambda (f)
-    (list (f  9.5  2.5)
-          (f  9.5 -2.5)
-          (f -9.5  2.5)
-          (f -9.5 -2.5))))
+(defun test-signed-floats (f)
+  (list (f  9.5  2.5)
+        (f  9.5 -2.5)
+        (f -9.5  2.5)
+        (f -9.5 -2.5)))
 
-(define test-round-func
-  (lambda (f)
-    (list (list (f 5) (f 5.0) (f -5.0))
-          (list (f  5.4) (f  5.5) (f  5.6))
-          (list (f -5.4) (f -5.5) (f -5.6)))))
+(defun test-round-func (f)
+  (list (list (f 5) (f 5.0) (f -5.0))
+        (list (f  5.4) (f  5.5) (f  5.6))
+        (list (f -5.4) (f -5.5) (f -5.6))))
 
-(define assert-type-conversion
-  (lambda (val func inverse)
-    (list val
-          (func val)
-          (inverse (func val)))))
+(defun assert-type-conversion (val func inverse)
+  (list val
+        (func val)
+        (inverse (func val))))
 
-(define assert-mod
-  (lambda (dividend divisor)
-    (equal? dividend
-            (+ (mod dividend divisor)
-               (* (floor (/ dividend divisor)) divisor)))))
+(defun assert-mod (dividend divisor)
+  (equal? dividend
+          (+ (mod dividend divisor)
+             (* (floor (/ dividend divisor)) divisor))))
 
-(define assert-remainder
-  (lambda (dividend divisor)
-    (equal? dividend
-            (+ (remainder dividend divisor)
-               (* (quotient dividend divisor) divisor)))))
+(defun assert-remainder (dividend divisor)
+  (equal? dividend
+          (+ (remainder dividend divisor)
+             (* (quotient dividend divisor) divisor))))
+
+(defun hex (num)
+  (format "%x" num))
 
 ;;------------------------------------------------------------------------------
 
@@ -78,10 +75,9 @@
 (test-round-func ceiling)  ; ((5 5.0 -5.0) (6.0 6.0 6.0) (-5.0 -5.0 -5.0))
 (test-round-func truncate) ; ((5 5.0 -5.0) (5.0 5.0 5.0) (-5.0 -5.0 -5.0))
 
-;; TODO: Add `format' primitive, wrap these in calls.
-(bit-and 0x123456 0xFF00FF) ; Expected: 1179734 (0x120056)
-(bit-or 0xFF00 0x00FF)      ; Expected: 65535 (0xFFFF)
-(bit-xor 0x5555 0xFFFF)     ; Expected: 43690 (0xAAAA)
-(bit-not 0xFF)              ; Expected: -256 (0xFFFFFFFFFFFFFF00)
-(shr 0xFF00 8)              ; Expected: 255 (0x00FF)
-(shl 0x00FF 8)              ; Expected: 65280 (0xFF00)
+(hex (bit-and 0x123456 0xFF00FF)) ; Expected: 0x120056
+(hex (bit-or 0xFF00 0x00FF))      ; Expected: 0xffff
+(hex (bit-xor 0x5555 0xFFFF))     ; Expected: 0xaaaa
+(hex (bit-not 0xFF))              ; Expected: 0xffffffffffffff00
+(hex (shr 0xFF00 8))              ; Expected: 0xff
+(hex (shl 0x00FF 8))              ; Expected: 0xff00

@@ -4,11 +4,10 @@
 ;;   - Output primitives: `write', `print-str'
 ;;------------------------------------------------------------------------------
 
-(define writeln
-    (lambda (e)
-      (write e)
-      (print-str "\n")
-      tru))
+(defun writeln (e)
+  (write e)
+  (print-str "\n")
+  tru)
 
 (begin
  (print-str "Reading two expressions...\n")
