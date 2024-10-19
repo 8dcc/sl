@@ -4,29 +4,39 @@
 #+OPTIONS: toc:2
 #+STARTUP: nofold
 #+TEXINFO_DIR_CATEGORY: Software development
-
-#+begin_comment emacs-lisp :results none
-(defalias 'add-dedicated-target
-   (kmacro "/ ^ - SPC <return> f : l l v E y A SPC < < <escape> p A > > <escape>")
-   "Add an Org dedicated target to the next description list item.")
-#+end_comment
-
-#+begin_comment org
-We should avoid using =⇒= and =→= directly, it would be good if we could use
-Texinfo's =@result{}=. See:
-https://www.gnu.org/savannah-checkouts/gnu/texinfo/manual/texinfo/html_node/_0040result.html
-#+end_comment
+#+TEXINFO_DIR_NAME: SL
+#+TEXINFO_DIR_DESC: Simple Lisp
 
 #+TOC: headlines 2
 
-Manual for [[https://github.com/8dcc/sl][8dcc/sl]].
+* COMMENT Meta
+** Document manipulation
+
+For adding Org dedicated targets to description list items.
+
+#+begin_src emacs-lisp :results none
+(query-replace-regexp (rx line-start
+                          (group-n 1 (seq "- Function:"
+                                          (one-or-more space)))
+                          (group-n 2 (one-or-more graph))
+                          (group-n 3 (seq (one-or-more space)
+                                          (zero-or-more not-newline)
+                                          "::"))
+                          line-end)
+                      "\\1\\2\\3 <<\\2>>")
+#+end_src
+
+** General todo list
+
+- We should avoid using =⇒= and =→= directly, it would be good if we could
+  use Texinfo's =@result{}=. See [[https://www.gnu.org/savannah-checkouts/gnu/texinfo/manual/texinfo/html_node/_0040result.html][Texinfo manual]].
 
 * Copying
 :PROPERTIES:
 :COPYING: t
 :END:
 
-This manual is for SL (version 0.1), a simple Lisp interpreter.
+This manual is for SL (version 0.1), a Simple Lisp interpreter.
 
 Copyright \copy 2024 8dcc.
 
