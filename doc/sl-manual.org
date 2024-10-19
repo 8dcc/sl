@@ -1873,7 +1873,151 @@ numbers. The primitives in this section are defined in
 
 ** Bit-wise primitives
 
-TODO
+These primitives are related to the manipulation of bits. The primitives
+in this section are defined in [[file:prim_bitwise.c]].
+
+- Function: bit-and integer &rest rest :: <<bit-and>>
+
+  Perform a bit-wise /and/ operation with each integer argument. That is,
+  each bit in the result is set if that bit was set in all of the
+  arguments.
+
+  #+begin_example
+  0b11110000  0xF0  240
+  0b11001100  0xCC  204
+  ----------  ----  --- (AND)
+  0b11000000  0xC0  192
+  #+end_example
+
+  Some examples:
+
+  #+begin_src lisp
+  (bit-and 0xF0 0xCC)
+    ⇒ 192
+
+  (bit-and 0xF0 0xCC 0x03)
+    ⇒ 0
+  #+end_src
+
+- Function: bit-or integer &rest rest :: <<bit-or>>
+
+  Perform a bit-wise /or/ operation with each integer argument. That is,
+  each bit in the result is set if that bit was set in at least one of
+  the arguments.
+
+  #+begin_example
+  0b11110000  0xF0  240
+  0b11001100  0xCC  204
+  ----------  ----  --- (OR)
+  0b11111100  0xFC  252
+  #+end_example
+
+  Some examples:
+
+  #+begin_src lisp
+  (bit-or 0xF0 0xCC)
+    ⇒ 252
+
+  (bit-or 0xF0 0xCC 0x03)
+    ⇒ 255
+  #+end_src
+
+- Function: bit-xor integer &rest rest :: <<bit-xor>>
+
+  Perform a bit-wise /xor/ operation with each integer argument. That is,
+  each bit in the result is set if that bit was set in an odd number of
+  arguments.
+
+  #+begin_example
+  0b11110000  0xF0  240
+  0b11001100  0xCC  204
+  ----------  ----  --- (XOR)
+  0b00111100  0x3C   60
+  #+end_example
+
+  Some examples:
+
+  #+begin_src lisp
+  (bit-xor 0xF0 0xCC)
+    ⇒ 60
+
+  (bit-xor 0xF0 0xCC 0x03)
+    ⇒ 63
+  #+end_src
+
+- Function: bit-not integer :: <<bit-not>>
+
+  Perform a bit-wise /not/ operation on =integer=. That is, if a bit was set
+  (1) in the input, it becomes unset; and if the bit was unset (0), it
+  becomes set.
+
+  #+begin_example
+  0b11001100  0xCC  204
+  ----------  ----  --- (NOT)
+  0b00110011  0x33   51
+  #+end_example
+
+  Some examples:
+
+  #+begin_src lisp
+  (bit-not 0xCC)
+    ⇒ -205 ; Shown as signed
+
+  (format "%x" (bit-not 0xCC))
+    ⇒ "0xffffffffffffff33"
+
+  (bit-not 0)
+    ⇒ -1
+
+  (format "%x" (bit-not 0))
+    ⇒ "0xffffffffffffffff"
+  #+end_src
+
+- Function: shr integer n-bits :: <<shr>>
+
+  Shift the specified =integer= /n/ bits to the right. Sets the high-order
+  bits to zero. It is equivalent to the ~>>~ C operator, and to the =shr=
+  ~x86~ assembly instruction[fn::It is /not/ equivalent to the =ror=
+  instruction.].
+
+  Some examples:
+
+  #+begin_src lisp
+  (shr 0xF0 4)
+    ⇒ 15
+
+  (format "%x" (shr 0xF0 4))
+    ⇒ "0xf"
+
+  (shr 0xF0 6)
+    ⇒ 3
+
+  (format "%x" (shr 0xF0 6))
+    ⇒ "0x3"
+  #+end_src
+
+- Function: shl integer n-bits :: <<shl>>
+
+  Shift the specified =integer= /n/ bits to the left. Sets the low-order
+  bits to zero. It is equivalent to the ~<<~ C operator, and to the =shl=
+  ~x86~ assembly instruction[fn::It is /not/ equivalent to the =rol=
+  instruction.].
+
+  Some examples:
+
+  #+begin_src lisp
+  (shl 0x0F 4)
+    ⇒ 240
+
+  (format "%x" (shl 0x0F 4))
+    ⇒ "0xf0"
+
+  (shl 0x0F 6)
+    ⇒ 960
+
+  (format "%x" (shl 0x0F 6))
+    ⇒ "0x3c0"
+  #+end_src
 
 ** Input/Output primitives
 
