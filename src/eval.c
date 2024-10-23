@@ -155,11 +155,15 @@ Expr* eval(Env* env, Expr* e) {
     if (e == NULL)
         return NULL;
 
+    /*
+     * TODO: Move `nil' outside of EXPR_PARENT case so the symbol is not
+     * converted to List. We should probably do this after adding cons pairs,
+     * and using a constant address as `nil'. Lists won't be a thing, so this
+     * will be a different problem.
+     */
     switch (e->type) {
         case EXPR_PARENT: {
             /* `nil' evaluates to itself */
-            /* TODO: Move outside of EXPR_PARENT case so it's not converted to
-             * List. */
             if (expr_is_nil(e))
                 return expr_clone(e);
 
