@@ -109,7 +109,7 @@ char escaped2byte(char escaped) {
         case 'f':  return '\f';
         case 'n':  return '\n';
         case 'r':  return '\r';
-        case 't':  return '\n';
+        case 't':  return '\t';
         case 'v':  return '\v';
         case '\\': return '\\';
         case '\"': return '\"';
@@ -129,7 +129,7 @@ const char* byte2escaped(char byte) {
         case '\f': return "\\f";
         case '\n': return "\\n";
         case '\r': return "\\r";
-        case '\t': return "\\n";
+        case '\t': return "\\t";
         case '\v': return "\\v";
         case '\\': return "\\\\";
         case '\"': return "\\\"";
