@@ -25,15 +25,13 @@
 
 #define READ_BUFSZ 100
 
+/*
+ * Is the specified character a comment start/end delimiter?
+ */
+#define IS_COMMENT_START(C) ((c) == ';')
+#define IS_COMMENT_END(C)   ((c) == '\n')
+
 /*----------------------------------------------------------------------------*/
-
-static bool is_comment_start(int c) {
-    return c == ';';
-}
-
-static bool is_comment_end(int c) {
-    return c == '\n';
-}
 
 /*
  * Did the character at `str[pos]' just open/close a string with a double-quote?
@@ -61,7 +59,7 @@ static bool just_toggled_string_state(const char* str, int pos) {
 static int get_next_non_comment(FILE* fp) {
     int c = fgetc(fp);
 
-    while (is_comment_start(c)) {
+    while (IS_COMMENT_START(c)) {
         /* Skip comment */
         do {
             c = fgetc(fp);
@@ -69,7 +67,7 @@ static int get_next_non_comment(FILE* fp) {
             /* Make sure we never ignore EOF, even in comments */
             if (c == EOF)
                 return EOF;
-        } while (!is_comment_end(c));
+        } while (!IS_COMMENT_END(c));
 
         c = fgetc(fp);
     }
