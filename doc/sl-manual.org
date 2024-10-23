@@ -2024,12 +2024,18 @@ in this section are defined in [[file:prim_bitwise.c]].
 
 ** Input/Output primitives
 
-TODO
+These primitives are related to reading and writing data to the outside
+world. They are defined in [[file:prim_io.c]].
 
 - Function: read :: <<read>>
 
   Read a single expression from =stdin=, parse it, and return it as a Lisp
-  expression.
+  expression. It's the first step in the REPL, which consists of reading
+  a string from the standard input, tokenizing it, and parsing it into a
+  Lisp expression.
+
+  In the following example, note that the inputs are shown literally, so
+  in the input ~"Hello\nWorld\n"~, the user typed the quotes, =\= and =n=.
 
   #+begin_src lisp
   (read)
@@ -2054,15 +2060,77 @@ TODO
     ⇒ 3
   #+end_src
 
+  Note the difference with [[scan-str][=scan-str=]].
+
 - Function: write expr :: <<write>>
 
-  TODO
+  Write an expression in such a way that it can be parsed into the
+  original expression using [[read][=read=]]. This function returns =tru= on
+  success. For more information, see [[write-to-str][=write-to-str=]].
 
-  For more information, see [[write-to-str][=write-to-str=]].
+  #+begin_src lisp
+  (write 123)
+    → 123
+    ⇒ tru
 
-- Function: scan-str :: <<scan-str>>
+  (write 'sym)
+    → sym
+    ⇒ tru
 
-  TODO
+  (write "foo\nbar")
+    → "foo\nbar"
+    ⇒ tru
+
+  (write "foo
+  bar
+  baz")
+    → "foo\nbar\nbaz"
+    ⇒ tru
+  #+end_src
+
+- Function: scan-str &optional delimiters :: <<scan-str>>
+
+  Read user input into a string. This function reads from the standard
+  input until one of the following is found:
+
+    - End-of-file (=EOF=).
+    - Null character (~'\0'~).
+    - A character in the =delimiters= string.
+
+  By default, the =delimiters= string is ~"\n"~, so the function stops
+  reading as soon as the received character is a newline. Note that the
+  final delimiter is not included in the returned string.
+
+  #+begin_comment org
+  TODO: We should include the first found delimiter in the returned
+  string, but there is no way of returning EOF or null character, so it
+  should remain consistent. Mention that the user might have to use some
+  string function to remove it, like [[substring][=substring=]].
+  #+end_comment
+
+  Unlike =read=, this function doesn't read or parse a single Lisp
+  expression. See [[read][=read=]].
+
+  In the following example, ~<RET>~ and ~<TAB>~ are used to indicate that
+  the user pressed the return and tab keys, respectively.
+
+  #+begin_src lisp
+  (scan-str)
+    ;; Input: foo<RET>
+    ⇒ "foo"
+
+  (type-of (scan-str))
+    ;; Input: foo<RET>
+    ⇒ String
+
+  (scan-str)
+    ;; Input: Hello<TAB>World<RET>
+    ⇒ "Hello\tWorld"
+
+  (scan-str "._-\n")
+    ;; Input: Hello. World.<RET>
+    ⇒ "Hello"
+  #+end_src
 
 - Function: print-str string :: <<print-str>>
 
