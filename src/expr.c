@@ -484,8 +484,8 @@ bool expr_write(FILE* fp, const Expr* e) {
 
         case EXPR_PRIM:
         case EXPR_ERR:
-            SL_ERR("Expressions of type '%s' can't be converted to a string.",
-                   exprtype2str(e->type));
+            err("Expressions of type '%s' can't be converted to a string.",
+                exprtype2str(e->type));
             return false;
     }
 

@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License along with
  * SL. If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef UTIL_H_
 #define UTIL_H_ 1
 
@@ -37,9 +38,18 @@
 #define CLAMP(N, LO, HI) (MIN(MAX((LO), (N)), (HI)))
 
 /*
- * Wrapper for `sl_print_err'.
+ * Wrapper for `sl_print_err'. Should only be used for errors about the
+ * interpreter itself; for Lisp errors, use the `err' function.
  */
-#define SL_ERR(...) sl_print_err(true, __func__, __VA_ARGS__)
+#define SL_ERR(...) sl_print_err(__func__, __VA_ARGS__)
+
+/*
+ * Handle Lisp errors.
+ *
+ * TODO: This should be a function that doesn't print anything, but instead
+ * returns an EXPR_ERR that gets propagated upwards.
+ */
+#define err SL_ERR
 
 /*
  * Show error message with `sl_print_ftl' and exit.
@@ -72,11 +82,13 @@ sl_lbl_on_err:                  \
 /*
  * If COND is not true, show warning and jump to instruction declared by
  * SL_ON_ERR().
+ *
+ * TODO: Instea of using SL_ON_ERR, return the EXPR_ERR returned by `err'.
  */
 #define SL_EXPECT(COND, ...)                                         \
     do {                                                             \
         if ((COND) == 0) {                                           \
-            SL_ERR(__VA_ARGS__);                                     \
+            err(__VA_ARGS__);                                        \
             goto sl_lbl_on_err; /* Make sure you call SL_ON_ERR() */ \
         }                                                            \
     } while (0)
@@ -123,7 +135,7 @@ sl_lbl_on_err:                  \
  * Print different error messages to stderr, along with some context
  * information.
  */
-void sl_print_err(bool is_c_func, const char* func, const char* fmt, ...);
+void sl_print_err(const char* func, const char* fmt, ...);
 void sl_print_ftl(const char* file, int line, const char* func, const char* fmt,
                   ...);
 

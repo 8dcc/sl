@@ -240,8 +240,8 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
         } break;
 
         default: {
-            SL_ERR("Expected 'Primitive' or 'Lambda', got '%s'.",
-                   exprtype2str(func->type));
+            err("Expected 'Primitive' or 'Lambda', got '%s'.",
+                exprtype2str(func->type));
             result = NULL;
         } break;
     }

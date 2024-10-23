@@ -32,9 +32,7 @@
 #define COL_BOLD_CYAN   "\e[1;36m"
 #define COL_BOLD_RED    "\e[1;31m"
 
-void sl_print_err(bool is_c_func, const char* func, const char* fmt, ...) {
-    SL_UNUSED(is_c_func);
-
+void sl_print_err(const char* func, const char* fmt, ...) {
     va_list va;
     va_start(va, fmt);
 
@@ -42,8 +40,8 @@ void sl_print_err(bool is_c_func, const char* func, const char* fmt, ...) {
     fprintf(stderr, "%s: ", func);
     vfprintf(stderr, fmt, va);
 #else
-    const char* func_col = (is_c_func) ? COL_BOLD_CYAN : COL_BOLD_RED;
-    fprintf(stderr, "%s%s%s: %s", func_col, func, COL_RESET, COL_NORM_YELLOW);
+    fprintf(stderr, "%s%s%s: %s", COL_BOLD_CYAN, func, COL_RESET,
+            COL_NORM_YELLOW);
     vfprintf(stderr, fmt, va);
     fprintf(stderr, "%s", COL_RESET);
 #endif

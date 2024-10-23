@@ -153,7 +153,7 @@ Expr* prim_unquote(Env* env, Expr* e) {
      */
     SL_UNUSED(env);
     SL_UNUSED(e);
-    SL_ERR("Invalid use of unquote (,) outside of backquote.");
+    err("Invalid use of unquote (,) outside of backquote.");
     return NULL;
 }
 
@@ -164,7 +164,7 @@ Expr* prim_splice(Env* env, Expr* e) {
      */
     SL_UNUSED(env);
     SL_UNUSED(e);
-    SL_ERR("Invalid use of splice (,@) outside of backquote.");
+    err("Invalid use of splice (,@) outside of backquote.");
     return NULL;
 }
 

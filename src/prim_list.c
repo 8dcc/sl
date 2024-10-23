@@ -168,7 +168,7 @@ Expr* prim_length(Env* env, Expr* e) {
             break;
 
         default:
-            SL_ERR("Invalid argument of type '%s'.", exprtype2str(e->type));
+            err("Invalid argument of type '%s'.", exprtype2str(e->type));
             return NULL;
     }
 
@@ -188,7 +188,7 @@ Expr* prim_append(Env* env, Expr* e) {
     }
 
     if (!expr_list_is_homogeneous(e)) {
-        SL_ERR("Expected arguments of the same type.");
+        err("Expected arguments of the same type.");
         return NULL;
     }
 
@@ -211,7 +211,7 @@ Expr* prim_append(Env* env, Expr* e) {
             break;
 
         default:
-            SL_ERR("Invalid argument of type '%s'.", exprtype2str(e->type));
+            err("Invalid argument of type '%s'.", exprtype2str(e->type));
             ret = NULL;
             break;
     }
