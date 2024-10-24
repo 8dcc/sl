@@ -40,26 +40,56 @@
 #define IS_COMMENT_END(C)   ((C) == '\n')
 
 /*
- * Get the first non-comment character from `fp' using `fgetc'.  Doesn't
- * check for EOF, it returns it literally.
+ * Last character read by `store_incoming', which will be returned on the next
+ * call to `get_user_char'.
  */
-static int get_next_non_comment(FILE* fp) {
-    int c = fgetc(fp);
+static int g_incoming = ' ';
 
-    while (IS_COMMENT_START(c)) {
-        /* Skip comment */
+/*
+ * Get a user character from `fp', and store it in `g_incoming' return the
+ * previous value from `g_incoming'. Does not handle EOF in any way.
+ *
+ * We use this "delayed" approach to allow the caller to check the next incoming
+ * character.
+ */
+static int get_user_char(FILE* fp) {
+    int c      = g_incoming;
+    g_incoming = fgetc(fp);
+    return c;
+}
+
+/*
+ * Read characters from `fp' until a non-comment is found in `g_incoming',
+ * without actually reading it. Uses `get_user_char'.
+ *
+ * Returns false if EOF was encountered before the non-comment, or true
+ * otherwise.
+ */
+static bool read_until_incoming_non_comment(FILE* fp) {
+    while (IS_COMMENT_START(g_incoming)) {
+        /* Skip comment contents */
         do {
-            c = fgetc(fp);
+            get_user_char(fp);
+            if (g_incoming == EOF)
+                return false;
+        } while (!IS_COMMENT_END(g_incoming));
 
-            /* Make sure we never ignore EOF, even in comments */
-            if (c == EOF)
-                return EOF;
-        } while (!IS_COMMENT_END(c));
-
-        c = fgetc(fp);
+        /* Skip incoming comment end */
+        get_user_char(fp);
     }
 
-    return c;
+    return true;
+}
+
+/*
+ * Get the first non-comment character from `fp' using `get_user_char'. If EOF
+ * is encountered inside a comment, it is returned literally.
+ */
+static int get_next_non_comment(FILE* fp) {
+    if (!read_until_incoming_non_comment(fp))
+        return EOF;
+
+    return get_user_char(fp);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -67,16 +97,13 @@ static int get_next_non_comment(FILE* fp) {
 /*
  * Read a double-quote-terminated string into the `dst' buffer, modifying its
  * size and position. Assumes the opening double-quote has just been written to
- * `dst'; reads up to the final non-escaped double-quote, included.
+ * `dst'; and reads up to the final non-escaped double-quote, included.
  *
  * The string will be reallocated if necessary, ensuring there is enough space
  * for the null terminator after the closing double-quote, but without actually
  * writing it.
- *
- * Returns true on success, or false if EOF was encountered (though note that
- * nothing is freed from here).
  */
-static bool read_user_string(FILE* fp, char** dst, size_t* dst_sz,
+static void read_user_string(FILE* fp, char** dst, size_t* dst_sz,
                              size_t* dst_pos) {
     /*
      * Important notes:
@@ -89,28 +116,17 @@ static bool read_user_string(FILE* fp, char** dst, size_t* dst_sz,
      *     return false.
      */
     int c = 0;
-    while (c != '\"') {
+    while (c != '\"' && g_incoming != EOF) {
         if (*dst_pos + 2 >= *dst_sz) {
             *dst_sz += READ_BUFSZ;
             sl_safe_realloc(*dst, *dst_sz);
         }
 
-        c = fgetc(fp);
-        if (c == EOF)
-            return false;
+        (*dst)[(*dst_pos)++] = c = get_user_char(fp);
 
-        (*dst)[(*dst_pos)++] = c;
-
-        if (c == '\\') {
-            const int escaped = fgetc(fp);
-            if (escaped == EOF)
-                return false;
-
-            (*dst)[(*dst_pos)++] = escaped;
-        }
+        if (c == '\\' && g_incoming != EOF)
+            (*dst)[(*dst_pos)++] = get_user_char(fp);
     }
-
-    return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -127,20 +143,16 @@ static char* read_user_list(FILE* fp) {
     /* Will increase when encountering '(' and decrease with ')' */
     int nesting_level = 1;
 
-    result[result_pos++] = '(';
+    SL_ASSERT(g_incoming == '(');
+    result[result_pos++] = get_next_non_comment(fp);
 
-    while (nesting_level > 0) {
+    while (nesting_level > 0 && g_incoming != EOF) {
         if (result_pos + 1 >= result_sz) {
             result_sz += READ_BUFSZ;
             sl_safe_realloc(result, result_sz);
         }
 
-        const int c = get_next_non_comment(fp);
-        if (c == EOF) {
-            free(result);
-            return NULL;
-        }
-
+        const int c          = get_next_non_comment(fp);
         result[result_pos++] = c;
 
         /*
@@ -161,10 +173,7 @@ static char* read_user_list(FILE* fp) {
             } break;
 
             case '\"': {
-                if (!read_user_string(fp, &result, &result_sz, &result_pos)) {
-                    free(result);
-                    return NULL;
-                }
+                read_user_string(fp, &result, &result_sz, &result_pos);
             } break;
 
             default:
@@ -177,64 +186,44 @@ static char* read_user_list(FILE* fp) {
 }
 
 /*
- * Read an isolated user string.  Assumes the caller just received a
+ * Read an isolated user string. Assumes the caller just received a
  * double-quote, but didn't write it anywhere. Writes the opening double-quote,
  * reads a string using the `read_user_string' function (used in other places),
- * checks if it contained EOF, and writes the final null terminator.
+ * and writes the final null terminator.
  */
 static char* read_isolated_user_string(FILE* fp) {
     size_t result_pos = 0;
     size_t result_sz  = READ_BUFSZ;
     char* result      = sl_safe_malloc(result_sz);
 
-    result[result_pos++] = '\"';
+    SL_ASSERT(g_incoming == '\"');
+    result[result_pos++] = get_next_non_comment(fp);
 
-    if (!read_user_string(fp, &result, &result_sz, &result_pos)) {
-        free(result);
-        return NULL;
-    }
-
+    read_user_string(fp, &result, &result_sz, &result_pos);
     result[result_pos] = '\0';
     return result;
 }
 
 /*
  * Reads characters until a token separator is found.
- *
- * FIXME: On input "123(+ 1 2)", we should only read "123" on the first call,
- * and "(+ 1 2)" on the second. How do we store that token separator for next
- * calls. `g_incoming'?
- *
- * TODO: If using `g_incoming', remove `first_char' parameter.
  */
-static char* read_isolated_atom(FILE* fp, char first_char) {
+static char* read_isolated_atom(FILE* fp) {
     size_t result_pos = 0;
     size_t result_sz  = READ_BUFSZ;
     char* result      = sl_safe_malloc(result_sz);
 
-    result[result_pos++] = first_char;
-
     /*
-     * Read until any token separator. This includes spaces, but also
-     * parentheses, for example. The `is_token_separator' function is declared
-     * in <lexer.h>.
+     * Read until the incoming character is a token separator. This includes
+     * spaces, but also parentheses, for example. The `is_token_separator'
+     * function is declared in <lexer.h>.
      */
-    for (;;) {
+    while (!is_token_separator(g_incoming) && g_incoming != EOF) {
         if (result_pos + 1 >= result_sz) {
             result_sz += READ_BUFSZ;
             sl_safe_realloc(result, result_sz);
         }
 
-        const int c = get_next_non_comment(fp);
-        if (c == EOF) {
-            free(result);
-            return NULL;
-        }
-
-        if (is_token_separator(c))
-            break;
-
-        result[result_pos++] = c;
+        result[result_pos++] = get_next_non_comment(fp);
     }
 
     result[result_pos] = '\0';
@@ -245,13 +234,10 @@ static char* read_isolated_atom(FILE* fp, char first_char) {
 
 char* read_expr(FILE* fp) {
     /* Skip preceding spaces or comments, if any */
-    int c;
-    do {
-        c = get_next_non_comment(fp);
-    } while (isspace(c));
-
-    if (c == EOF)
-        return NULL;
+    while (isspace(g_incoming) || IS_COMMENT_START(g_incoming)) {
+        get_user_char(fp);
+        read_until_incoming_non_comment(fp);
+    }
 
     /*
      * The first character (which is guaranteed to not be EOF) will indicate
@@ -266,19 +252,27 @@ char* read_expr(FILE* fp) {
      * We also check for some invalid characters:
      *
      * - If we encountered a closing parentheses in level 0, it is unmatched.
+     * - If the next character is EOF, inform the caller that there is no more
+     *   user input. We also clear the `g_incoming' variable for subsequent
+     *   calls.
      */
-    switch (c) {
+    switch (g_incoming) {
         case '(':
             return read_user_list(fp);
-
-        case ')':
-            SL_ERR("Encountered unmatched ')'.");
-            return read_expr(fp);
 
         case '\"':
             return read_isolated_user_string(fp);
 
         default:
-            return read_isolated_atom(fp, c);
+            return read_isolated_atom(fp);
+
+        case ')':
+            SL_ERR("Encountered unmatched ')'.");
+            get_next_non_comment(fp);
+            return read_expr(fp);
+
+        case EOF:
+            g_incoming = ' ';
+            return NULL;
     }
 }
