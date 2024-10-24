@@ -36,8 +36,8 @@
 /*
  * Is the specified character a comment start/end delimiter?
  */
-#define IS_COMMENT_START(C) ((c) == ';')
-#define IS_COMMENT_END(C)   ((c) == '\n')
+#define IS_COMMENT_START(C) ((C) == ';')
+#define IS_COMMENT_END(C)   ((C) == '\n')
 
 /*
  * Get the first non-comment character from `fp' using `fgetc'.  Doesn't
