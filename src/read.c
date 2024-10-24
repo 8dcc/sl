@@ -273,7 +273,7 @@ char* read_expr(FILE* fp) {
 
         case ')':
             SL_ERR("Encountered unmatched ')'.");
-            return sl_safe_strdup("");
+            return read_expr(fp);
 
         case '\"':
             return read_isolated_user_string(fp);
