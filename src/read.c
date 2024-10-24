@@ -164,17 +164,17 @@ static char* read_user_list(FILE* fp) {
          * inside strings, escaped quotes should be handled, etc.
          */
         switch (c) {
-            case '(': {
+            case '(':
                 nesting_level++;
-            } break;
+                break;
 
-            case ')': {
+            case ')':
                 nesting_level--;
-            } break;
+                break;
 
-            case '\"': {
+            case '\"':
                 read_user_string(fp, &result, &result_sz, &result_pos);
-            } break;
+                break;
 
             default:
                 break;
@@ -239,7 +239,7 @@ static char* read_isolated_atom(FILE* fp) {
 char* read_expr(FILE* fp) {
     int incoming = get_incoming(fp);
 
-    /* Skip preceding spaces or comments, if any */
+    /* Skip leading spaces or comments, if any */
     while (isspace(incoming) || IS_COMMENT_START(incoming)) {
         fgetc(fp);
         read_until_incoming_non_comment(fp);
