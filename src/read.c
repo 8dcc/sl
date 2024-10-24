@@ -40,56 +40,47 @@
 #define IS_COMMENT_END(C)   ((C) == '\n')
 
 /*
- * Last character read by `store_incoming', which will be returned on the next
- * call to `get_user_char'.
+ * Get the incoming character from `fp'. Calls `fgetc' and, if it's not EOF,
+ * calls `ungetc'.
  */
-static int g_incoming = ' ';
-
-/*
- * Get a user character from `fp', and store it in `g_incoming' return the
- * previous value from `g_incoming'. Does not handle EOF in any way.
- *
- * We use this "delayed" approach to allow the caller to check the next incoming
- * character.
- */
-static int get_user_char(FILE* fp) {
-    int c      = g_incoming;
-    g_incoming = fgetc(fp);
-    return c;
+static int get_incoming(FILE* fp) {
+    int incoming = fgetc(fp);
+    if (incoming != EOF)
+        ungetc(incoming, fp);
+    return incoming;
 }
 
 /*
- * Read characters from `fp' until a non-comment is found in `g_incoming',
- * without actually reading it. Uses `get_user_char'.
+ * Read characters from `fp' until a non-comment is found using `get_incoming',
+ * without actually reading it.
  *
  * Returns false if EOF was encountered before the non-comment, or true
  * otherwise.
  */
 static bool read_until_incoming_non_comment(FILE* fp) {
-    while (IS_COMMENT_START(g_incoming)) {
-        /* Skip comment contents */
-        do {
-            get_user_char(fp);
-            if (g_incoming == EOF)
-                return false;
-        } while (!IS_COMMENT_END(g_incoming));
+    int c;
 
-        /* Skip incoming comment end */
-        get_user_char(fp);
+    while (IS_COMMENT_START(get_incoming(fp))) {
+        /* Skip comment contents, along with comment end */
+        do {
+            c = fgetc(fp);
+            if (c == EOF)
+                return false;
+        } while (!IS_COMMENT_END(c));
     }
 
     return true;
 }
 
 /*
- * Get the first non-comment character from `fp' using `get_user_char'. If EOF
- * is encountered inside a comment, it is returned literally.
+ * Get the first non-comment character from `fp' using `fgetc'. If EOF is
+ * encountered inside a comment, it is returned literally.
  */
 static int get_next_non_comment(FILE* fp) {
     if (!read_until_incoming_non_comment(fp))
         return EOF;
 
-    return get_user_char(fp);
+    return fgetc(fp);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -116,16 +107,23 @@ static void read_user_string(FILE* fp, char** dst, size_t* dst_sz,
      *     return false.
      */
     int c = 0;
-    while (c != '\"' && g_incoming != EOF) {
-        if (*dst_pos + 2 >= *dst_sz) {
+    while (c != '\"') {
+        if (*dst_pos + 1 >= *dst_sz) {
             *dst_sz += READ_BUFSZ;
             sl_safe_realloc(*dst, *dst_sz);
         }
 
-        (*dst)[(*dst_pos)++] = c = get_user_char(fp);
+        c = fgetc(fp);
+        if (c == EOF)
+            break;
+        (*dst)[(*dst_pos)++] = c;
 
-        if (c == '\\' && g_incoming != EOF)
-            (*dst)[(*dst_pos)++] = get_user_char(fp);
+        if (c == '\\') {
+            const int escaped = fgetc(fp);
+            if (c == EOF)
+                break;
+            (*dst)[(*dst_pos)++] = escaped;
+        }
     }
 }
 
@@ -143,16 +141,18 @@ static char* read_user_list(FILE* fp) {
     /* Will increase when encountering '(' and decrease with ')' */
     int nesting_level = 1;
 
-    SL_ASSERT(g_incoming == '(');
+    SL_ASSERT(get_incoming(fp) == '(');
     result[result_pos++] = get_next_non_comment(fp);
 
-    while (nesting_level > 0 && g_incoming != EOF) {
+    while (nesting_level > 0) {
         if (result_pos + 1 >= result_sz) {
             result_sz += READ_BUFSZ;
             sl_safe_realloc(result, result_sz);
         }
 
-        const int c          = get_next_non_comment(fp);
+        const int c = get_next_non_comment(fp);
+        if (c == EOF)
+            break;
         result[result_pos++] = c;
 
         /*
@@ -196,7 +196,7 @@ static char* read_isolated_user_string(FILE* fp) {
     size_t result_sz  = READ_BUFSZ;
     char* result      = sl_safe_malloc(result_sz);
 
-    SL_ASSERT(g_incoming == '\"');
+    SL_ASSERT(get_incoming(fp) == '\"');
     result[result_pos++] = get_next_non_comment(fp);
 
     read_user_string(fp, &result, &result_sz, &result_pos);
@@ -217,7 +217,11 @@ static char* read_isolated_atom(FILE* fp) {
      * spaces, but also parentheses, for example. The `is_token_separator'
      * function is declared in <lexer.h>.
      */
-    while (!is_token_separator(g_incoming) && g_incoming != EOF) {
+    for (;;) {
+        const int incoming = get_incoming(fp);
+        if (is_token_separator(incoming) || incoming == EOF)
+            break;
+
         if (result_pos + 1 >= result_sz) {
             result_sz += READ_BUFSZ;
             sl_safe_realloc(result, result_sz);
@@ -233,10 +237,13 @@ static char* read_isolated_atom(FILE* fp) {
 /*----------------------------------------------------------------------------*/
 
 char* read_expr(FILE* fp) {
+    int incoming = get_incoming(fp);
+
     /* Skip preceding spaces or comments, if any */
-    while (isspace(g_incoming) || IS_COMMENT_START(g_incoming)) {
-        get_user_char(fp);
+    while (isspace(incoming) || IS_COMMENT_START(incoming)) {
+        fgetc(fp);
         read_until_incoming_non_comment(fp);
+        incoming = get_incoming(fp);
     }
 
     /*
@@ -253,10 +260,9 @@ char* read_expr(FILE* fp) {
      *
      * - If we encountered a closing parentheses in level 0, it is unmatched.
      * - If the next character is EOF, inform the caller that there is no more
-     *   user input. We also clear the `g_incoming' variable for subsequent
-     *   calls.
+     *   user input.
      */
-    switch (g_incoming) {
+    switch (incoming) {
         case '(':
             return read_user_list(fp);
 
@@ -272,7 +278,6 @@ char* read_expr(FILE* fp) {
             return read_expr(fp);
 
         case EOF:
-            g_incoming = ' ';
             return NULL;
     }
 }

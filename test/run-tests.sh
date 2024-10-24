@@ -31,8 +31,8 @@ for file in $(ls "$SCRIPT_DIR"/*.lisp); do
 
     input_str=""
     if [ "$(basename "$file")" == "io.lisp" ]; then
-        input_str+="123\n"
-        input_str+="(+ 1 2 3 (- 5 4))\n"
+        input_str+="123"
+        input_str+="(+ 1 2 3 (- 5 4))"
         input_str+="User string...\n"
         input_str+="Another delimited line. EXTRA"
     fi

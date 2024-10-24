@@ -98,12 +98,6 @@ Expr* prim_scan_str(Env* env, Expr* e) {
             sl_safe_realloc(str, str_sz);
         }
 
-        /*
-         * FIXME: This ignores the `g_incoming' static variable from
-         * <read.c>. We could add some kind of interface for reading strings
-         * from there. Usually, this is only a problem when piping input, since
-         * an interactive user has to press <RET> after each input.
-         */
         const char c = getchar();
         if (c == EOF || c == '\0' || is_char_in_str(c, delimiters))
             break;
