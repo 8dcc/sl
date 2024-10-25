@@ -1420,9 +1420,17 @@ in general, not just /lists/, so they can be used with strings.
     ⇒ "\"Hello, world\\n\""
   #+end_src
 
-  Note that string arguments are escaped by =write-to-str=, but also by
-  the REPL itself, so the real output of the function can be seen with
-  something like [[print-str][=print-str=]].
+  It might be a bit hard to understand what is really escaped, and what
+  is only escaped "visually". First, note that the user input is
+  "un-escaped" by the lexer, so the interpreter always works with the
+  real string (i.e. the interpreter would write ~0xA~ to the internal
+  string, not ~[0x5C, 0x6E]~). Then, since =write-to-str= must return a
+  valid string for =read=, it manually escapes it, normally resulting in
+  what the user typed in the first place. However, note that the /print/
+  step of the REPL also escapes strings before printing them (that's
+  what I meant by "only escaped visually"). To view the "raw" output of
+  =write-to-str=, it's best to use something like =print-str= (See
+  [[print-str][=print-str=]]).
 
   #+begin_src lisp
   (begin
@@ -2029,10 +2037,10 @@ world. They are defined in [[file:prim_io.c]].
 
 - Function: read :: <<read>>
 
-  Read a single expression from =stdin=, parse it, and return it as a Lisp
-  expression. It's the first step in the REPL, which consists of reading
-  a string from the standard input, tokenizing it, and parsing it into a
-  Lisp expression.
+  Read a single expression from the standard input, parse it, and return
+  it as a Lisp expression. It's the first step in the REPL, which
+  consists of reading a string from the standard input, tokenizing it,
+  and parsing it into a Lisp expression.
 
   In the following example, note that the inputs are shown literally, so
   in the input ~"Hello\nWorld\n"~, the user typed the quotes, =\= and =n=.
@@ -2134,7 +2142,35 @@ world. They are defined in [[file:prim_io.c]].
 
 - Function: print-str string :: <<print-str>>
 
-  TODO
+  Print the specified string literally to standard output. Returns its
+  argument.
+
+  #+begin_src lisp
+  (print-str "Hello, world.\n")
+    → Hello, world.
+    ⇒ "Hello, world.\n"
+
+  (print-str "I am \"escaping\" the quotes...\n")
+    → I am "escaping" the quotes...
+    ⇒ "I am \"escaping\" the quotes...\n"
+  #+end_src
+
+  Unlike =write=, it only operates on strings, does not print the
+  double-quotes, and doesn't escape anything implicitly.
+
+  #+begin_src lisp
+  (print-str "123 \"abc\" 456\n")
+    → 123 "abc" 456
+    ⇒ "123 \"abc\" 456\n"
+
+  (write "123 \"abc\" 456\n")
+    → "123 \"abc\" 456\n"
+    ⇒ tru
+  #+end_src
+
+  Note that =write= is doing the escaping before printing; =print-str=
+  doesn't "un-escape" anything, the user input is converted by the
+  lexer. See [[write-to-str][=write-to-str=]].
 
 - Function: error string :: <<error>>
 
