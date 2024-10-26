@@ -48,6 +48,7 @@ void expr_free(Expr* e) {
             expr_list_free(e->val.children);
             break;
 
+        case EXPR_ERR:
         case EXPR_SYMBOL:
         case EXPR_STRING:
             free(e->val.s);
@@ -58,7 +59,6 @@ void expr_free(Expr* e) {
             lambda_ctx_free(e->val.lambda);
             break;
 
-        case EXPR_ERR:
         case EXPR_UNKNOWN:
         case EXPR_NUM_INT:
         case EXPR_NUM_FLT:
@@ -101,6 +101,7 @@ Expr* expr_clone(const Expr* e) {
             ret->val.f = e->val.f;
             break;
 
+        case EXPR_ERR:
         case EXPR_SYMBOL:
         case EXPR_STRING:
             ret->val.s = sl_safe_strdup(e->val.s);
@@ -119,9 +120,8 @@ Expr* expr_clone(const Expr* e) {
             ret->val.lambda = lambda_ctx_clone(e->val.lambda);
             break;
 
-        case EXPR_ERR:
         case EXPR_UNKNOWN:
-            SL_ERR("Trying to clone <error>");
+            SL_ERR("Trying to clone <unknown>");
             break;
     }
 
@@ -230,6 +230,7 @@ bool expr_equal(const Expr* a, const Expr* b) {
         case EXPR_NUM_FLT:
             return a->val.f == b->val.f;
 
+        case EXPR_ERR:
         case EXPR_SYMBOL:
         case EXPR_STRING:
             return strcmp(a->val.s, b->val.s) == 0;
@@ -244,7 +245,6 @@ bool expr_equal(const Expr* a, const Expr* b) {
         case EXPR_LAMBDA:
             return lambda_ctx_equal(a->val.lambda, b->val.lambda);
 
-        case EXPR_ERR:
         case EXPR_UNKNOWN:
             return false;
     }
@@ -272,6 +272,7 @@ bool expr_lt(const Expr* a, const Expr* b) {
         case EXPR_NUM_FLT:
             return a->val.f < b->val.f;
 
+        case EXPR_ERR:
         case EXPR_SYMBOL:
         case EXPR_STRING:
             return strcmp(a->val.s, b->val.s) < 0;
@@ -280,7 +281,6 @@ bool expr_lt(const Expr* a, const Expr* b) {
         case EXPR_PRIM:
         case EXPR_LAMBDA:
         case EXPR_MACRO:
-        case EXPR_ERR:
         case EXPR_UNKNOWN:
             return false;
     }
@@ -304,6 +304,7 @@ bool expr_gt(const Expr* a, const Expr* b) {
         case EXPR_NUM_FLT:
             return a->val.f > b->val.f;
 
+        case EXPR_ERR:
         case EXPR_SYMBOL:
         case EXPR_STRING:
             return strcmp(a->val.s, b->val.s) > 0;
@@ -312,7 +313,6 @@ bool expr_gt(const Expr* a, const Expr* b) {
         case EXPR_PRIM:
         case EXPR_LAMBDA:
         case EXPR_MACRO:
-        case EXPR_ERR:
         case EXPR_UNKNOWN:
             return false;
     }
@@ -409,6 +409,10 @@ void expr_print(FILE* fp, const Expr* e) {
             print_escaped_str(fp, e->val.s);
             break;
 
+        case EXPR_ERR:
+            fprintf(fp, "Error: %s\n", e->val.s);
+            break;
+
         case EXPR_PARENT:
             if (expr_is_nil(e))
                 fprintf(fp, "nil");
@@ -426,10 +430,6 @@ void expr_print(FILE* fp, const Expr* e) {
 
         case EXPR_MACRO:
             fprintf(fp, "<macro>");
-            break;
-
-        case EXPR_ERR:
-            fprintf(fp, "<error>");
             break;
 
         case EXPR_UNKNOWN:
@@ -494,8 +494,7 @@ bool expr_write(FILE* fp, const Expr* e) {
         case EXPR_ERR:
         case EXPR_PRIM:
         case EXPR_UNKNOWN:
-            err("Expressions of type '%s' can't be converted to a string.",
-                exprtype2str(e->type));
+            err("Can't write expressions of type '%s'.", exprtype2str(e->type));
             return false;
     }
 
@@ -522,6 +521,10 @@ void expr_print_debug(FILE* fp, const Expr* e) {
 
         case EXPR_NUM_FLT: {
             fprintf(fp, "[FLT] %f\n", e->val.f);
+        } break;
+
+        case EXPR_ERR: {
+            fprintf(fp, "[ERR] \"%s\"\n", e->val.s);
         } break;
 
         case EXPR_SYMBOL: {
@@ -575,11 +578,6 @@ void expr_print_debug(FILE* fp, const Expr* e) {
             expr_print_debug(fp, e->val.lambda->body);
             indent -= INDENT_STEP * 2;
         } break;
-
-        case EXPR_ERR: {
-            fprintf(fp, "[ERR] (Stopping)");
-            return;
-        }
 
         case EXPR_UNKNOWN: {
             fprintf(fp, "[UNK] (Stopping)");
