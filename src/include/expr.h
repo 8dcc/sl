@@ -34,15 +34,15 @@ struct LambdaCtx; /* lambda.h */
 typedef struct Expr* (*PrimitiveFuncPtr)(struct Env*, struct Expr*);
 
 enum EExprType {
-    EXPR_ERR     = 0x0,
-    EXPR_NUM_INT = 0x1,
-    EXPR_NUM_FLT = 0x2,
-    EXPR_SYMBOL  = 0x4,
-    EXPR_STRING  = 0x8,
-    EXPR_PARENT  = 0x10,
-    EXPR_PRIM    = 0x20,
-    EXPR_LAMBDA  = 0x40,
-    EXPR_MACRO   = 0x80,
+    EXPR_ERR     = (1 << 0),
+    EXPR_NUM_INT = (1 << 1),
+    EXPR_NUM_FLT = (1 << 2),
+    EXPR_SYMBOL  = (1 << 3),
+    EXPR_STRING  = (1 << 4),
+    EXPR_PARENT  = (1 << 5),
+    EXPR_PRIM    = (1 << 6),
+    EXPR_LAMBDA  = (1 << 7),
+    EXPR_MACRO   = (1 << 8),
 };
 
 typedef struct Expr Expr;
