@@ -98,7 +98,7 @@ Expr* prim_format(Env* env, Expr* e) {
          * expression type of the value.
          */
         const char* c_format     = NULL;
-        enum EExprType expr_type = EXPR_ERR;
+        enum EExprType expr_type = EXPR_UNKNOWN;
         switch (*fmt) {
             case 's':
                 c_format  = "%s";

@@ -43,7 +43,7 @@ static size_t wrap_in_call(Expr* dst, const Token* tokens,
      * The second element is the actual expression, which might consist of
      * multiple Tokens.
      */
-    dst->val.children->next     = expr_new(EXPR_ERR);
+    dst->val.children->next     = expr_new(EXPR_UNKNOWN);
     const size_t parsed_in_call = parse_recur(dst->val.children->next, tokens);
 
     SL_ASSERT(parsed_in_call > 0);
@@ -106,7 +106,7 @@ static size_t parse_recur(Expr* dst, const Token* tokens) {
                  * Parse the current children recursively, storing the parsed
                  * Tokens in that call.
                  */
-                cur_child->next = expr_new(EXPR_ERR);
+                cur_child->next = expr_new(EXPR_UNKNOWN);
                 const size_t parsed_in_call =
                   parse_recur(cur_child->next, &tokens[parsed]);
                 cur_child = cur_child->next;
@@ -187,7 +187,7 @@ Expr* parse(const Token* tokens) {
      * call is done parsing the list, we want to continue parsing at the "123",
      * not the "a".
      */
-    Expr* expr                 = expr_new(EXPR_ERR);
+    Expr* expr                 = expr_new(EXPR_UNKNOWN);
     const size_t tokens_parsed = parse_recur(expr, tokens);
     return (tokens_parsed == 0) ? NULL : expr;
 }

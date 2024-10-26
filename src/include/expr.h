@@ -34,9 +34,10 @@ struct LambdaCtx; /* lambda.h */
 typedef struct Expr* (*PrimitiveFuncPtr)(struct Env*, struct Expr*);
 
 enum EExprType {
-    EXPR_ERR     = (1 << 0),
-    EXPR_NUM_INT = (1 << 1),
-    EXPR_NUM_FLT = (1 << 2),
+    EXPR_UNKNOWN = 0,
+    EXPR_NUM_INT = (1 << 0),
+    EXPR_NUM_FLT = (1 << 1),
+    EXPR_ERR     = (1 << 2),
     EXPR_SYMBOL  = (1 << 3),
     EXPR_STRING  = (1 << 4),
     EXPR_PARENT  = (1 << 5),
@@ -235,9 +236,10 @@ static inline void expr_println(FILE* fp, const Expr* e) {
 static inline const char* exprtype2str(enum EExprType type) {
     /* clang-format off */
     switch (type) {
-        case EXPR_ERR:     return "Error";
+        case EXPR_UNKNOWN: return "Unknown";
         case EXPR_NUM_INT: return "Integer";
         case EXPR_NUM_FLT: return "Float";
+        case EXPR_ERR:     return "Error";
         case EXPR_SYMBOL:  return "Symbol";
         case EXPR_STRING:  return "String";
         case EXPR_PARENT:  return "List";

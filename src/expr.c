@@ -59,6 +59,7 @@ void expr_free(Expr* e) {
             break;
 
         case EXPR_ERR:
+        case EXPR_UNKNOWN:
         case EXPR_NUM_INT:
         case EXPR_NUM_FLT:
         case EXPR_PRIM:
@@ -119,6 +120,7 @@ Expr* expr_clone(const Expr* e) {
             break;
 
         case EXPR_ERR:
+        case EXPR_UNKNOWN:
             SL_ERR("Trying to clone <error>");
             break;
     }
@@ -243,6 +245,7 @@ bool expr_equal(const Expr* a, const Expr* b) {
             return lambda_ctx_equal(a->val.lambda, b->val.lambda);
 
         case EXPR_ERR:
+        case EXPR_UNKNOWN:
             return false;
     }
 
@@ -278,6 +281,7 @@ bool expr_lt(const Expr* a, const Expr* b) {
         case EXPR_LAMBDA:
         case EXPR_MACRO:
         case EXPR_ERR:
+        case EXPR_UNKNOWN:
             return false;
     }
 
@@ -309,6 +313,7 @@ bool expr_gt(const Expr* a, const Expr* b) {
         case EXPR_LAMBDA:
         case EXPR_MACRO:
         case EXPR_ERR:
+        case EXPR_UNKNOWN:
             return false;
     }
 
@@ -426,6 +431,10 @@ void expr_print(FILE* fp, const Expr* e) {
         case EXPR_ERR:
             fprintf(fp, "<error>");
             break;
+
+        case EXPR_UNKNOWN:
+            fprintf(fp, "<unknown>");
+            break;
     }
 }
 
@@ -482,8 +491,9 @@ bool expr_write(FILE* fp, const Expr* e) {
             fputc(')', fp);
             break;
 
-        case EXPR_PRIM:
         case EXPR_ERR:
+        case EXPR_PRIM:
+        case EXPR_UNKNOWN:
             err("Expressions of type '%s' can't be converted to a string.",
                 exprtype2str(e->type));
             return false;
@@ -568,6 +578,11 @@ void expr_print_debug(FILE* fp, const Expr* e) {
 
         case EXPR_ERR: {
             fprintf(fp, "[ERR] (Stopping)");
+            return;
+        }
+
+        case EXPR_UNKNOWN: {
+            fprintf(fp, "[UNK] (Stopping)");
             return;
         }
     }
