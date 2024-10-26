@@ -21,9 +21,9 @@
 
 #include <stddef.h>
 #include <stdbool.h>
-#include <stdio.h> /* FILE, putchar() */
+#include <stdio.h> /* FILE, fputc() */
 
-#include "util.h" /* SL_FATAL() */
+#include "error.h" /* SL_FATAL() */
 
 struct Env;       /* env.h */
 struct LambdaCtx; /* lambda.h */

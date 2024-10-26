@@ -25,53 +25,7 @@
 #include <regex.h>
 
 #include "include/util.h"
-
-#define COL_RESET       "\e[0m"
-#define COL_NORM_YELLOW "\e[0;33m"
-#define COL_NORM_RED    "\e[0;31m"
-#define COL_BOLD_CYAN   "\e[1;36m"
-#define COL_BOLD_RED    "\e[1;31m"
-
-void sl_print_err(const char* func, const char* fmt, ...) {
-    va_list va;
-    va_start(va, fmt);
-
-#ifdef SL_NO_COLOR
-    fprintf(stderr, "%s: ", func);
-    vfprintf(stderr, fmt, va);
-#else
-    fprintf(stderr, "%s%s%s: %s", COL_BOLD_CYAN, func, COL_RESET,
-            COL_NORM_YELLOW);
-    vfprintf(stderr, fmt, va);
-    fprintf(stderr, "%s", COL_RESET);
-#endif
-
-    fputc('\n', stderr);
-
-    va_end(va);
-}
-
-void sl_print_ftl(const char* file, int line, const char* func, const char* fmt,
-                  ...) {
-    va_list va;
-    va_start(va, fmt);
-
-#ifdef SL_NO_COLOR
-    fprintf(stderr, "%s:%d: %s: ", file, line, func);
-    vfprintf(stderr, fmt, va);
-#else
-    fprintf(stderr, "%s:%d: %s%s%s: %s", file, line, COL_BOLD_CYAN, func,
-            COL_RESET, COL_NORM_RED);
-    vfprintf(stderr, fmt, va);
-    fprintf(stderr, "%s", COL_RESET);
-#endif
-
-    fputc('\n', stderr);
-
-    va_end(va);
-}
-
-/*----------------------------------------------------------------------------*/
+#include "include/error.h"
 
 void* sl_safe_malloc(size_t size) {
     void* result = malloc(size);
