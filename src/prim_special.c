@@ -188,8 +188,10 @@ Expr* prim_define(Env* env, Expr* e) {
     if (evaluated == NULL)
         return NULL;
 
-    const bool success = env_bind(env, e->val.s, evaluated, ENV_FLAG_NONE);
-    return (success) ? evaluated : NULL;
+    const bool bound = env_bind(env, e->val.s, evaluated, ENV_FLAG_NONE);
+    SL_EXPECT(bound, "Could not bind symbol `%s'.", e->val.s);
+
+    return evaluated;
 }
 
 Expr* prim_define_global(Env* env, Expr* e) {

@@ -204,8 +204,9 @@ static Expr* lambda_ctx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
      */
     Expr* cur_arg = args;
     for (size_t i = 0; i < ctx->formals_num && cur_arg != NULL; i++) {
-        if (!env_bind(ctx->env, ctx->formals[i], cur_arg, ENV_FLAG_NONE))
-            return NULL;
+        const bool bound =
+          env_bind(ctx->env, ctx->formals[i], cur_arg, ENV_FLAG_NONE);
+        SL_EXPECT(bound, "Could not bind symbol `%s'.", ctx->formals[i]);
 
         cur_arg = cur_arg->next;
     }
@@ -215,8 +216,9 @@ static Expr* lambda_ctx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
         Expr* rest_list         = expr_new(EXPR_PARENT);
         rest_list->val.children = cur_arg;
 
-        if (!env_bind(ctx->env, ctx->formal_rest, rest_list, ENV_FLAG_NONE))
-            return NULL;
+        const bool bound =
+          env_bind(ctx->env, ctx->formal_rest, rest_list, ENV_FLAG_NONE);
+        SL_EXPECT(bound, "Could not bind symbol `%s'.", ctx->formal_rest);
 
         rest_list->val.children = NULL;
         expr_free(rest_list);
