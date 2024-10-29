@@ -40,6 +40,7 @@ Expr* prim_write_to_str(Env* env, Expr* e) {
 
     if (!success) {
         free(str);
+        err("Couldn't write expression of type '%s'.", exprtype2str(e->type));
         return NULL;
     }
 

@@ -494,7 +494,6 @@ bool expr_write(FILE* fp, const Expr* e) {
         case EXPR_ERR:
         case EXPR_PRIM:
         case EXPR_UNKNOWN:
-            err("Can't write expressions of type '%s'.", exprtype2str(e->type));
             return false;
     }
 
