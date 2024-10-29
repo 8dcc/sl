@@ -198,6 +198,9 @@ Env* env_clone(Env* env) {
 }
 
 void env_free(Env* env) {
+    if (env == NULL)
+        return;
+
     for (size_t i = 0; i < env->size; i++) {
         free(env->bindings[i].sym);
         expr_free(env->bindings[i].val);
