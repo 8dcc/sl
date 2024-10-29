@@ -121,8 +121,8 @@ Expr* prim_int2str(Env* env, Expr* e) {
     SL_EXPECT_TYPE(e, EXPR_NUM_INT);
 
     char* s;
-    if (int2str(e->val.n, &s) == 0)
-        return NULL;
+    const size_t written = int2str(e->val.n, &s);
+    SL_EXPECT(written > 0, "Failed to convert Integer to String.");
 
     Expr* ret  = expr_new(EXPR_STRING);
     ret->val.s = s;
@@ -136,8 +136,8 @@ Expr* prim_flt2str(Env* env, Expr* e) {
     SL_EXPECT_TYPE(e, EXPR_NUM_FLT);
 
     char* s;
-    if (flt2str(e->val.f, &s) == 0)
-        return NULL;
+    const size_t written = flt2str(e->val.f, &s);
+    SL_EXPECT(written > 0, "Failed to convert Float to String.");
 
     Expr* ret  = expr_new(EXPR_STRING);
     ret->val.s = s;

@@ -179,7 +179,6 @@ size_t int2str(long long x, char** dst) {
      */
     const int size = snprintf(NULL, 0, "%lld", x);
     if (size < 0) {
-        SL_ERR("Failed to get the target string length for integer: %lld", x);
         *dst = NULL;
         return 0;
     }
@@ -192,7 +191,6 @@ size_t int2str(long long x, char** dst) {
 size_t flt2str(double x, char** dst) {
     const int size = snprintf(NULL, 0, "%f", x);
     if (size < 0) {
-        SL_ERR("Failed to get the target string length for float: %f", x);
         *dst = NULL;
         return 0;
     }
