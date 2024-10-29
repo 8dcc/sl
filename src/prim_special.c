@@ -39,8 +39,6 @@ static inline bool is_call_to(const Expr* e, const char* func) {
 }
 
 static Expr* handle_backquote_arg(Env* env, const Expr* e) {
-    SL_ON_ERR(return NULL);
-
     /* Not a list, return unevaluated, just like `quote' */
     if (e->type != EXPR_PARENT)
         return expr_clone(e);
@@ -82,13 +80,23 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
              * Therefore, `expr' must evaluate to a list.
              */
             Expr* splice_arg = cur->val.children->next;
-            SL_EXPECT(splice_arg != NULL && splice_arg->next == NULL,
-                      "Call to splice (,@) expected exactly one argument.");
+            if (splice_arg == NULL || splice_arg->next != NULL) {
+                expr_list_free(dummy_copy.next);
+                return err("Call to splice (,@) expected exactly one"
+                           "argument.");
+            }
 
             Expr* evaluated = eval(env, splice_arg);
-            SL_EXPECT(evaluated->type == EXPR_PARENT,
-                      "Can't splice (,@) a non-list expression. Use unquote "
-                      "(,) instead.");
+            if (EXPRP_ERR(evaluated)) {
+                expr_list_free(dummy_copy.next);
+                return evaluated;
+            }
+
+            if (evaluated->type != EXPR_PARENT) {
+                expr_list_free(dummy_copy.next);
+                return err("Can't splice (,@) a non-list expression. Use "
+                           "unquote (,) instead.");
+            }
 
             if (evaluated->val.children != NULL) {
                 /* Append contents, not the list itself */
@@ -105,14 +113,14 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
             expr_free(evaluated);
         } else {
             /* Not splicing, handle the children and append to final list */
-            cur_copy->next = handle_backquote_arg(env, cur);
-            cur_copy       = cur_copy->next;
-
-            /* Failed to evaluate one argument, stop */
-            if (cur_copy == NULL) {
+            Expr* handled = handle_backquote_arg(env, cur);
+            if (EXPRP_ERR(handled)) {
                 expr_list_free(dummy_copy.next);
-                return NULL;
+                return handled;
             }
+
+            cur_copy->next = handled;
+            cur_copy       = cur_copy->next;
         }
     }
 
@@ -129,7 +137,6 @@ Expr* prim_quote(Env* env, Expr* e) {
      * effectively delaying its evaluation.
      */
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     return expr_clone_recur(e);
 }
@@ -141,7 +148,6 @@ Expr* prim_backquote(Env* env, Expr* e) {
      * converted to (` expr) by the parser.
      */
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     return handle_backquote_arg(env, e);
 }
@@ -153,8 +159,7 @@ Expr* prim_unquote(Env* env, Expr* e) {
      */
     SL_UNUSED(env);
     SL_UNUSED(e);
-    err("Invalid use of unquote (,) outside of backquote.");
-    return NULL;
+    return err("Invalid use of unquote (,) outside of backquote.");
 }
 
 Expr* prim_splice(Env* env, Expr* e) {
@@ -164,8 +169,7 @@ Expr* prim_splice(Env* env, Expr* e) {
      */
     SL_UNUSED(env);
     SL_UNUSED(e);
-    err("Invalid use of splice (,@) outside of backquote.");
-    return NULL;
+    return err("Invalid use of splice (,@) outside of backquote.");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -180,13 +184,12 @@ Expr* prim_define(Env* env, Expr* e) {
      *
      * Returns the evaluated expression.
      */
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 2);
     SL_EXPECT_TYPE(e, EXPR_SYMBOL);
 
     Expr* evaluated = eval(env, e->next);
-    if (evaluated == NULL)
-        return NULL;
+    if (EXPRP_ERR(evaluated))
+        return evaluated;
 
     const bool bound = env_bind(env, e->val.s, evaluated, ENV_FLAG_NONE);
     SL_EXPECT(bound, "Could not bind symbol `%s'.", e->val.s);
@@ -204,24 +207,23 @@ Expr* prim_define_global(Env* env, Expr* e) {
      *
      * Returns the evaluated expression.
      */
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 2);
     SL_EXPECT_TYPE(e, EXPR_SYMBOL);
 
     Expr* evaluated = eval(env, e->next);
-    if (evaluated == NULL)
-        return NULL;
+    if (EXPRP_ERR(evaluated))
+        return evaluated;
 
-    const bool success =
-      env_bind_global(env, e->val.s, evaluated, ENV_FLAG_NONE);
-    return (success) ? evaluated : NULL;
+    const bool bound = env_bind_global(env, e->val.s, evaluated, ENV_FLAG_NONE);
+    SL_EXPECT(bound, "Could not bind global symbol `%s'.", e->val.s);
+
+    return evaluated;
 }
 
 /*----------------------------------------------------------------------------*/
 
 Expr* prim_lambda(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(expr_list_len(e) >= 2,
               "The special form `lambda' expects at least 2 arguments: Formals "
               "and body.");
@@ -240,8 +242,7 @@ Expr* prim_lambda(Env* env, Expr* e) {
     const enum ELambdaCtxErr lambda_err = lambda_ctx_init(ctx, formals, body);
     if (lambda_err != LAMBDACTX_ERR_NONE) {
         lambda_ctx_free(ctx);
-        err(lambda_ctx_strerror(lambda_err));
-        return NULL;
+        return err(lambda_ctx_strerror(lambda_err));
     }
 
     Expr* ret       = expr_new(EXPR_LAMBDA);
@@ -251,7 +252,6 @@ Expr* prim_lambda(Env* env, Expr* e) {
 
 Expr* prim_macro(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(expr_list_len(e) >= 2,
               "The special form `macro' expects at least 2 arguments: Formals "
               "and body.");
@@ -264,8 +264,7 @@ Expr* prim_macro(Env* env, Expr* e) {
     const enum ELambdaCtxErr lambda_err = lambda_ctx_init(ctx, formals, body);
     if (lambda_err != LAMBDACTX_ERR_NONE) {
         lambda_ctx_free(ctx);
-        err(lambda_ctx_strerror(lambda_err));
-        return NULL;
+        return err(lambda_ctx_strerror(lambda_err));
     }
 
     /*
@@ -301,8 +300,8 @@ Expr* prim_begin(Env* env, Expr* e) {
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
         expr_free(last_evaluated);
         last_evaluated = eval(env, cur);
-        if (last_evaluated == NULL)
-            return NULL;
+        if (EXPRP_ERR(last_evaluated))
+            break;
     }
 
     return last_evaluated;
@@ -311,7 +310,6 @@ Expr* prim_begin(Env* env, Expr* e) {
 /*----------------------------------------------------------------------------*/
 
 Expr* prim_if(Env* env, Expr* e) {
-    SL_ON_ERR(return NULL);
     SL_EXPECT(expr_list_len(e) == 3,
               "The special form `if' expects exactly 3 arguments: Predicate, "
               "consequent and alternative.");
@@ -322,8 +320,9 @@ Expr* prim_if(Env* env, Expr* e) {
      * argument); otherwise, evaluate the "consequent" (second argument).
      */
     Expr* evaluated_predicate = eval(env, e);
-    if (evaluated_predicate == NULL)
-        return NULL;
+    if (EXPRP_ERR(evaluated_predicate))
+        return evaluated_predicate;
+
     Expr* result = expr_is_nil(evaluated_predicate) ? e->next->next : e->next;
     expr_free(evaluated_predicate);
     return eval(env, result);
@@ -338,17 +337,18 @@ Expr* prim_or(Env* env, Expr* e) {
      * same is true for `prim_and', but we stop as soon as one of them is `nil'
      * (false).
      */
+    if (e == NULL)
+        return expr_clone(nil);
+
     Expr* result = NULL;
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
         expr_free(result);
         result = eval(env, cur);
-        if (result == NULL)
-            return NULL;
-        if (!expr_is_nil(result))
+        if (EXPRP_ERR(result) || !expr_is_nil(result))
             break;
     }
 
-    return (result == NULL) ? expr_clone(nil) : result;
+    return result;
 }
 
 Expr* prim_and(Env* env, Expr* e) {
@@ -358,15 +358,16 @@ Expr* prim_and(Env* env, Expr* e) {
      * Also note that we are returning `tru' if we didn't receive any arguments.
      * This is the standard behavior in Scheme.
      */
+    if (e == NULL)
+        return expr_clone(tru);
+
     Expr* result = NULL;
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
         expr_free(result);
         result = eval(env, cur);
-        if (result == NULL)
-            return NULL;
-        if (expr_is_nil(result))
+        if (EXPRP_ERR(result) || expr_is_nil(result))
             break;
     }
 
-    return (result == NULL) ? expr_clone(tru) : result;
+    return result;
 }

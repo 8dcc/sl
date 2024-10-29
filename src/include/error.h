@@ -21,19 +21,15 @@
 
 #include <stdlib.h> /* exit() */
 
+struct Expr;
+
+/*----------------------------------------------------------------------------*/
+
 /*
  * Wrapper for `sl_print_err'. Should only be used for errors about the
  * interpreter itself; for Lisp errors, use the `err' function.
  */
 #define SL_ERR(...) sl_print_err(__func__, __VA_ARGS__)
-
-/*
- * Handle Lisp errors.
- *
- * TODO: This should be a function that doesn't print anything, but instead
- * returns an EXPR_ERR that gets propagated upwards.
- */
-#define err SL_ERR
 
 /*
  * Show error message with `sl_print_ftl' and exit.
@@ -55,26 +51,14 @@
     } while (0)
 
 /*
- * Set the instruction(s) to be executed when SL_EXPECT() fails.
+ * If COND is not true, return expression of type EXPR_ERR with the specified
+ * message.
  */
-#define SL_ON_ERR(INSTRUCTIONS) \
-    if (0) {                    \
-sl_lbl_on_err:                  \
-        INSTRUCTIONS;           \
-    }
-
-/*
- * If COND is not true, show warning and jump to instruction declared by
- * SL_ON_ERR().
- *
- * TODO: Instea of using SL_ON_ERR, return the EXPR_ERR returned by `err'.
- */
-#define SL_EXPECT(COND, ...)                                         \
-    do {                                                             \
-        if ((COND) == 0) {                                           \
-            err(__VA_ARGS__);                                        \
-            goto sl_lbl_on_err; /* Make sure you call SL_ON_ERR() */ \
-        }                                                            \
+#define SL_EXPECT(COND, ...)         \
+    do {                             \
+        if ((COND) == 0) {           \
+            return err(__VA_ARGS__); \
+        }                            \
     } while (0)
 
 /*
@@ -96,6 +80,13 @@ sl_lbl_on_err:                  \
               exprtype2str(TYPE), exprtype2str((EXPR)->type))
 
 /*----------------------------------------------------------------------------*/
+
+/*
+ * Create a new error expression with the specified message. This function
+ * doesn't directly print anything; the error is supposed to get propagated
+ * upwards.
+ */
+struct Expr* err(const char* fmt, ...);
 
 /*
  * Print different error messages to stderr, along with some context

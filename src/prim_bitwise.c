@@ -25,7 +25,6 @@
 
 Expr* prim_bit_and(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
 
     long long total = e->val.n;
@@ -41,7 +40,6 @@ Expr* prim_bit_and(Env* env, Expr* e) {
 
 Expr* prim_bit_or(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
 
     long long total = e->val.n;
@@ -57,7 +55,6 @@ Expr* prim_bit_or(Env* env, Expr* e) {
 
 Expr* prim_bit_xor(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
 
     long long total = e->val.n;
@@ -73,7 +70,6 @@ Expr* prim_bit_xor(Env* env, Expr* e) {
 
 Expr* prim_bit_not(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_NUM_INT);
 
@@ -84,7 +80,6 @@ Expr* prim_bit_not(Env* env, Expr* e) {
 
 Expr* prim_shr(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 2);
     SL_EXPECT_TYPE(e, EXPR_NUM_INT);
     SL_EXPECT_TYPE(e->next, EXPR_NUM_INT);
@@ -96,7 +91,6 @@ Expr* prim_shr(Env* env, Expr* e) {
 
 Expr* prim_shl(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 2);
     SL_EXPECT_TYPE(e, EXPR_NUM_INT);
     SL_EXPECT_TYPE(e->next, EXPR_NUM_INT);

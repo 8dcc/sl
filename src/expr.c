@@ -512,7 +512,6 @@ void expr_print_debug(FILE* fp, const Expr* e) {
         fputc(' ', fp);
 
     if (e == NULL) {
-        fprintf(fp, "[ERR] ");
         SL_ERR("Unexpected NULL expression. Returning...");
         return;
     }

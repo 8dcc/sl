@@ -19,7 +19,34 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include "include/util.h"
 #include "include/error.h"
+#include "include/expr.h"
+
+Expr* err(const char* fmt, ...) {
+    /*
+     * TODO: If compiled with SL_TRACE_ON_ERR, somehow print call stack as soon
+     * as this function is entered (for debugging, no need to integrate it into
+     * EXPR_ERR).
+     */
+    va_list va;
+
+    va_start(va, fmt);
+    const int data_size = vsnprintf(NULL, 0, fmt, va);
+    va_end(va);
+
+    char* result = sl_safe_malloc(data_size + 1);
+
+    va_start(va, fmt);
+    vsnprintf(result, data_size + 1, fmt, va);
+    va_end(va);
+
+    Expr* ret  = expr_new(EXPR_ERR);
+    ret->val.s = result;
+    return ret;
+}
+
+/*----------------------------------------------------------------------------*/
 
 #define COL_RESET       "\e[0m"
 #define COL_NORM_YELLOW "\e[0;33m"

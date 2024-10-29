@@ -28,7 +28,6 @@
 
 Expr* prim_write_to_str(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
 
     char* str;
@@ -40,8 +39,8 @@ Expr* prim_write_to_str(Env* env, Expr* e) {
 
     if (!success) {
         free(str);
-        err("Couldn't write expression of type '%s'.", exprtype2str(e->type));
-        return NULL;
+        return err("Couldn't write expression of type '%s'.",
+                   exprtype2str(e->type));
     }
 
     Expr* ret  = expr_new(EXPR_STRING);
@@ -59,7 +58,6 @@ Expr* prim_write_to_str(Env* env, Expr* e) {
 
 Expr* prim_format(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
     SL_EXPECT_TYPE(e, EXPR_STRING);
 
@@ -89,9 +87,8 @@ Expr* prim_format(Env* env, Expr* e) {
 
         /* Make sure the user supplied enough arguments. */
         if (cur_arg == NULL) {
-            err("Not enough arguments for the specified format.");
             free(dst);
-            return NULL;
+            return err("Not enough arguments for the specified format.");
         }
 
         /*
@@ -134,7 +131,8 @@ Expr* prim_format(Env* env, Expr* e) {
                 goto done;
 
             default:
-                err("Invalid format specifier: '%c' (0x%02x).", *fmt, *fmt);
+                /* Just print a warning, but don't stop */
+                SL_ERR("Invalid format specifier: '%c' (0x%02x).", *fmt, *fmt);
                 dst[dst_pos++] = *fmt++;
                 continue;
         }
@@ -145,10 +143,10 @@ Expr* prim_format(Env* env, Expr* e) {
          * argument.
          */
         if (expr_type != cur_arg->type) {
-            err("Format specifier expected argument of type '%s', got '%s'.",
-                exprtype2str(expr_type), exprtype2str(cur_arg->type));
             free(dst);
-            return NULL;
+            return err("Format specifier expected argument of type '%s', got "
+                       "'%s'.",
+                       exprtype2str(expr_type), exprtype2str(cur_arg->type));
         }
 
         /*
@@ -197,7 +195,6 @@ done:
 
 Expr* prim_substring(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
 
     const size_t arg_num = expr_list_len(e);
     SL_EXPECT(arg_num >= 1 || arg_num <= 3,
@@ -250,7 +247,6 @@ Expr* prim_substring(Env* env, Expr* e) {
 
 Expr* prim_re_match_groups(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
 
     const size_t arg_num = expr_list_len(e);
     SL_EXPECT(arg_num >= 2 || arg_num <= 3, "Expected 2 or 3 arguments.");

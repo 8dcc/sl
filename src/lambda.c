@@ -221,8 +221,6 @@ void lambda_ctx_print_args(FILE* fp, const LambdaCtx* ctx) {
 /*----------------------------------------------------------------------------*/
 
 static Expr* lambda_ctx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
-    SL_ON_ERR(return NULL);
-
     /* Count the number of arguments that we received */
     const size_t arg_num = expr_list_len(args);
 
@@ -273,8 +271,8 @@ static Expr* lambda_ctx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
     for (Expr* cur = ctx->body; cur != NULL; cur = cur->next) {
         expr_free(last_evaluated);
         last_evaluated = eval(ctx->env, cur);
-        if (last_evaluated == NULL)
-            return NULL;
+        if (EXPRP_ERR(last_evaluated))
+            break;
     }
 
     return last_evaluated;
@@ -292,8 +290,8 @@ Expr* macro_expand(Env* env, Expr* func, Expr* args) {
 
 Expr* macro_call(Env* env, Expr* func, Expr* args) {
     Expr* expansion = macro_expand(env, func, args);
-    if (expansion == NULL)
-        return NULL;
+    if (EXPRP_ERR(expansion))
+        return expansion;
 
     /* Calling a macro is just evaluation its macro exansion */
     Expr* evaluated = eval(env, expansion);
