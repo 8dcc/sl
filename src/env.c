@@ -27,14 +27,14 @@
 #include "include/primitives.h"
 
 /* Used in `env_init_defaults' */
-#define BIND_PRIM_FLAGS(ENV, SYM, FUNC, FLAGS)   \
-    do {                                         \
-        Expr FUNC##_expr = {                     \
-            .type     = EXPR_PRIM,               \
-            .val.prim = prim_##FUNC,             \
-            .next     = NULL,                    \
-        };                                       \
-        env_bind(ENV, SYM, &FUNC##_expr, FLAGS); \
+#define BIND_PRIM_FLAGS(ENV, SYM, FUNC, FLAGS)              \
+    do {                                                    \
+        Expr FUNC##_expr = {                                \
+            .type     = EXPR_PRIM,                          \
+            .val.prim = prim_##FUNC,                        \
+            .next     = NULL,                               \
+        };                                                  \
+        SL_ASSERT(env_bind(ENV, SYM, &FUNC##_expr, FLAGS)); \
     } while (0)
 
 #define BIND_PRIM(ENV, SYM, FUNC) BIND_PRIM_FLAGS(ENV, SYM, FUNC, ENV_FLAG_NONE)
@@ -84,15 +84,15 @@ void env_init_defaults(Env* env) {
      * Since the expressions will be cloned, it's safe to pass the stack address
      * to `env_bind'.
      */
-    env_bind(env, "nil", nil, ENV_FLAG_CONST);
-    env_bind(env, "tru", tru, ENV_FLAG_CONST);
+    SL_ASSERT(env_bind(env, "nil", nil, ENV_FLAG_CONST));
+    SL_ASSERT(env_bind(env, "tru", tru, ENV_FLAG_CONST));
 
     Expr debug_trace_list = {
         .type         = EXPR_PARENT,
         .val.children = NULL,
         .next         = NULL,
     };
-    env_bind(env, "*debug-trace*", &debug_trace_list, ENV_FLAG_NONE);
+    SL_ASSERT(env_bind(env, "*debug-trace*", &debug_trace_list, ENV_FLAG_NONE));
 
     /* Special forms */
     BIND_SPECIAL(env, "quote", quote);
