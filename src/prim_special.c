@@ -228,19 +228,24 @@ Expr* prim_lambda(Env* env, Expr* e) {
     SL_EXPECT_TYPE(e, EXPR_PARENT);
 
     /*
-     * Allocate and initialize a new `LambdaCtx' structure using the formals and
-     * the body expressions we received. Store that context structure in the
+     * Allocate new `LambdaCtx' structure. Try to initialize it using the
+     * formals and the body expressions we received. Check for errors in the
+     * lambda definition, and finally store that context structure in the actual
      * expression we will return.
      */
+    LambdaCtx* ctx = lambda_ctx_new();
 
-    const Expr* formals   = e;
-    const Expr* body      = e->next;
-    LambdaCtx* lambda_ctx = lambda_ctx_new(formals, body);
-    if (lambda_ctx == NULL)
+    const Expr* formals                 = e;
+    const Expr* body                    = e->next;
+    const enum ELambdaCtxErr lambda_err = lambda_ctx_init(ctx, formals, body);
+    if (lambda_err != LAMBDACTX_ERR_NONE) {
+        lambda_ctx_free(ctx);
+        err(lambda_ctx_strerror(lambda_err));
         return NULL;
+    }
 
     Expr* ret       = expr_new(EXPR_LAMBDA);
-    ret->val.lambda = lambda_ctx;
+    ret->val.lambda = ctx;
     return ret;
 }
 
@@ -252,18 +257,23 @@ Expr* prim_macro(Env* env, Expr* e) {
               "and body.");
     SL_EXPECT_TYPE(e, EXPR_PARENT);
 
-    const Expr* formals   = e;
-    const Expr* body      = e->next;
-    LambdaCtx* lambda_ctx = lambda_ctx_new(formals, body);
-    if (lambda_ctx == NULL)
+    LambdaCtx* ctx = lambda_ctx_new();
+
+    const Expr* formals                 = e;
+    const Expr* body                    = e->next;
+    const enum ELambdaCtxErr lambda_err = lambda_ctx_init(ctx, formals, body);
+    if (lambda_err != LAMBDACTX_ERR_NONE) {
+        lambda_ctx_free(ctx);
+        err(lambda_ctx_strerror(lambda_err));
         return NULL;
+    }
 
     /*
      * The `macro' and `lambda' primitives are identical, but the type of the
      * returned expression changes.
      */
     Expr* ret       = expr_new(EXPR_MACRO);
-    ret->val.lambda = lambda_ctx;
+    ret->val.lambda = ctx;
     return ret;
 }
 
