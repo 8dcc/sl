@@ -36,7 +36,7 @@ struct Expr* eval(struct Env* env, struct Expr* e);
  * Call `func' with the specified `args'.
  *
  * The `env' and `func' pointers should not be NULL, and `func' should be an
- * "applicable" expression as specified by `expr_is_applicable'.
+ * "applicable" expression as specified by `EXPRP_APPLICABLE'.
  *
  * The arguments are passed to the function unchanged, so the evaluation is up
  * to the caller.

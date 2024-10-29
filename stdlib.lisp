@@ -127,12 +127,12 @@
         (if result result
             (some f (cdr lst))))))
 
-;; NOTE: Should match C's `expr_is_number'
+;; NOTE: Should match C's `EXPRP_NUMBER'
 (defun number? (expr)
   (or (int? expr)
       (flt? expr)))
 
-;; NOTE: Should match C's `expr_is_applicable'
+;; NOTE: Should match C's `EXPRP_APPLICABLE'
 (defun applicable? (expr)
   (or (primitive? expr)
       (lambda?    expr)
