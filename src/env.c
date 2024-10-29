@@ -213,7 +213,6 @@ bool env_bind(Env* env, const char* sym, const Expr* val,
               enum EEnvBindingFlags flags) {
     SL_ASSERT(env != NULL);
     SL_ASSERT(sym != NULL);
-    SL_ON_ERR(return false);
 
     /*
      * Before creating a new item in the environment, traverse the existing
@@ -230,8 +229,8 @@ bool env_bind(Env* env, const char* sym, const Expr* val,
      */
     for (size_t i = 0; i < env->size; i++) {
         if (strcmp(env->bindings[i].sym, sym) == 0) {
-            SL_EXPECT((env->bindings[i].flags & ENV_FLAG_CONST) == 0,
-                      "Trying to set constant symbol `%s'.", sym);
+            if ((env->bindings[i].flags & ENV_FLAG_CONST) != 0)
+                return false;
 
             expr_free(env->bindings[i].val);
             env->bindings[i].val   = expr_clone_recur(val);

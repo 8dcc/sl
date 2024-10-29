@@ -88,6 +88,9 @@ void env_free(Env* env);
 /*
  * Bind the symbol `sym' to the expression `val' in environment `env', with the
  * specified `flags'.
+ *
+ * Returns true on success, or false on failure. The caller is responsible for
+ * checking the returned value and handling errors.
  */
 bool env_bind(Env* env, const char* sym, const struct Expr* val,
               enum EEnvBindingFlags flags);
