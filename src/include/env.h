@@ -91,6 +91,11 @@ void env_free(Env* env);
  *
  * Returns true on success, or false on failure. The caller is responsible for
  * checking the returned value and handling errors.
+ *
+ * TODO: In the future, if this function fails with multiple conditions
+ * (e.g. after adding more `EEnvBindingFlags'), we should create a new enum and
+ * return an error code. The caller should check if the function succeeded, and
+ * if not, print the returned value of some `env_strerror' function.
  */
 bool env_bind(Env* env, const char* sym, const struct Expr* val,
               enum EEnvBindingFlags flags);
