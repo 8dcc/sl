@@ -232,12 +232,15 @@ Expr* prim_lambda(Env* env, Expr* e) {
      * the body expressions we received. Store that context structure in the
      * expression we will return.
      */
-    Expr* ret = expr_new(EXPR_LAMBDA);
 
-    const Expr* formals = e;
-    const Expr* body    = e->next;
-    ret->val.lambda     = lambda_ctx_new(formals, body);
+    const Expr* formals   = e;
+    const Expr* body      = e->next;
+    LambdaCtx* lambda_ctx = lambda_ctx_new(formals, body);
+    if (lambda_ctx == NULL)
+        return NULL;
 
+    Expr* ret       = expr_new(EXPR_LAMBDA);
+    ret->val.lambda = lambda_ctx;
     return ret;
 }
 
@@ -249,16 +252,18 @@ Expr* prim_macro(Env* env, Expr* e) {
               "and body.");
     SL_EXPECT_TYPE(e, EXPR_PARENT);
 
+    const Expr* formals   = e;
+    const Expr* body      = e->next;
+    LambdaCtx* lambda_ctx = lambda_ctx_new(formals, body);
+    if (lambda_ctx == NULL)
+        return NULL;
+
     /*
      * The `macro' and `lambda' primitives are identical, but the type of the
      * returned expression changes.
      */
-    Expr* ret = expr_new(EXPR_MACRO);
-
-    const Expr* formals = e;
-    const Expr* body    = e->next;
-    ret->val.lambda     = lambda_ctx_new(formals, body);
-
+    Expr* ret       = expr_new(EXPR_MACRO);
+    ret->val.lambda = lambda_ctx;
     return ret;
 }
 
