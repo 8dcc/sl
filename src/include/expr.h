@@ -65,6 +65,22 @@ struct Expr {
 
 /*----------------------------------------------------------------------------*/
 
+/* Expression predicates */
+#define EXPRP_ERR(E)    ((E)->type == EXPR_ERR)
+#define EXPRP_INT(E)    ((E)->type == EXPR_NUM_INT)
+#define EXPRP_FLT(E)    ((E)->type == EXPR_NUM_FLT)
+#define EXPRP_SYM(E)    ((E)->type == EXPR_SYMBOL)
+#define EXPRP_STR(E)    ((E)->type == EXPR_STRING)
+#define EXPRP_LST(E)    ((E)->type == EXPR_PARENT)
+#define EXPRP_PRIM(E)   ((E)->type == EXPR_PRIM)
+#define EXPRP_LAMBDA(E) ((E)->type == EXPR_LAMBDA)
+#define EXPRP_MACRO(E)  ((E)->type == EXPR_MACRO)
+
+#define EXPRP_NUMBER(E)     (EXPRP_INT(E) || EXPRP_FLT(E))
+#define EXPRP_APPLICABLE(E) (EXPRP_PRIM(E) || EXPRP_LAMBDA(E) || EXPRP_MACRO(E))
+
+/*----------------------------------------------------------------------------*/
+
 /*
  * Allocate a new empty expression of the specified type. The returned pointer
  * should be freed by the caller using `expr_free'.
@@ -134,30 +150,6 @@ bool expr_equal(const Expr* a, const Expr* b);
 bool expr_lt(const Expr* a, const Expr* b);
 bool expr_gt(const Expr* a, const Expr* b);
 
-/*
- * Check if the specified expression type is a number: Integer or float.
- */
-static inline bool exprtype_is_number(enum EExprType type) {
-    return type == EXPR_NUM_INT || type == EXPR_NUM_FLT;
-}
-
-/*
- * Check if the specified expression is a number. Wrapper for
- * `exprtype_is_number'.
- */
-static inline bool expr_is_number(const Expr* e) {
-    return exprtype_is_number(e->type);
-}
-
-/*
- * Check if the specified expression can be applied (i.e. called): Primitive,
- * lambda or macro.
- */
-static inline bool expr_is_applicable(const Expr* e) {
-    return e->type == EXPR_PRIM || e->type == EXPR_LAMBDA ||
-           e->type == EXPR_MACRO;
-}
-
 /*----------------------------------------------------------------------------*/
 
 /*
@@ -186,7 +178,7 @@ bool expr_list_has_type(const Expr* e, enum EExprType type);
 /*
  * Does the specified linked list contain ONLY expressions with numeric types?
  *
- * Uses the `expr_is_number' inline function.
+ * Uses the `EXPRP_NUMBER' inline function.
  * See also the `expr_list_has_only_type' inline function below.
  */
 bool expr_list_has_only_numbers(const Expr* e);
@@ -271,7 +263,7 @@ static inline void expr_set_generic_num(Expr* e, GenericNum num) {
 
 /*
  * Get the value of a numeric expression in a generic C type. The expression
- * should be a number according to `expr_is_number'.
+ * should be a number according to `EXPRP_NUMBER'.
  */
 static inline GenericNum expr_get_generic_num(const Expr* e) {
     switch (e->type) {

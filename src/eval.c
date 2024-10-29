@@ -97,7 +97,7 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* func = eval(env, car);
     if (func == NULL)
         return NULL;
-    SL_EXPECT(expr_is_applicable(func), "Expected function or macro, got '%s'.",
+    SL_EXPECT(EXPRP_APPLICABLE(func), "Expected function or macro, got '%s'.",
               exprtype2str(func->type));
 
     /* Is this function in the `*debug-trace*' list? */
@@ -201,7 +201,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
     /*
      * Some important notes about the implementation of `apply':
      *   - It expects a valid environment and a valid applicable function (see
-     *     the `expr_is_applicable' function in "expr.h").
+     *     the `EXPRP_APPLICABLE' function in "expr.h").
      *   - The arguments, are expected to be evaluated by the caller whenever
      *     necessary. The arguments are passed to the function unchanged.
      *   - The `args' pointer can be NULL, since some functions expect no
@@ -209,7 +209,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
      */
     SL_ASSERT(env != NULL);
     SL_ASSERT(func != NULL);
-    SL_ASSERT(expr_is_applicable(func));
+    SL_ASSERT(EXPRP_APPLICABLE(func));
 
     Expr* result;
     switch (func->type) {
