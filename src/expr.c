@@ -410,7 +410,11 @@ void expr_print(FILE* fp, const Expr* e) {
             break;
 
         case EXPR_ERR:
-            fprintf(fp, "Error: %s\n", e->val.s);
+            /*
+             * TODO: Print with color if SL_NO_COLOR is not defined, similar to
+             * `sl_print_err'.
+             */
+            fprintf(fp, "Error: %s", e->val.s);
             break;
 
         case EXPR_PARENT:
