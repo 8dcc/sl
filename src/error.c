@@ -23,6 +23,12 @@
 #include "include/error.h"
 #include "include/expr.h"
 
+#define COL_RESET       "\e[0m"
+#define COL_NORM_YELLOW "\e[0;33m"
+#define COL_NORM_RED    "\e[0;31m"
+#define COL_BOLD_CYAN   "\e[1;36m"
+#define COL_BOLD_RED    "\e[1;31m"
+
 Expr* err(const char* fmt, ...) {
     /*
      * TODO: If compiled with SL_TRACE_ON_ERR, somehow print call stack as soon
@@ -46,13 +52,20 @@ Expr* err(const char* fmt, ...) {
     return ret;
 }
 
-/*----------------------------------------------------------------------------*/
+void err_print(FILE* fp, const Expr* e) {
+    SL_ASSERT(e != NULL);
+    SL_ASSERT(e->type == EXPR_ERR);
+    SL_ASSERT(e->val.s != NULL);
 
-#define COL_RESET       "\e[0m"
-#define COL_NORM_YELLOW "\e[0;33m"
-#define COL_NORM_RED    "\e[0;31m"
-#define COL_BOLD_CYAN   "\e[1;36m"
-#define COL_BOLD_RED    "\e[1;31m"
+#ifdef SL_NO_COLOR
+    fprintf(fp, "Error: %s", e->val.s);
+#else
+    fprintf(fp, "%sError%s: %s%s%s", COL_BOLD_RED, COL_RESET, COL_NORM_YELLOW,
+            e->val.s, COL_RESET);
+#endif
+}
+
+/*----------------------------------------------------------------------------*/
 
 void sl_print_err(const char* func, const char* fmt, ...) {
     va_list va;

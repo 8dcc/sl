@@ -43,11 +43,11 @@ struct Expr;
 /*
  * If COND is zero, show error message and exit.
  */
-#define SL_ASSERT(COND)                                  \
-    do {                                                 \
-        if ((COND) == 0) {                               \
-            SL_FATAL("Assertion `%s' failed.\n", #COND); \
-        }                                                \
+#define SL_ASSERT(COND)                                \
+    do {                                               \
+        if ((COND) == 0) {                             \
+            SL_FATAL("Assertion `%s' failed.", #COND); \
+        }                                              \
     } while (0)
 
 /*
@@ -89,8 +89,18 @@ struct Expr;
 struct Expr* err(const char* fmt, ...);
 
 /*
- * Print different error messages to stderr, along with some context
- * information.
+ * Print an expression of type `EXPR_ERR' into the specified file. Doesn't print
+ * a final newline.
+ *
+ * Will use colors unless `SL_NO_COLOR' is defined.
+ */
+void err_print(FILE* fp, const struct Expr* e);
+
+/*
+ * Print different error messages to `stderr', along with some context
+ * information. Prints a final newline.
+ *
+ * Will use colors unless `SL_NO_COLOR' is defined.
  */
 void sl_print_err(const char* func, const char* fmt, ...);
 void sl_print_ftl(const char* file, int line, const char* func, const char* fmt,
