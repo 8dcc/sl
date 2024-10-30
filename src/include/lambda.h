@@ -25,8 +25,13 @@
 struct Expr; /* expr.h */
 struct Env;  /* env.h */
 
-typedef struct LambdaCtx LambdaCtx;
+enum ELambdaCtxErr {
+    LAMBDACTX_ERR_NONE = 0,
+    LAMBDACTX_ERR_FORMALTYPE,
+    LAMBDACTX_ERR_NOREST,
+};
 
+typedef struct LambdaCtx LambdaCtx;
 struct LambdaCtx {
     /* Environment for binding the formal arguments to the actual values when
      * calling the lambda. */
@@ -41,14 +46,35 @@ struct LambdaCtx {
     char* formal_rest;
 
     /* List of expressions to be evaluated in order when calling the lambda */
-    Expr* body;
+    struct Expr* body;
 };
 
+/*----------------------------------------------------------------------------*/
+
 /*
- * Allocate and initialize a new `LambdaCtx' structure using the specified
- * formal arguments and the specified list of body expressions.
+ * Return an immutable string that describes the specified error.
  */
-LambdaCtx* lambda_ctx_new(const struct Expr* formals, const struct Expr* body);
+const char* lambda_ctx_strerror(enum ELambdaCtxErr code);
+
+/*----------------------------------------------------------------------------*/
+/* TODO: Rename `lambda_ctx*' to `lambdactx_*' */
+
+/*
+ * Allocate an empty `LambdaCtx' structure. Should be freed by the caller with
+ * `lambda_ctx_free'. See also `lambda_ctx_init'.
+ */
+LambdaCtx* lambda_ctx_new(void);
+
+/*
+ * Initialize a new `LambdaCtx' structure using the specified formal arguments
+ * and the specified body. Note that the `body' argument is a linked list of
+ * expressions.
+ *
+ * The function returns an error code, which the caller should check, and
+ * optionally print with `lambda_ctx_strerror'.
+ */
+enum ELambdaCtxErr lambda_ctx_init(LambdaCtx* ctx, const struct Expr* formals,
+                                   const struct Expr* body);
 
 /*
  * Copy the specified `LambdaCtx' structure into an allocated copy, and return

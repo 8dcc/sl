@@ -42,7 +42,6 @@ static bool is_char_in_str(char c, const char* str) {
 Expr* prim_read(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_UNUSED(e);
-    SL_ON_ERR(return NULL);
 
     char* str = read_expr(stdin);
     SL_EXPECT(str != NULL, "Error reading expression.");
@@ -58,16 +57,17 @@ Expr* prim_read(Env* env, Expr* e) {
 
 Expr* prim_write(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
 
     const bool success = expr_write(stdout, e);
-    return (success) ? expr_clone(tru) : NULL;
+    SL_EXPECT(success, "Couldn't write expression of type '%s'.",
+              exprtype2str(e->type));
+
+    return expr_clone(tru);
 }
 
 Expr* prim_scan_str(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
 
     /*
      * (scan-str &optional delimiters)
@@ -114,7 +114,6 @@ Expr* prim_scan_str(Env* env, Expr* e) {
 
 Expr* prim_print_str(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_STRING);
 
@@ -124,12 +123,11 @@ Expr* prim_print_str(Env* env, Expr* e) {
 
 Expr* prim_error(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_STRING);
 
-    sl_print_err(false, "error", "%s", e->val.s);
-
-    /* Intentionally return NULL to stop execution */
-    return NULL;
+    /*
+     * TODO: Use `prim_format' and `&rest'. Move outside of 'prim_io.c'.
+     */
+    return err("%s", e->val.s);
 }

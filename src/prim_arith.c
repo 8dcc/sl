@@ -26,7 +26,6 @@
 
 Expr* prim_add(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
               "Unexpected non-numeric argument.");
 
@@ -74,7 +73,6 @@ Expr* prim_add(Env* env, Expr* e) {
 
 Expr* prim_sub(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
               "Unexpected non-numeric argument.");
 
@@ -127,7 +125,6 @@ Expr* prim_sub(Env* env, Expr* e) {
 
 Expr* prim_mul(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
               "Unexpected non-numeric argument.");
 
@@ -177,7 +174,6 @@ Expr* prim_mul(Env* env, Expr* e) {
 
 Expr* prim_div(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Expected at least one argument.");
     SL_EXPECT(expr_list_has_only_numbers(e),
               "Unexpected non-numeric argument.");
@@ -200,7 +196,6 @@ Expr* prim_div(Env* env, Expr* e) {
 
 Expr* prim_mod(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Expected at least one argument.");
     SL_EXPECT(expr_list_has_only_numbers(e),
               "Unexpected non-numeric argument.");
@@ -234,7 +229,6 @@ Expr* prim_mod(Env* env, Expr* e) {
 
 Expr* prim_quotient(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Expected at least one argument.");
 
     /*
@@ -256,7 +250,6 @@ Expr* prim_quotient(Env* env, Expr* e) {
 
 Expr* prim_remainder(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT(e != NULL, "Missing arguments.");
 
     /*
@@ -281,7 +274,6 @@ Expr* prim_remainder(Env* env, Expr* e) {
 
 Expr* prim_round(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
 
@@ -301,7 +293,6 @@ Expr* prim_round(Env* env, Expr* e) {
 
 Expr* prim_floor(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
 
@@ -321,7 +312,6 @@ Expr* prim_floor(Env* env, Expr* e) {
 
 Expr* prim_ceiling(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
 
@@ -341,7 +331,6 @@ Expr* prim_ceiling(Env* env, Expr* e) {
 
 Expr* prim_truncate(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
 

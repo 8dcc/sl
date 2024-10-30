@@ -54,17 +54,21 @@ static Expr* eval_list(Env* env, Expr* list) {
     Expr* cur_copy  = &dummy_copy;
 
     for (Expr* cur = list; cur != NULL; cur = cur->next) {
-        /* Evaluate original argument, save it in our copy */
-        cur_copy->next = eval(env, cur);
-
-        /* Move to the next argument in our copy list */
-        cur_copy = cur_copy->next;
-
-        /* Failed to evaluate an item. Free what we had evaluated and stop. */
-        if (cur_copy == NULL) {
+        /*
+         * Evaluate each argument. If one of them returns an error, free what we
+         * had evaluated and propagate it upwards.
+         *
+         * Otherwise, save the evaluation in our copy, and move to the next
+         * argument in our linked list.
+         */
+        Expr* evaluated = eval(env, cur);
+        if (EXPRP_ERR(evaluated)) {
             expr_list_free(dummy_copy.next);
-            return NULL;
+            return evaluated;
         }
+
+        cur_copy->next = evaluated;
+        cur_copy       = cur_copy->next;
     }
 
     return dummy_copy.next;
@@ -76,8 +80,6 @@ static Expr* eval_list(Env* env, Expr* list) {
  * (using `eval_list') before applying the function, if necessary.
  */
 static Expr* eval_function_call(Env* env, Expr* e) {
-    SL_ON_ERR(return NULL);
-
     /* Caller should have checked if `e' is `nil' */
     SL_ASSERT(e->val.children != NULL);
 
@@ -95,8 +97,8 @@ static Expr* eval_function_call(Env* env, Expr* e) {
      * we are done.
      */
     Expr* func = eval(env, car);
-    if (func == NULL)
-        return NULL;
+    if (EXPRP_ERR(func))
+        return func;
     SL_EXPECT(EXPRP_APPLICABLE(func), "Expected function or macro, got '%s'.",
               exprtype2str(func->type));
 
@@ -124,9 +126,9 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* args;
     if (should_eval_args) {
         args = eval_list(env, cdr);
-        if (args == NULL) {
+        if (EXPRP_ERR(args)) {
             expr_free(func);
-            return NULL;
+            return args;
         }
     } else {
         args = cdr;
@@ -137,6 +139,8 @@ static Expr* eval_function_call(Env* env, Expr* e) {
 
     /* Apply the evaluated function to the evaluated argument list */
     Expr* applied = apply(env, func, args);
+    if (applied == NULL)
+        applied = err("Unknown error (?)");
 
     /* The evaluations of `func' and `args' returned clones */
     expr_free(func);
@@ -150,8 +154,6 @@ static Expr* eval_function_call(Env* env, Expr* e) {
 }
 
 Expr* eval(Env* env, Expr* e) {
-    SL_ON_ERR(return NULL);
-
     if (e == NULL)
         return NULL;
 
@@ -184,10 +186,12 @@ Expr* eval(Env* env, Expr* e) {
         case EXPR_STRING:
         case EXPR_PRIM:
         case EXPR_LAMBDA:
-        case EXPR_MACRO: {
+        case EXPR_MACRO:
             /* Not a parent nor a symbol, evaluates to itself */
             return expr_clone(e);
-        }
+
+        case EXPR_UNKNOWN:
+            SL_FATAL("Tried to evaluate an expression of type 'Unknown'.");
     }
 
     SL_FATAL("Reached unexpected point, didn't return from switch.");
@@ -244,9 +248,8 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
         } break;
 
         default: {
-            err("Expected 'Primitive' or 'Lambda', got '%s'.",
-                exprtype2str(func->type));
-            result = NULL;
+            result = err("Expected 'Primitive' or 'Lambda', got '%s'.",
+                         exprtype2str(func->type));
         } break;
     }
 

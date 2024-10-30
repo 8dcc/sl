@@ -29,7 +29,6 @@
 
 Expr* prim_type_of(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
 
     Expr* ret  = expr_new(EXPR_SYMBOL);
@@ -90,7 +89,6 @@ Expr* prim_is_macro(Env* env, Expr* e) {
 
 Expr* prim_int2flt(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_NUM_INT);
 
@@ -101,7 +99,6 @@ Expr* prim_int2flt(Env* env, Expr* e) {
 
 Expr* prim_flt2int(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_NUM_FLT);
 
@@ -116,13 +113,12 @@ Expr* prim_flt2int(Env* env, Expr* e) {
  */
 Expr* prim_int2str(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_NUM_INT);
 
     char* s;
-    if (int2str(e->val.n, &s) == 0)
-        return NULL;
+    const size_t written = int2str(e->val.n, &s);
+    SL_EXPECT(written > 0, "Failed to convert Integer to String.");
 
     Expr* ret  = expr_new(EXPR_STRING);
     ret->val.s = s;
@@ -131,13 +127,12 @@ Expr* prim_int2str(Env* env, Expr* e) {
 
 Expr* prim_flt2str(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_NUM_FLT);
 
     char* s;
-    if (flt2str(e->val.f, &s) == 0)
-        return NULL;
+    const size_t written = flt2str(e->val.f, &s);
+    SL_EXPECT(written > 0, "Failed to convert Float to String.");
 
     Expr* ret  = expr_new(EXPR_STRING);
     ret->val.s = s;
@@ -146,7 +141,6 @@ Expr* prim_flt2str(Env* env, Expr* e) {
 
 Expr* prim_str2int(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_STRING);
 
@@ -157,7 +151,6 @@ Expr* prim_str2int(Env* env, Expr* e) {
 
 Expr* prim_str2flt(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_STRING);
 

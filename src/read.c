@@ -26,6 +26,7 @@
 #include <ctype.h>
 
 #include "include/util.h"
+#include "include/error.h"
 #include "include/read.h"
 #include "include/lexer.h" /* is_token_separator() */
 

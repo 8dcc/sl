@@ -96,7 +96,6 @@ Expr* prim_list(Env* env, Expr* e) {
 
 Expr* prim_cons(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 2);
     SL_EXPECT_TYPE(e->next, EXPR_PARENT);
 
@@ -115,7 +114,6 @@ Expr* prim_cons(Env* env, Expr* e) {
 
 Expr* prim_car(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_PARENT);
 
@@ -132,7 +130,6 @@ Expr* prim_car(Env* env, Expr* e) {
 
 Expr* prim_cdr(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_PARENT);
 
@@ -154,7 +151,6 @@ Expr* prim_cdr(Env* env, Expr* e) {
 
 Expr* prim_length(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
 
     long long result;
@@ -168,8 +164,7 @@ Expr* prim_length(Env* env, Expr* e) {
             break;
 
         default:
-            err("Invalid argument of type '%s'.", exprtype2str(e->type));
-            return NULL;
+            return err("Invalid argument of type '%s'.", exprtype2str(e->type));
     }
 
     Expr* ret  = expr_new(EXPR_NUM_INT);
@@ -187,10 +182,8 @@ Expr* prim_append(Env* env, Expr* e) {
         return ret;
     }
 
-    if (!expr_list_is_homogeneous(e)) {
-        err("Expected arguments of the same type.");
-        return NULL;
-    }
+    if (!expr_list_is_homogeneous(e))
+        return err("Expected arguments of the same type.");
 
     Expr* ret;
     switch (e->type) {
@@ -211,8 +204,7 @@ Expr* prim_append(Env* env, Expr* e) {
             break;
 
         default:
-            err("Invalid argument of type '%s'.", exprtype2str(e->type));
-            ret = NULL;
+            ret = err("Invalid argument of type '%s'.", exprtype2str(e->type));
             break;
     }
 

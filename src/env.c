@@ -27,14 +27,14 @@
 #include "include/primitives.h"
 
 /* Used in `env_init_defaults' */
-#define BIND_PRIM_FLAGS(ENV, SYM, FUNC, FLAGS)   \
-    do {                                         \
-        Expr FUNC##_expr = {                     \
-            .type     = EXPR_PRIM,               \
-            .val.prim = prim_##FUNC,             \
-            .next     = NULL,                    \
-        };                                       \
-        env_bind(ENV, SYM, &FUNC##_expr, FLAGS); \
+#define BIND_PRIM_FLAGS(ENV, SYM, FUNC, FLAGS)              \
+    do {                                                    \
+        Expr FUNC##_expr = {                                \
+            .type     = EXPR_PRIM,                          \
+            .val.prim = prim_##FUNC,                        \
+            .next     = NULL,                               \
+        };                                                  \
+        SL_ASSERT(env_bind(ENV, SYM, &FUNC##_expr, FLAGS)); \
     } while (0)
 
 #define BIND_PRIM(ENV, SYM, FUNC) BIND_PRIM_FLAGS(ENV, SYM, FUNC, ENV_FLAG_NONE)
@@ -84,15 +84,15 @@ void env_init_defaults(Env* env) {
      * Since the expressions will be cloned, it's safe to pass the stack address
      * to `env_bind'.
      */
-    env_bind(env, "nil", nil, ENV_FLAG_CONST);
-    env_bind(env, "tru", tru, ENV_FLAG_CONST);
+    SL_ASSERT(env_bind(env, "nil", nil, ENV_FLAG_CONST));
+    SL_ASSERT(env_bind(env, "tru", tru, ENV_FLAG_CONST));
 
     Expr debug_trace_list = {
         .type         = EXPR_PARENT,
         .val.children = NULL,
         .next         = NULL,
     };
-    env_bind(env, "*debug-trace*", &debug_trace_list, ENV_FLAG_NONE);
+    SL_ASSERT(env_bind(env, "*debug-trace*", &debug_trace_list, ENV_FLAG_NONE));
 
     /* Special forms */
     BIND_SPECIAL(env, "quote", quote);
@@ -198,6 +198,9 @@ Env* env_clone(Env* env) {
 }
 
 void env_free(Env* env) {
+    if (env == NULL)
+        return;
+
     for (size_t i = 0; i < env->size; i++) {
         free(env->bindings[i].sym);
         expr_free(env->bindings[i].val);
@@ -213,7 +216,6 @@ bool env_bind(Env* env, const char* sym, const Expr* val,
               enum EEnvBindingFlags flags) {
     SL_ASSERT(env != NULL);
     SL_ASSERT(sym != NULL);
-    SL_ON_ERR(return false);
 
     /*
      * Before creating a new item in the environment, traverse the existing
@@ -230,8 +232,8 @@ bool env_bind(Env* env, const char* sym, const Expr* val,
      */
     for (size_t i = 0; i < env->size; i++) {
         if (strcmp(env->bindings[i].sym, sym) == 0) {
-            SL_EXPECT((env->bindings[i].flags & ENV_FLAG_CONST) == 0,
-                      "Trying to set constant symbol `%s'.", sym);
+            if ((env->bindings[i].flags & ENV_FLAG_CONST) != 0)
+                return false;
 
             expr_free(env->bindings[i].val);
             env->bindings[i].val   = expr_clone_recur(val);

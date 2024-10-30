@@ -30,7 +30,6 @@ Expr* prim_eval(Env* env, Expr* e) {
 }
 
 Expr* prim_apply(Env* env, Expr* e) {
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 2);
     SL_EXPECT(EXPRP_APPLICABLE(e),
               "Expected a function or macro as the first argument, got '%s'.",
@@ -41,7 +40,6 @@ Expr* prim_apply(Env* env, Expr* e) {
 }
 
 Expr* prim_macroexpand(Env* env, Expr* e) {
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_PARENT);
 
@@ -56,10 +54,9 @@ Expr* prim_macroexpand(Env* env, Expr* e) {
     SL_EXPECT(car != NULL,
               "The supplied list must have at least one element: The macro.");
 
-    /* If `eval' returns NULL, we don't have to print our own errors */
     Expr* func = eval(env, car);
-    if (func == NULL)
-        return NULL;
+    if (EXPRP_ERR(func))
+        return func;
     SL_EXPECT_TYPE(func, EXPR_MACRO);
 
     Expr* args     = e->val.children->next;
@@ -71,7 +68,6 @@ Expr* prim_macroexpand(Env* env, Expr* e) {
 
 Expr* prim_random(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
 
@@ -100,7 +96,6 @@ Expr* prim_random(Env* env, Expr* e) {
 
 Expr* prim_set_random_seed(Env* env, Expr* e) {
     SL_UNUSED(env);
-    SL_ON_ERR(return NULL);
     SL_EXPECT_ARG_NUM(e, 1);
     SL_EXPECT_TYPE(e, EXPR_NUM_INT);
 
