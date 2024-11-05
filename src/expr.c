@@ -410,10 +410,6 @@ void expr_print(FILE* fp, const Expr* e) {
             break;
 
         case EXPR_ERR:
-            /*
-             * TODO: Print with color if SL_NO_COLOR is not defined, similar to
-             * `sl_print_err'.
-             */
             err_print(stderr, e);
             break;
 
