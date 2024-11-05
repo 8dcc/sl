@@ -24,9 +24,6 @@
 
 struct Expr; /* expr.h */
 
-typedef struct Env Env;
-typedef struct EnvBinding EnvBinding;
-
 /*
  * Possible flags for each `EnvBinding' structure. They can be OR'd together.
  */
@@ -41,6 +38,7 @@ enum EEnvBindingFlags {
  * An `EnvBinding' structure is used to bind a symbol to its expression, with
  * some specified flags from the `EEnvBindingFlags' enum.
  */
+typedef struct EnvBinding EnvBinding;
 struct EnvBinding {
     char* sym;
     struct Expr* val;
@@ -51,6 +49,7 @@ struct EnvBinding {
  * An environment is simply an array of `EnvBinding' structures, and a parent
  * environment.
  */
+typedef struct Env Env;
 struct Env {
     Env* parent;
     size_t size;
