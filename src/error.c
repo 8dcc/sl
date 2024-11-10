@@ -19,9 +19,10 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "include/util.h"
-#include "include/error.h"
 #include "include/expr.h"
+#include "include/util.h"
+#include "include/memory.h"
+#include "include/error.h"
 
 #define COL_RESET       "\e[0m"
 #define COL_NORM_YELLOW "\e[0;33m"

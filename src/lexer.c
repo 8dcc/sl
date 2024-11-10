@@ -6,6 +6,7 @@
 #include <ctype.h>
 
 #include "include/util.h"
+#include "include/memory.h"
 #include "include/error.h"
 #include "include/lexer.h"
 

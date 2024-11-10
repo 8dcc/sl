@@ -20,10 +20,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "include/expr.h"
 #include "include/env.h"
+#include "include/expr.h"
 #include "include/lambda.h"
 #include "include/util.h"
+#include "include/memory.h"
 #include "include/eval.h"
 
 /*

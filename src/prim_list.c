@@ -22,6 +22,7 @@
 #include "include/env.h"
 #include "include/expr.h"
 #include "include/util.h"
+#include "include/memory.h"
 #include "include/primitives.h"
 
 /* Used by `prim_append' when receiving list arguments */

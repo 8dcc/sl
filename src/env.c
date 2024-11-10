@@ -21,9 +21,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "include/expr.h"
 #include "include/env.h"
+#include "include/expr.h"
 #include "include/util.h"
+#include "include/memory.h"
 #include "include/primitives.h"
 
 /* Used in `env_init_defaults' */

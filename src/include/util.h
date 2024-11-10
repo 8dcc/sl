@@ -22,10 +22,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>  /* FILE */
-#include <stdlib.h> /* realloc() */
 #include <regex.h>  /* regmatch_t */
-
-#include "error.h" /* SL_FATAL() */
 
 /*----------------------------------------------------------------------------*/
 
@@ -42,32 +39,6 @@
  * Avoid -Wunused-parameter
  */
 #define SL_UNUSED(VAR) (void)VAR
-
-/*
- * Use a macro to avoid assignment.
- */
-#define sl_safe_realloc(PTR, SZ)              \
-    do {                                      \
-        PTR = realloc(PTR, SZ);               \
-        if (PTR == NULL) {                    \
-            SL_FATAL("Reallocation failed."); \
-        }                                     \
-    } while (0)
-
-/*----------------------------------------------------------------------------*/
-
-/*
- * Allocate `sz' bytes using `malloc' or `calloc', ensuring a valid pointer is
- * returned.
- */
-void* sl_safe_malloc(size_t sz);
-void* sl_safe_calloc(size_t nmemb, size_t size);
-
-/*
- * Allocate a new string big enough to hold `s', and copy it. Ensures a valid
- * pointer is returned.
- */
-char* sl_safe_strdup(const char* s);
 
 /*----------------------------------------------------------------------------*/
 

@@ -5,7 +5,7 @@ LDLIBS=-lm
 
 SRC=main.c \
     env.c expr.c lambda.c \
-	util.c error.c debug.c \
+	util.c memory.c error.c debug.c \
     read.c lexer.c parser.c eval.c \
     prim_special.c prim_general.c prim_logic.c prim_type.c prim_list.c \
     prim_string.c prim_arith.c prim_bitwise.c prim_io.c

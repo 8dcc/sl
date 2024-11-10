@@ -21,10 +21,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "include/expr.h"
 #include "include/env.h"
+#include "include/expr.h"
 #include "include/lambda.h"
 #include "include/util.h"
+#include "include/memory.h"
 
 Expr* expr_new(enum EExprType type) {
     Expr* ret         = sl_safe_malloc(sizeof(Expr));

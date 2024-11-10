@@ -24,6 +24,7 @@
 #include "include/env.h"
 #include "include/expr.h"
 #include "include/util.h"
+#include "include/memory.h"
 #include "include/read.h"
 #include "include/lexer.h"
 #include "include/parser.h"

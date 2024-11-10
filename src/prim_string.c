@@ -24,6 +24,7 @@
 #include "include/env.h"
 #include "include/expr.h"
 #include "include/util.h"
+#include "include/memory.h"
 #include "include/primitives.h"
 
 Expr* prim_write_to_str(Env* env, Expr* e) {
