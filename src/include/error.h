@@ -19,6 +19,7 @@
 #ifndef ERROR_H_
 #define ERROR_H_ 1
 
+#include <stdio.h>  /* FILE */
 #include <stdlib.h> /* exit() */
 
 struct Expr; /* expr.h */
