@@ -23,7 +23,7 @@ static size_t parse_user_string(const char* input, char** dst) {
 
     size_t result_pos = 0;
     size_t result_sz  = STRING_BUFSZ;
-    char* result      = sl_safe_malloc(result_sz);
+    char* result      = mem_alloc(result_sz);
 
     size_t input_pos;
     for (input_pos = 1; input[input_pos] != '\"'; input_pos++, result_pos++) {
@@ -35,7 +35,7 @@ static size_t parse_user_string(const char* input, char** dst) {
 
         if (result_pos >= result_sz - 1) {
             result_sz += TOKEN_BUFSZ;
-            sl_safe_realloc(result, result_sz);
+            mem_realloc(result, result_sz);
         }
 
         /* Parse escape sequences */
@@ -79,7 +79,7 @@ static void set_value_from_str(Token* dst, char* str) {
     /* If we couldn't convert it to a `double' or a `long long', assume it's a
      * symbol. */
     dst->type  = TOKEN_SYMBOL;
-    dst->val.s = sl_safe_strdup(str);
+    dst->val.s = mem_strdup(str);
 }
 
 /*
@@ -172,12 +172,12 @@ done:
 
 Token* tokenize(char* input) {
     size_t tokens_num = TOKEN_BUFSZ;
-    Token* tokens     = sl_safe_calloc(TOKEN_BUFSZ, sizeof(Token));
+    Token* tokens     = mem_calloc(TOKEN_BUFSZ, sizeof(Token));
 
     for (size_t i = 0; input != NULL; i++) {
         if (i >= tokens_num) {
             tokens_num += TOKEN_BUFSZ;
-            sl_safe_realloc(tokens, tokens_num * sizeof(Token));
+            mem_realloc(tokens, tokens_num * sizeof(Token));
         }
 
         /* Try to scan the token pointed to by `input', and increase the pointer

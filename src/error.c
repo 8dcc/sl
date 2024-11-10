@@ -42,7 +42,7 @@ Expr* err(const char* fmt, ...) {
     const int data_size = vsnprintf(NULL, 0, fmt, va);
     va_end(va);
 
-    char* result = sl_safe_malloc(data_size + 1);
+    char* result = mem_alloc(data_size + 1);
 
     va_start(va, fmt);
     vsnprintf(result, data_size + 1, fmt, va);

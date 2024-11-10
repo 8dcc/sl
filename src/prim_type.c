@@ -33,7 +33,7 @@ Expr* prim_type_of(Env* env, Expr* e) {
     SL_EXPECT_ARG_NUM(e, 1);
 
     Expr* ret  = expr_new(EXPR_SYMBOL);
-    ret->val.s = sl_safe_strdup(exprtype2str(e->type));
+    ret->val.s = mem_strdup(exprtype2str(e->type));
     return ret;
 }
 

@@ -24,7 +24,7 @@
 #include "include/memory.h"
 #include "include/error.h"
 
-void* sl_safe_malloc(size_t size) {
+void* mem_alloc(size_t size) {
     void* result = malloc(size);
     if (result == NULL)
         SL_FATAL("Failed to allocate %zu bytes: %s (%d).", size,
@@ -32,7 +32,7 @@ void* sl_safe_malloc(size_t size) {
     return result;
 }
 
-void* sl_safe_calloc(size_t nmemb, size_t size) {
+void* mem_calloc(size_t nmemb, size_t size) {
     void* result = calloc(nmemb, size);
     if (result == NULL)
         SL_FATAL("Failed to allocate %zu elements of %zu bytes each: %s (%d).",
@@ -40,7 +40,7 @@ void* sl_safe_calloc(size_t nmemb, size_t size) {
     return result;
 }
 
-char* sl_safe_strdup(const char* s) {
+char* mem_strdup(const char* s) {
     char* result = strdup(s);
     if (result == NULL)
         SL_FATAL("Failed to copy string: %s (%d).", strerror(errno), errno);

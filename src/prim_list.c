@@ -71,7 +71,7 @@ static Expr* string_append(Expr* e) {
     }
 
     Expr* ret  = expr_new(EXPR_STRING);
-    ret->val.s = sl_safe_malloc(total_len + 1);
+    ret->val.s = mem_alloc(total_len + 1);
 
     char* last_copied = ret->val.s;
     for (Expr* arg = e; arg != NULL; arg = arg->next)

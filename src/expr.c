@@ -28,7 +28,7 @@
 #include "include/memory.h"
 
 Expr* expr_new(enum EExprType type) {
-    Expr* ret         = sl_safe_malloc(sizeof(Expr));
+    Expr* ret         = mem_alloc(sizeof(Expr));
     ret->type         = type;
     ret->val.children = NULL;
     ret->next         = NULL;
@@ -105,7 +105,7 @@ Expr* expr_clone(const Expr* e) {
         case EXPR_ERR:
         case EXPR_SYMBOL:
         case EXPR_STRING:
-            ret->val.s = sl_safe_strdup(e->val.s);
+            ret->val.s = mem_strdup(e->val.s);
             break;
 
         case EXPR_PARENT:

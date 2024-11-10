@@ -99,7 +99,7 @@ bool sl_regex_match_groups(const char* pat, const char* str, bool ignore_case,
      * extra item for the entire match, which will be at index 0.
      */
     *nmatch = r.re_nsub + 1;
-    *pmatch = sl_safe_malloc(*nmatch * sizeof(regmatch_t*));
+    *pmatch = mem_alloc(*nmatch * sizeof(regmatch_t*));
 
     const int code = regexec(&r, str, *nmatch, *pmatch, 0);
     regfree(&r);
@@ -131,7 +131,7 @@ bool sl_concat_format(char** dst, size_t* dst_sz, size_t* dst_offset,
 
     if (*dst_offset + data_size + 1 >= *dst_sz) {
         *dst_sz = *dst_offset + data_size + 1;
-        sl_safe_realloc(*dst, *dst_sz);
+        mem_realloc(*dst, *dst_sz);
     }
 
     char* real_dst = &(*dst)[*dst_offset];
@@ -158,7 +158,7 @@ size_t int2str(long long x, char** dst) {
         return 0;
     }
 
-    *dst = sl_safe_malloc(size + 1);
+    *dst = mem_alloc(size + 1);
     snprintf(*dst, size + 1, "%lld", x);
     return size;
 }
@@ -170,7 +170,7 @@ size_t flt2str(double x, char** dst) {
         return 0;
     }
 
-    *dst = sl_safe_malloc(size + 1);
+    *dst = mem_alloc(size + 1);
     snprintf(*dst, size + 1, "%f", x);
     return size;
 }

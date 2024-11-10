@@ -63,7 +63,7 @@ const Expr* tru = &tru_expr;
 /*----------------------------------------------------------------------------*/
 
 Env* env_new(void) {
-    Env* env      = sl_safe_malloc(sizeof(Env));
+    Env* env      = mem_alloc(sizeof(Env));
     env->parent   = NULL;
     env->size     = 0;
     env->bindings = NULL;
@@ -187,10 +187,10 @@ Env* env_clone(Env* env) {
     cloned->parent = env->parent;
 
     cloned->size     = env->size;
-    cloned->bindings = sl_safe_malloc(cloned->size * sizeof(EnvBinding));
+    cloned->bindings = mem_alloc(cloned->size * sizeof(EnvBinding));
 
     for (size_t i = 0; i < cloned->size; i++) {
-        cloned->bindings[i].sym   = sl_safe_strdup(env->bindings[i].sym);
+        cloned->bindings[i].sym   = mem_strdup(env->bindings[i].sym);
         cloned->bindings[i].val   = expr_clone_recur(env->bindings[i].val);
         cloned->bindings[i].flags = env->bindings[i].flags;
     }
@@ -244,9 +244,9 @@ bool env_bind(Env* env, const char* sym, const Expr* val,
     }
 
     env->size++;
-    sl_safe_realloc(env->bindings, env->size * sizeof(EnvBinding));
+    mem_realloc(env->bindings, env->size * sizeof(EnvBinding));
 
-    env->bindings[env->size - 1].sym   = sl_safe_strdup(sym);
+    env->bindings[env->size - 1].sym   = mem_strdup(sym);
     env->bindings[env->size - 1].val   = expr_clone_recur(val);
     env->bindings[env->size - 1].flags = flags;
 

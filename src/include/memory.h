@@ -26,8 +26,11 @@
 
 /*
  * Use a macro to avoid assignment.
+ *
+ * TODO: Perhaps we could add an internal function that calls stdlib's `realloc'
+ * and `SL_FATAL', to avoid having to include them in the header.
  */
-#define sl_safe_realloc(PTR, SZ)              \
+#define mem_realloc(PTR, SZ)                  \
     do {                                      \
         PTR = realloc(PTR, SZ);               \
         if (PTR == NULL) {                    \
@@ -38,16 +41,16 @@
 /*----------------------------------------------------------------------------*/
 
 /*
- * Allocate `sz' bytes using `malloc' or `calloc', ensuring a valid pointer is
- * returned.
+ * Allocate `sz' bytes using stdlib's `malloc' or `calloc', ensuring a valid
+ * pointer is returned.
  */
-void* sl_safe_malloc(size_t sz);
-void* sl_safe_calloc(size_t nmemb, size_t size);
+void* mem_alloc(size_t sz);
+void* mem_calloc(size_t nmemb, size_t size);
 
 /*
  * Allocate a new string big enough to hold `s', and copy it. Ensures a valid
  * pointer is returned.
  */
-char* sl_safe_strdup(const char* s);
+char* mem_strdup(const char* s);
 
 #endif /* MEMORY_H_ */
