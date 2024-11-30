@@ -25,6 +25,10 @@
 ;;   - `find'
 ;;   - `filter'
 ;;   - `reduce'
+;;   - More mapping functions (See Maclisp):
+;;       - `map'
+;;       - `mapc'
+;;       - `mapcdr'
 ;;   - `member' (return arg0 when car is arg1)
 ;;   - `member?' (is arg1 in arg0?)
 ;;   - `string-split' using regex
@@ -76,6 +80,16 @@
 ;;------------------------------------------------------------------------------
 ;; Conditional macros
 ;;------------------------------------------------------------------------------
+
+;; (when pred  >  (if pred
+;;   expr1     >    (begin
+;;   expr2)    >      expr1
+;;             >      expr2)
+;;             >    nil)
+(defmacro when (predicate &rest body)
+  `(if ,predicate
+       (begin ,@body)
+       nil))
 
 ;; TODO: Convert to primitive?
 ;;
