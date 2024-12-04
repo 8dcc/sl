@@ -91,6 +91,13 @@
        (begin ,@body)
        nil))
 
+;; (unless pred  >  (when (not pred)
+;;   expr1       >    expr1
+;;   expr2)      >    expr2)
+(defmacro unless (predicate &rest body)
+  `(when (not ,predicate)
+     ,@body))
+
 ;; TODO: Convert to primitive?
 ;;
 ;; (cond (pred1 expr1)           >  (if pred1 (begin expr1)
