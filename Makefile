@@ -31,11 +31,11 @@ clean:
 install: install-bin install-lib
 
 install-bin: $(BIN)
-	mkdir -p $(BINDIR)
+	@mkdir -p $(BINDIR)
 	install -m 755 $^ $(BINDIR)
 
 install-lib: $(LIB)
-	mkdir -p $(LIBDIR)
+	@mkdir -p $(LIBDIR)
 	install -m 644 $^ $(LIBDIR)
 
 doc:
