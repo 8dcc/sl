@@ -30,12 +30,12 @@
  * TODO: Perhaps we could add an internal function that calls stdlib's `realloc'
  * and `SL_FATAL', to avoid having to include them in the header.
  */
-#define mem_realloc(PTR, SZ)                  \
-    do {                                      \
-        PTR = realloc(PTR, SZ);               \
-        if (PTR == NULL) {                    \
-            SL_FATAL("Reallocation failed."); \
-        }                                     \
+#define mem_realloc(PTR, SZ)                                                   \
+    do {                                                                       \
+        PTR = realloc(PTR, SZ);                                                \
+        if (PTR == NULL) {                                                     \
+            SL_FATAL("Reallocation failed.");                                  \
+        }                                                                      \
     } while (0)
 
 /*----------------------------------------------------------------------------*/
