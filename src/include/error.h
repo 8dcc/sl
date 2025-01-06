@@ -35,50 +35,52 @@ struct Expr; /* expr.h */
 /*
  * Show error message with `sl_print_ftl' and exit.
  */
-#define SL_FATAL(...)                                            \
-    do {                                                         \
-        sl_print_ftl(__FILE__, __LINE__, __func__, __VA_ARGS__); \
-        exit(1);                                                 \
+#define SL_FATAL(...)                                                          \
+    do {                                                                       \
+        sl_print_ftl(__FILE__, __LINE__, __func__, __VA_ARGS__);               \
+        exit(1);                                                               \
     } while (0)
 
 /*
  * If COND is zero, show error message and exit.
  */
-#define SL_ASSERT(COND)                                \
-    do {                                               \
-        if ((COND) == 0) {                             \
-            SL_FATAL("Assertion `%s' failed.", #COND); \
-        }                                              \
+#define SL_ASSERT(COND)                                                        \
+    do {                                                                       \
+        if ((COND) == 0) {                                                     \
+            SL_FATAL("Assertion `%s' failed.", #COND);                         \
+        }                                                                      \
     } while (0)
 
 /*
  * If COND is not true, return expression of type EXPR_ERR with the specified
  * message.
  */
-#define SL_EXPECT(COND, ...)         \
-    do {                             \
-        if ((COND) == 0) {           \
-            return err(__VA_ARGS__); \
-        }                            \
+#define SL_EXPECT(COND, ...)                                                   \
+    do {                                                                       \
+        if ((COND) == 0) {                                                     \
+            return err(__VA_ARGS__);                                           \
+        }                                                                      \
     } while (0)
 
 /*
  * Check if the specified linked list of `Expr' structures has a specific
  * length using `SL_EXPECT'.
  */
-#define SL_EXPECT_ARG_NUM(EXPR_LIST, NUM)                    \
-    SL_EXPECT(expr_list_len(EXPR_LIST) == (NUM),             \
-              "Expected exactly %d arguments, got %d.", NUM, \
+#define SL_EXPECT_ARG_NUM(EXPR_LIST, NUM)                                      \
+    SL_EXPECT(expr_list_len(EXPR_LIST) == (NUM),                               \
+              "Expected exactly %d arguments, got %d.",                        \
+              NUM,                                                             \
               expr_list_len(EXPR_LIST))
 
 /*
  * Check if the specified expression matches the expected type using
  * `SL_EXPECT'.
  */
-#define SL_EXPECT_TYPE(EXPR, TYPE)                           \
-    SL_EXPECT((EXPR)->type == (TYPE),                        \
-              "Expected expression of type '%s', got '%s'.", \
-              exprtype2str(TYPE), exprtype2str((EXPR)->type))
+#define SL_EXPECT_TYPE(EXPR, TYPE)                                             \
+    SL_EXPECT((EXPR)->type == (TYPE),                                          \
+              "Expected expression of type '%s', got '%s'.",                   \
+              exprtype2str(TYPE),                                              \
+              exprtype2str((EXPR)->type))
 
 /*----------------------------------------------------------------------------*/
 
