@@ -21,6 +21,7 @@
 ;; TODO:
 ;;   - `let*'
 ;;   - `nth'
+;;   - `push', `pop'
 ;;   - `assoc'
 ;;   - `find'
 ;;   - `filter'
@@ -29,9 +30,11 @@
 ;;       - `map'
 ;;       - `mapc'
 ;;       - `mapcdr'
+;;   - `thread-last' (perhaps rename, check other lisps)
 ;;   - `member' (return arg0 when car is arg1)
 ;;   - `member?' (is arg1 in arg0?)
 ;;   - `string-split' using regex
+;;   - See Emacs' "M-x shortdoc" categories.
 
 ;;------------------------------------------------------------------------------
 ;; Meta-definition macros

@@ -91,7 +91,7 @@ the basic [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][
    allocated by =tokenize()= have been copied into the AST instead of reused, so
    they can be freed safely.
 4. We evaluate the expression using =eval()=, defined in [[file:src/eval.c][eval.c]]. This function
-   will return another linked list of =Expr= structures, but just like =parse()=, it
+   will return another linked list of =Expr= structures but, just like =parse()=, it
    will not reuse any data in the heap, so the old =Expr*= can be freed
    safely. This is the rough evaluation process:
    1. Before evaluating the expression, it checks if the current expression is a
@@ -114,7 +114,7 @@ the basic [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][
          evaluated and returned. For more information on how macros behave in
          this Lisp, see [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Macros.html][Emacs Lisp manual]].
       3. If the function was not a macro, each argument should be evaluated
-         before calling the function. This is done with the =eval_args()= static
+         before calling the function. This is done with the =eval_list()= static
          function. Then the function is applied to the arguments with =apply()=,
          also defined in [[file:src/eval.c][eval.c]].
       4. The function type is checked inside =apply()=. If it's a C primitive, the

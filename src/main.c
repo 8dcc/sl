@@ -41,7 +41,9 @@ static FILE* get_input_file(int argc, char** argv) {
         const char* filename = argv[1];
         result               = fopen(filename, "r");
         if (result == NULL) {
-            fprintf(stderr, "Error opening '%s': %s.\n", filename,
+            fprintf(stderr,
+                    "Error opening '%s': %s.\n",
+                    filename,
                     strerror(errno));
             exit(1);
         }
@@ -105,6 +107,7 @@ int main(int argc, char** argv) {
 
     /* Initialize global environment with symbols like "nil" */
     Env* global_env = env_new();
+    SL_ASSERT(global_env != NULL);
     env_init_defaults(global_env);
 
     /* Set unique random seed, can be overwritten with `prim_set_random_seed' */

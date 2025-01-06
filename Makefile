@@ -31,12 +31,10 @@ clean:
 install: install-bin install-lib
 
 install-bin: $(BIN)
-	@mkdir -p $(BINDIR)
-	install -m 755 $^ $(BINDIR)
+	install -D -m 755 $^ -t $(DESTDIR)$(BINDIR)
 
 install-lib: $(LIB)
-	@mkdir -p $(LIBDIR)
-	install -m 644 $^ $(LIBDIR)
+	install -D -m 644 $^ -t $(DESTDIR)$(LIBDIR)
 
 doc:
 	make --directory=doc clean all
