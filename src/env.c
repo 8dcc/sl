@@ -27,18 +27,18 @@
 #include "include/primitives.h"
 
 /* Used in `env_init_defaults' */
-#define BIND_PRIM_FLAGS(ENV, SYM, FUNC, FLAGS)              \
-    do {                                                    \
-        Expr FUNC##_expr = {                                \
-            .type     = EXPR_PRIM,                          \
-            .val.prim = prim_##FUNC,                        \
-            .next     = NULL,                               \
-        };                                                  \
-        SL_ASSERT(env_bind(ENV, SYM, &FUNC##_expr, FLAGS)); \
+#define BIND_PRIM_FLAGS(ENV, SYM, FUNC, FLAGS)                                 \
+    do {                                                                       \
+        Expr FUNC##_expr = {                                                   \
+            .type     = EXPR_PRIM,                                             \
+            .val.prim = prim_##FUNC,                                           \
+            .next     = NULL,                                                  \
+        };                                                                     \
+        SL_ASSERT(env_bind(ENV, SYM, &FUNC##_expr, FLAGS));                    \
     } while (0)
 
 #define BIND_PRIM(ENV, SYM, FUNC) BIND_PRIM_FLAGS(ENV, SYM, FUNC, ENV_FLAG_NONE)
-#define BIND_SPECIAL(ENV, SYM, FUNC) \
+#define BIND_SPECIAL(ENV, SYM, FUNC)                                           \
     BIND_PRIM_FLAGS(ENV, SYM, FUNC, ENV_FLAG_CONST | ENV_FLAG_SPECIAL)
 
 /*----------------------------------------------------------------------------*/
@@ -314,7 +314,9 @@ void env_print(FILE* fp, const Env* env) {
             fprintf(fp, "\n ");
 
         /* Not the same order as the C structure, but prettier */
-        fprintf(fp, "(%X \"%s\" ", env->bindings[i].flags,
+        fprintf(fp,
+                "(%X \"%s\" ",
+                env->bindings[i].flags,
                 env->bindings[i].sym);
         expr_print(fp, env->bindings[i].val);
         fputc(')', fp);

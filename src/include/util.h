@@ -46,12 +46,12 @@
 /*
  * Use a macro to avoid assignment.
  */
-#define sl_safe_realloc(PTR, SZ)              \
-    do {                                      \
-        PTR = realloc(PTR, SZ);               \
-        if (PTR == NULL) {                    \
-            SL_FATAL("Reallocation failed."); \
-        }                                     \
+#define sl_safe_realloc(PTR, SZ)                                               \
+    do {                                                                       \
+        PTR = realloc(PTR, SZ);                                                \
+        if (PTR == NULL) {                                                     \
+            SL_FATAL("Reallocation failed.");                                  \
+        }                                                                      \
     } while (0)
 
 /*----------------------------------------------------------------------------*/

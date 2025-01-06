@@ -99,7 +99,8 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* func = eval(env, car);
     if (EXPRP_ERR(func))
         return func;
-    SL_EXPECT(EXPRP_APPLICABLE(func), "Expected function or macro, got '%s'.",
+    SL_EXPECT(EXPRP_APPLICABLE(func),
+              "Expected function or macro, got '%s'.",
               exprtype2str(func->type));
 
     /* Is this function in the `*debug-trace*' list? */

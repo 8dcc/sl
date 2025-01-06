@@ -60,7 +60,8 @@ Expr* prim_write(Env* env, Expr* e) {
     SL_EXPECT_ARG_NUM(e, 1);
 
     const bool success = expr_write(stdout, e);
-    SL_EXPECT(success, "Couldn't write expression of type '%s'.",
+    SL_EXPECT(success,
+              "Couldn't write expression of type '%s'.",
               exprtype2str(e->type));
 
     return expr_clone(tru);

@@ -481,7 +481,8 @@ bool expr_write(FILE* fp, const Expr* e) {
 
         case EXPR_LAMBDA:
         case EXPR_MACRO:
-            fprintf(fp, "(%s ",
+            fprintf(fp,
+                    "(%s ",
                     (e->type == EXPR_LAMBDA)  ? "lambda"
                     : (e->type == EXPR_MACRO) ? "macro"
                                               : "ERROR");
@@ -557,7 +558,8 @@ void expr_print_debug(FILE* fp, const Expr* e) {
 
         case EXPR_MACRO:
         case EXPR_LAMBDA: {
-            fprintf(fp, "[FUN] <%s>\n",
+            fprintf(fp,
+                    "[FUN] <%s>\n",
                     (e->type == EXPR_LAMBDA) ? "lambda" : "macro");
 
             /* Print list of formal arguments */
