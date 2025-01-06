@@ -33,6 +33,16 @@ struct LambdaCtx; /* lambda.h */
 /* Pointer to a primitive C function. */
 typedef struct Expr* (*PrimitiveFuncPtr)(struct Env*, struct Expr*);
 
+/*
+ * Possible expression types. They are mutually exclusive (i.e. an expression
+ * can only have one type at a time), but we still use distinct bits for
+ * checking multiple expression types at once. For example, we can easily check
+ * if an expression is a number with:
+ *
+ *     (e->type & (EXPR_NUM_INT | EXPR_NUM_FLT)) != 0
+ *
+ * TODO: Rename to `EExprTypes' (plural).
+ */
 enum EExprType {
     EXPR_UNKNOWN = 0,
     EXPR_NUM_INT = (1 << 0),
@@ -48,8 +58,10 @@ enum EExprType {
 
 typedef struct Expr Expr;
 struct Expr {
-    /* Type and value of the expression */
+    /* Type */
     enum EExprType type;
+
+    /* Value of the expression */
     union {
         long long n;
         double f;
@@ -66,6 +78,7 @@ struct Expr {
 /*----------------------------------------------------------------------------*/
 
 /* Expression predicates */
+/* TODO: Rename to ERR_P, etc. */
 #define EXPRP_ERR(E)    ((E)->type == EXPR_ERR)
 #define EXPRP_INT(E)    ((E)->type == EXPR_NUM_INT)
 #define EXPRP_FLT(E)    ((E)->type == EXPR_NUM_FLT)
