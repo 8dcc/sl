@@ -28,10 +28,9 @@ struct Expr; /* expr.h */
  * Possible flags for each `EnvBinding' structure. They can be OR'd together.
  */
 enum EEnvBindingFlags {
-    ENV_FLAG_INVALID = -1,
-    ENV_FLAG_NONE    = 0x0,
-    ENV_FLAG_CONST   = 0x1,
-    ENV_FLAG_SPECIAL = 0x2,
+    ENV_FLAG_NONE    = 0,
+    ENV_FLAG_CONST   = (1 << 0),
+    ENV_FLAG_SPECIAL = (1 << 1),
 };
 
 /*
@@ -117,7 +116,11 @@ struct Expr* env_get(const Env* env, const char* sym);
 
 /*
  * Get the flags of the specified symbol in the specified environment. Returns
- * ENV_FLAG_INVALID if the symbol is not bound.
+ * ENV_FLAG_NONE if the symbol is not bound.
+ *
+ * TODO: This function should return a unique value if the symbol is not bound,
+ * not ENV_FLAG_NONE. This is not currently (4d3cc0f) a problem, but might be in
+ * the future.
  */
 enum EEnvBindingFlags env_get_flags(const Env* env, const char* sym);
 

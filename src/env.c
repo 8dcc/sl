@@ -285,23 +285,16 @@ static const EnvBinding* env_get_binding(const Env* env, const char* sym) {
 }
 
 Expr* env_get(const Env* env, const char* sym) {
-    /* Search for this symbol in the environment */
     const EnvBinding* binding = env_get_binding(env, sym);
     if (binding == NULL)
         return NULL;
 
-    /* Return a copy of its value */
     return expr_clone_recur(binding->val);
 }
 
 enum EEnvBindingFlags env_get_flags(const Env* env, const char* sym) {
-    /* Search for this symbol in the environment */
     const EnvBinding* binding = env_get_binding(env, sym);
-    if (binding == NULL)
-        return ENV_FLAG_INVALID;
-
-    /* Return its flags */
-    return binding->flags;
+    return (binding == NULL) ? ENV_FLAG_NONE : binding->flags;
 }
 
 /*----------------------------------------------------------------------------*/
