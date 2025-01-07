@@ -103,7 +103,7 @@ typedef struct ExprPool {
 extern ExprPool* g_expr_pool;
 
 /*----------------------------------------------------------------------------*/
-/* Functions */
+/* Public functions */
 
 /*
  * Allocate and initialize the global expression pool with the specified number
@@ -152,5 +152,19 @@ Expr* pool_alloc_or_expand(size_t extra_sz);
  * fail. If the pool is closed, however, an assertion will fail.
  */
 void pool_free(Expr* e);
+
+/*----------------------------------------------------------------------------*/
+/* Static functions */
+
+/*
+ * Return the pool node for the specified expression.
+ *
+ * We are able to cast an `Expr' pointer to a `PoolNode' one because the
+ * expression is stored (inside a union) in the first member of `PoolNode'. This
+ * might not always be the case, so it's useful to have this function.
+ */
+static inline PoolNode* expr2node(Expr* e) {
+    return (PoolNode*)e;
+}
 
 #endif /* EXPR_POOL_H_ */

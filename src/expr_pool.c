@@ -179,11 +179,7 @@ void pool_free(Expr* e) {
      */
     free_expr_members(e);
 
-    /*
-     * We are able to cast an `Expr' pointer to a `PoolNode' one because the
-     * expression is stored (inside a union) in the first member of `PoolNode'.
-     */
-    PoolNode* node         = (PoolNode*)e;
+    PoolNode* node         = expr2node(e);
     node->val.next         = g_expr_pool->free_node;
     g_expr_pool->free_node = node;
 }
