@@ -19,7 +19,7 @@
 #ifndef GARBAGE_COLLECTION_H_
 #define GARBAGE_COLLECTION_H_ 1
 
-#include "include/env.h"
+#include "env.h"
 
 /*
  * Initialize the garbage collection system.
