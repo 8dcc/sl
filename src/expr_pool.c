@@ -17,15 +17,11 @@
  *
  * ============================================================================
  *
- * This source implements a simple pool allocator for expressions, along with
- * garbage collection.
- *
- * Brief explanation of the pool allocator:
- * ----------------------------------------
- *
- * The pool allocator is based on my 'libpool' project, so see that for more
- * detailed comments <https://github.com/8dcc/libpool>, along with my blog
- * article <https://8dcc.github.io/programming/pool-allocator.html>.
+ * This source implements a simple pool allocator for expressions, meant to be
+ * integrated with the garbage collector. The pool allocator is based on my
+ * 'libpool' project, so see that for more detailed comments
+ * <https://github.com/8dcc/libpool>, along with my blog article
+ * <https://8dcc.github.io/programming/pool-allocator.html>.
  *
  * The pool is simply an array of `PoolNode' structures. This `PoolNode'
  * structure is a bit different from the one used in the blog article, since it
@@ -39,14 +35,51 @@
 #include <stdlib.h>
 
 #include "include/expr_pool.h"
+#include "include/lambda.h"
 #include "include/memory.h"
 #include "include/error.h"
 
 /*----------------------------------------------------------------------------*/
+/* Globals */
 
 ExprPool* g_expr_pool = NULL;
 
 /*----------------------------------------------------------------------------*/
+/* Static functions */
+
+/*
+ * Free all previously-allocated members of an expression when necessary.
+ * Doesn't free the `Expr' structure itself.
+ */
+static void free_expr_members(Expr* e) {
+    SL_ASSERT(e != NULL);
+
+    switch (e->type) {
+        case EXPR_PARENT:
+            expr_list_free(e->val.children);
+            break;
+
+        case EXPR_ERR:
+        case EXPR_SYMBOL:
+        case EXPR_STRING:
+            free(e->val.s);
+            break;
+
+        case EXPR_LAMBDA:
+        case EXPR_MACRO:
+            lambda_ctx_free(e->val.lambda);
+            break;
+
+        case EXPR_UNKNOWN:
+        case EXPR_NUM_INT:
+        case EXPR_NUM_FLT:
+        case EXPR_PRIM:
+            break;
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+/* Public pool-related functions */
 
 bool pool_init(size_t pool_sz) {
     SL_ASSERT(g_expr_pool == NULL);
@@ -111,6 +144,7 @@ void pool_close(void) {
 }
 
 /*----------------------------------------------------------------------------*/
+/* Public node-related functions */
 
 Expr* pool_alloc(void) {
     SL_ASSERT(g_expr_pool != NULL);
@@ -136,6 +170,12 @@ void pool_free(Expr* e) {
     SL_ASSERT(g_expr_pool != NULL);
     if (e == NULL)
         return;
+
+    /*
+     * Before freeing the expression we have to free all its members. They are
+     * currently allocated using the functions in 'memory.c', not with a pool.
+     */
+    free_expr_members(e);
 
     /*
      * We are able to cast an `Expr' pointer to a `PoolNode' one because the

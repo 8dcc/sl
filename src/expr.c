@@ -23,12 +23,13 @@
 
 #include "include/env.h"
 #include "include/expr.h"
+#include "include/expr_pool.h"
 #include "include/lambda.h"
 #include "include/util.h"
 #include "include/memory.h"
 
 Expr* expr_new(enum EExprType type) {
-    Expr* ret         = mem_alloc(sizeof(Expr));
+    Expr* ret         = pool_alloc_or_expand(BASE_POOL_SZ);
     ret->type         = type;
     ret->val.children = NULL;
     ret->next         = NULL;
@@ -36,38 +37,7 @@ Expr* expr_new(enum EExprType type) {
 }
 
 void expr_free(Expr* e) {
-    if (e == NULL)
-        return;
-
-    /*
-     * First, check if the value of the current expression was allocated, and
-     * free it.  Then, free the `Expr' structure itself, usually allocated in
-     * `expr_new'.
-     */
-    switch (e->type) {
-        case EXPR_PARENT:
-            expr_list_free(e->val.children);
-            break;
-
-        case EXPR_ERR:
-        case EXPR_SYMBOL:
-        case EXPR_STRING:
-            free(e->val.s);
-            break;
-
-        case EXPR_LAMBDA:
-        case EXPR_MACRO:
-            lambda_ctx_free(e->val.lambda);
-            break;
-
-        case EXPR_UNKNOWN:
-        case EXPR_NUM_INT:
-        case EXPR_NUM_FLT:
-        case EXPR_PRIM:
-            break;
-    }
-
-    free(e);
+    pool_free(e);
 }
 
 void expr_list_free(Expr* e) {

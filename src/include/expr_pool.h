@@ -8,6 +8,19 @@
 #include "expr.h"
 
 /*----------------------------------------------------------------------------*/
+/* Macros */
+
+/*
+ * Base pool size. Arbitrary number used when initializing and expanding the
+ * global pool.
+ *
+ * It doesn't make much sense to declare this macro in this header while also
+ * accepting size parameters in some 'pool_*' functions. Still, since this value
+ * was used from multiple sources, I think this is the best place.
+ */
+#define BASE_POOL_SZ 512
+
+/*----------------------------------------------------------------------------*/
 /* Enums and structures */
 
 /*
@@ -127,7 +140,9 @@ Expr* pool_alloc_or_expand(size_t extra_sz);
 
 /*
  * Free an expression which was previously allocated from the global expression
- * pool.
+ * pool, along with its members. The expression itself is just returned to the
+ * pool, but the members are freed externally, so the pointers should not be in
+ * use anywhere else.
  *
  * If the expression argument is NULL, the function ignores it but does not
  * fail. If the pool is closed, however, an assertion will fail.
