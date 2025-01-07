@@ -38,8 +38,8 @@
 
 #include "include/expr_pool.h"
 
-Pool* pool_new(size_t pool_sz) {
-    Pool* pool = malloc(sizeof(Pool));
+ExprPool* pool_new(size_t pool_sz) {
+    ExprPool* pool = malloc(sizeof(ExprPool));
     if (pool == NULL)
         return NULL;
 
@@ -69,7 +69,7 @@ Pool* pool_new(size_t pool_sz) {
     return pool;
 }
 
-bool pool_expand(Pool* pool, size_t extra_sz) {
+bool pool_expand(ExprPool* pool, size_t extra_sz) {
     if (pool == NULL || extra_sz == 0)
         return false;
 
@@ -102,7 +102,7 @@ bool pool_expand(Pool* pool, size_t extra_sz) {
     return true;
 }
 
-void pool_close(Pool* pool) {
+void pool_close(ExprPool* pool) {
     if (pool == NULL)
         return;
 
@@ -119,7 +119,7 @@ void pool_close(Pool* pool) {
 
 /*----------------------------------------------------------------------------*/
 
-Expr* pool_alloc(Pool* pool) {
+Expr* pool_alloc(ExprPool* pool) {
     if (pool == NULL || pool->free_node == NULL)
         return NULL;
 
@@ -130,7 +130,7 @@ Expr* pool_alloc(Pool* pool) {
     return &result->val.expr;
 }
 
-Expr* pool_alloc_or_expand(Pool* pool, size_t extra_sz) {
+Expr* pool_alloc_or_expand(ExprPool* pool, size_t extra_sz) {
     if (pool == NULL ||
         (pool->free_node == NULL && !pool_expand(pool, extra_sz)))
         return NULL;
@@ -138,7 +138,7 @@ Expr* pool_alloc_or_expand(Pool* pool, size_t extra_sz) {
     return pool_alloc(pool);
 }
 
-void pool_free(Pool* pool, Expr* e) {
+void pool_free(ExprPool* pool, Expr* e) {
     if (pool == NULL || e == NULL)
         return;
 

@@ -62,49 +62,49 @@ typedef struct LinkedPtr {
  * We need to store a list of array starts for freeing the actual `PoolNode'
  * arrays once the user is done with the pool.
  *
- * The user is able to allocate with O(1) time, because the `Pool.free_expr'
+ * The user is able to allocate with O(1) time, because the `ExprPool.free_expr'
  * pointer always points to a free node without needing to iterate anything.
  */
-typedef struct Pool {
+typedef struct ExprPool {
     PoolNode* free_node;
     LinkedPtr* array_starts;
-} Pool;
+} ExprPool;
 
 /*----------------------------------------------------------------------------*/
 
 /*
- * Allocate and initialize a new `Pool' structure, with the specified number of
+ * Allocate and initialize a new `ExprPool' structure, with the specified number of
  * expressions. If the initialization fails, NULL is returned.
  */
-Pool* pool_new(size_t pool_sz);
+ExprPool* pool_new(size_t pool_sz);
 
 /*
  * Expand the specified pool, adding `extra_sz' free expressions.
  */
-bool pool_expand(Pool* pool, size_t extra_sz);
+bool pool_expand(ExprPool* pool, size_t extra_sz);
 
 /*
- * Free all data in a `Pool' structure, and the structure itself. All data in
+ * Free all data in a `ExprPool' structure, and the structure itself. All data in
  * the pool becomes unusable. Allows NULL.
  */
-void pool_close(Pool* pool);
+void pool_close(ExprPool* pool);
 
 /*
  * Retrieve a free expression from the specified pool.
  */
-Expr* pool_alloc(Pool* pool);
+Expr* pool_alloc(ExprPool* pool);
 
 /*
  * Like `pool_get_expr', but if there are no free nodes in the pool, try to
  * expand it by `extra_sz' nodes. If the pool can't be expanded (according to
  * `pool_expand'), NULL is returned.
  */
-Expr* pool_alloc_or_expand(Pool* pool, size_t extra_sz);
+Expr* pool_alloc_or_expand(ExprPool* pool, size_t extra_sz);
 
 /*
  * Free an expression which was previously allocated from the specified pool.
  * Allows NULL as both arguments.
  */
-void pool_free(Pool* pool, Expr* e);
+void pool_free(ExprPool* pool, Expr* e);
 
 #endif /* EXPR_POOL_H_ */
