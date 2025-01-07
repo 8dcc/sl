@@ -63,16 +63,20 @@ typedef struct PoolNode {
 } PoolNode;
 
 /*
- * Linked list of pointers, used to store the start of the arrays inside a pool.
+ * Structure used to store the start of each array inside a pool.
  *
  * We need to store them as a linked list, since there can be an arbitrary
  * number of them, one for each call to `pool_expand' plus the initial one from
  * `pool_new'. New pointers will be prepended to the linked list.
+ *
+ * We also need to store the size of the current array, since the garbage
+ * collector will have to iterate over it.
  */
-typedef struct LinkedPtr {
-    struct LinkedPtr* next;
-    PoolNode* ptr;
-} LinkedPtr;
+typedef struct ArrayStart {
+    struct ArrayStart* next;
+    PoolNode* arr;
+    size_t arr_sz;
+} ArrayStart;
 
 /*
  * The actual pool structure, which contains a pointer to the first node, and
@@ -86,7 +90,7 @@ typedef struct LinkedPtr {
  */
 typedef struct ExprPool {
     PoolNode* free_node;
-    LinkedPtr* array_starts;
+    ArrayStart* array_starts;
 } ExprPool;
 
 /*----------------------------------------------------------------------------*/

@@ -95,9 +95,10 @@ bool pool_init(size_t pool_sz) {
     arr[pool_sz - 1].val.next = NULL;
     arr[pool_sz - 1].flags    = NODE_FREE;
 
-    g_expr_pool->array_starts       = mem_alloc(sizeof(LinkedPtr));
-    g_expr_pool->array_starts->next = NULL;
-    g_expr_pool->array_starts->ptr  = arr;
+    g_expr_pool->array_starts         = mem_alloc(sizeof(ArrayStart));
+    g_expr_pool->array_starts->next   = NULL;
+    g_expr_pool->array_starts->arr    = arr;
+    g_expr_pool->array_starts->arr_sz = pool_sz;
 
     return true;
 }
@@ -105,8 +106,8 @@ bool pool_init(size_t pool_sz) {
 bool pool_expand(size_t extra_sz) {
     SL_ASSERT(g_expr_pool != NULL && extra_sz > 0);
 
-    LinkedPtr* array_start = mem_alloc(sizeof(LinkedPtr));
-    PoolNode* extra_arr    = mem_alloc(extra_sz * sizeof(PoolNode));
+    ArrayStart* array_start = mem_alloc(sizeof(ArrayStart));
+    PoolNode* extra_arr     = mem_alloc(extra_sz * sizeof(PoolNode));
 
     /* Link the new free nodes together */
     for (size_t i = 0; i < extra_sz - 1; i++) {
@@ -120,7 +121,8 @@ bool pool_expand(size_t extra_sz) {
     g_expr_pool->free_node           = extra_arr;
 
     /* Prepend to the linked list of array starts */
-    array_start->ptr          = extra_arr;
+    array_start->arr          = extra_arr;
+    array_start->arr_sz       = extra_sz;
     array_start->next         = g_expr_pool->array_starts;
     g_expr_pool->array_starts = array_start;
 
@@ -131,12 +133,12 @@ void pool_close(void) {
     if (g_expr_pool == NULL)
         return;
 
-    LinkedPtr* linkedptr = g_expr_pool->array_starts;
-    while (linkedptr != NULL) {
-        LinkedPtr* next = linkedptr->next;
-        free(linkedptr->ptr);
-        free(linkedptr);
-        linkedptr = next;
+    ArrayStart* array_start = g_expr_pool->array_starts;
+    while (array_start != NULL) {
+        ArrayStart* next = array_start->next;
+        free(array_start->arr);
+        free(array_start);
+        array_start = next;
     }
 
     free(g_expr_pool);
