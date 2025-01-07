@@ -26,6 +26,7 @@
 
 #include "include/env.h"
 #include "include/expr.h"
+#include "include/expr_pool.h"
 #include "include/util.h"
 #include "include/read.h"
 #include "include/lexer.h"
@@ -105,6 +106,11 @@ int main(int argc, char** argv) {
     FILE* file_input        = get_input_file(argc, argv);
     const bool print_prompt = (file_input == stdin && isatty(0));
 
+    /* Allocate the expression pool. It will be expanded when needed. */
+    if (!pool_init(BASE_POOL_SZ))
+        SL_FATAL("Failed to initialize pool of %zu expressions.\n",
+                 BASE_POOL_SZ);
+
     /* Initialize global environment with symbols like "nil" */
     Env* global_env = env_new();
     SL_ASSERT(global_env != NULL);
@@ -129,6 +135,7 @@ int main(int argc, char** argv) {
     repl_until_eof(global_env, file_input, print_prompt, true);
 
     env_free(global_env);
+    pool_close();
     fclose(file_input);
     return 0;
 }
