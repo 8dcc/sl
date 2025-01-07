@@ -147,7 +147,8 @@ Expr* prim_format(Env* env, Expr* e) {
             free(dst);
             return err("Format specifier expected argument of type '%s', got "
                        "'%s'.",
-                       exprtype2str(expr_type), exprtype2str(cur_arg->type));
+                       exprtype2str(expr_type),
+                       exprtype2str(cur_arg->type));
         }
 
         /*
@@ -156,17 +157,26 @@ Expr* prim_format(Env* env, Expr* e) {
          */
         switch (expr_type) {
             case EXPR_STRING:
-                sl_concat_format(&dst, &dst_sz, &dst_pos, c_format,
+                sl_concat_format(&dst,
+                                 &dst_sz,
+                                 &dst_pos,
+                                 c_format,
                                  cur_arg->val.s);
                 break;
 
             case EXPR_NUM_INT:
-                sl_concat_format(&dst, &dst_sz, &dst_pos, c_format,
+                sl_concat_format(&dst,
+                                 &dst_sz,
+                                 &dst_pos,
+                                 c_format,
                                  cur_arg->val.n);
                 break;
 
             case EXPR_NUM_FLT:
-                sl_concat_format(&dst, &dst_sz, &dst_pos, c_format,
+                sl_concat_format(&dst,
+                                 &dst_sz,
+                                 &dst_pos,
+                                 c_format,
                                  cur_arg->val.f);
                 break;
 
@@ -281,7 +291,10 @@ Expr* prim_re_match_groups(Env* env, Expr* e) {
 
     size_t nmatch;
     regmatch_t* pmatch;
-    if (!sl_regex_match_groups(pattern, string, ignore_case, &nmatch,
+    if (!sl_regex_match_groups(pattern,
+                               string,
+                               ignore_case,
+                               &nmatch,
                                &pmatch)) {
         ret->val.children = NULL;
         return ret;

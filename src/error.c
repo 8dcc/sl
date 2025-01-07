@@ -61,8 +61,13 @@ void err_print(FILE* fp, const Expr* e) {
 #ifdef SL_NO_COLOR
     fprintf(fp, "Error: %s", e->val.s);
 #else
-    fprintf(fp, "%sError%s: %s%s%s", COL_BOLD_RED, COL_RESET, COL_NORM_YELLOW,
-            e->val.s, COL_RESET);
+    fprintf(fp,
+            "%sError%s: %s%s%s",
+            COL_BOLD_RED,
+            COL_RESET,
+            COL_NORM_YELLOW,
+            e->val.s,
+            COL_RESET);
 #endif
 }
 
@@ -76,7 +81,11 @@ void sl_print_err(const char* func, const char* fmt, ...) {
     fprintf(stderr, "%s: ", func);
     vfprintf(stderr, fmt, va);
 #else
-    fprintf(stderr, "%s%s%s: %s", COL_BOLD_CYAN, func, COL_RESET,
+    fprintf(stderr,
+            "%s%s%s: %s",
+            COL_BOLD_CYAN,
+            func,
+            COL_RESET,
             COL_NORM_YELLOW);
     vfprintf(stderr, fmt, va);
     fprintf(stderr, "%s", COL_RESET);
@@ -96,8 +105,14 @@ void sl_print_ftl(const char* file, int line, const char* func, const char* fmt,
     fprintf(stderr, "%s:%d: %s: ", file, line, func);
     vfprintf(stderr, fmt, va);
 #else
-    fprintf(stderr, "%s:%d: %s%s%s: %s", file, line, COL_BOLD_CYAN, func,
-            COL_RESET, COL_NORM_RED);
+    fprintf(stderr,
+            "%s:%d: %s%s%s: %s",
+            file,
+            line,
+            COL_BOLD_CYAN,
+            func,
+            COL_RESET,
+            COL_NORM_RED);
     vfprintf(stderr, fmt, va);
     fprintf(stderr, "%s", COL_RESET);
 #endif

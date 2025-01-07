@@ -27,8 +27,10 @@
 void* mem_alloc(size_t size) {
     void* result = malloc(size);
     if (result == NULL)
-        SL_FATAL("Failed to allocate %zu bytes: %s (%d).", size,
-                 strerror(errno), errno);
+        SL_FATAL("Failed to allocate %zu bytes: %s (%d).",
+                 size,
+                 strerror(errno),
+                 errno);
     return result;
 }
 
@@ -36,7 +38,10 @@ void* mem_calloc(size_t nmemb, size_t size) {
     void* result = calloc(nmemb, size);
     if (result == NULL)
         SL_FATAL("Failed to allocate %zu elements of %zu bytes each: %s (%d).",
-                 nmemb, size, strerror(errno), errno);
+                 nmemb,
+                 size,
+                 strerror(errno),
+                 errno);
     return result;
 }
 
