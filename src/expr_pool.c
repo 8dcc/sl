@@ -39,22 +39,21 @@
 #include <stdlib.h>
 
 #include "include/expr_pool.h"
+#include "include/memory.h"
 #include "include/error.h"
 
+/*----------------------------------------------------------------------------*/
+
 ExprPool* g_expr_pool = NULL;
+
+/*----------------------------------------------------------------------------*/
 
 bool pool_init(size_t pool_sz) {
     SL_ASSERT(g_expr_pool == NULL);
 
-    g_expr_pool = malloc(sizeof(ExprPool));
-    if (g_expr_pool == NULL)
-        return false;
-
-    PoolNode* arr = g_expr_pool->free_node = malloc(pool_sz * sizeof(PoolNode));
-    if (arr == NULL) {
-        free(g_expr_pool);
-        return false;
-    }
+    g_expr_pool   = mem_alloc(sizeof(ExprPool));
+    PoolNode* arr = g_expr_pool->free_node =
+      mem_alloc(pool_sz * sizeof(PoolNode));
 
     for (size_t i = 0; i < pool_sz - 1; i++) {
         arr[i].val.next = &arr[i + 1];
@@ -63,13 +62,7 @@ bool pool_init(size_t pool_sz) {
     arr[pool_sz - 1].val.next = NULL;
     arr[pool_sz - 1].flags    = NODE_FREE;
 
-    g_expr_pool->array_starts = malloc(sizeof(LinkedPtr));
-    if (g_expr_pool->array_starts == NULL) {
-        free(arr);
-        free(g_expr_pool);
-        return false;
-    }
-
+    g_expr_pool->array_starts       = mem_alloc(sizeof(LinkedPtr));
     g_expr_pool->array_starts->next = NULL;
     g_expr_pool->array_starts->ptr  = arr;
 
@@ -79,15 +72,8 @@ bool pool_init(size_t pool_sz) {
 bool pool_expand(size_t extra_sz) {
     SL_ASSERT(g_expr_pool != NULL && extra_sz > 0);
 
-    LinkedPtr* array_start = malloc(sizeof(LinkedPtr));
-    if (array_start == NULL)
-        return false;
-
-    PoolNode* extra_arr = malloc(extra_sz * sizeof(PoolNode));
-    if (extra_arr == NULL) {
-        free(array_start);
-        return false;
-    }
+    LinkedPtr* array_start = mem_alloc(sizeof(LinkedPtr));
+    PoolNode* extra_arr    = mem_alloc(extra_sz * sizeof(PoolNode));
 
     /* Link the new free nodes together */
     for (size_t i = 0; i < extra_sz - 1; i++) {
