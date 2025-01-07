@@ -20,28 +20,35 @@
 #define GARBAGE_COLLECTION_H_ 1
 
 #include "env.h"
+#include "expr.h"
 
 /*
- * Initialize the garbage collection system.
+ * Unmark all nodes in 'g_expr_pool', declared in 'expr_pool.h'.
  */
-void gc_init(void);
+void gc_unmark_all(void);
 
 /*
- * Register a pointer that could be garbage-collected.
+ * Mark all expressions in the specified environment as currently used. This
+ * function doesn't free or collect anything, use 'gc_collect' for that.
+ * Multiple environments can be marked before collecting.
  */
-void gc_register(void* ptr);
+void gc_mark_env(Env* env);
 
 /*
- * Collect (free) the garbage that is not in the specified environment.
+ * Mark the specified expression as currently used, recursively. This function
+ * doesn't free or collect anything, use 'gc_collect' for that. Multiple
+ * expressions can be marked before collecting.
+ */
+void gc_mark_expr(Expr* expr);
+
+/*
+ * Collect all unmarked expressions (i.e. all nodes whose 'NODE_GCMARKED' flag
+ * is not set) in 'g_expr_pool', declared in 'expr_pool.h'.
  *
- * In order for garbage to be collected, it must have been previously registered
- * using `gc_register'.
- *
- * FIXME: This function assumes that `env' is the only environment in use. This
- * is fine when passing the global environment (as long as it's not duringe.
- * procedure call), but we shouldn't rely on this. Specifically, this might be a
- * problem when adding closures in the future.
+ * This function is usually called after unmarking all nodes with
+ * 'gc_unmark_all', and then marking the desired nodes with one or more calls to
+ * functions like 'gc_mark_env'.
  */
-void gc_collect_env(Env* env);
+void gc_collect(void);
 
 #endif /* GARBAGE_COLLECTION_H_ */
