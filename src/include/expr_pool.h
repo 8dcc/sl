@@ -2,6 +2,9 @@
 #ifndef EXPR_POOL_H_
 #define EXPR_POOL_H_ 1
 
+#include <stddef.h>
+#include <stdbool.h>
+
 #include "expr.h"
 
 /*----------------------------------------------------------------------------*/

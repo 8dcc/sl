@@ -35,8 +35,11 @@
  */
 
 #include <stddef.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #include "include/expr_pool.h"
+#include "include/error.h"
 
 ExprPool* g_expr_pool = NULL;
 
