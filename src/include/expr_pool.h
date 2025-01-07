@@ -4,6 +4,9 @@
 
 #include "expr.h"
 
+/*----------------------------------------------------------------------------*/
+/* Enums and structures */
+
 /*
  * Flags stored in each node of the expression pool. These flags are NOT
  * mutually exclusive, so they can be OR'd together.
@@ -71,40 +74,61 @@ typedef struct ExprPool {
 } ExprPool;
 
 /*----------------------------------------------------------------------------*/
+/* Globals */
 
 /*
- * Allocate and initialize a new `ExprPool' structure, with the specified number of
- * expressions. If the initialization fails, NULL is returned.
+ * Global expression pool. Declared public so the garbage collector can access
+ * it directly.
  */
-ExprPool* pool_new(size_t pool_sz);
+extern ExprPool* g_expr_pool;
+
+/*----------------------------------------------------------------------------*/
+/* Functions */
 
 /*
- * Expand the specified pool, adding `extra_sz' free expressions.
+ * Allocate and initialize the global expression pool with the specified number
+ * of expressions. True is returned on success, or false otherwise.
+ *
+ * The caller is responsible for initializing the pool only once (or an
+ * assertion will fail).
  */
-bool pool_expand(ExprPool* pool, size_t extra_sz);
+bool pool_init(size_t pool_sz);
 
 /*
- * Free all data in a `ExprPool' structure, and the structure itself. All data in
- * the pool becomes unusable. Allows NULL.
+ * Expand the global expression pool, adding `extra_sz' free expressions.
  */
-void pool_close(ExprPool* pool);
+bool pool_expand(size_t extra_sz);
 
 /*
- * Retrieve a free expression from the specified pool.
+ * Close the global expression pool, freeing all necessary data. All data in
+ * the pool becomes unusable.
+ *
+ * If the pool is already closed, the function ignores it but does not fail.
  */
-Expr* pool_alloc(ExprPool* pool);
+void pool_close(void);
+
+/*
+ * Retrieve a free expression from the global expression pool.
+ *
+ * The caller is responsible for ensuring that the pool was previously
+ * initialized with `pool_init' (or an assertion will fail).
+ */
+Expr* pool_alloc(void);
 
 /*
  * Like `pool_get_expr', but if there are no free nodes in the pool, try to
  * expand it by `extra_sz' nodes. If the pool can't be expanded (according to
  * `pool_expand'), NULL is returned.
  */
-Expr* pool_alloc_or_expand(ExprPool* pool, size_t extra_sz);
+Expr* pool_alloc_or_expand(size_t extra_sz);
 
 /*
- * Free an expression which was previously allocated from the specified pool.
- * Allows NULL as both arguments.
+ * Free an expression which was previously allocated from the global expression
+ * pool.
+ *
+ * If the expression argument is NULL, the function ignores it but does not
+ * fail. If the pool is closed, however, an assertion will fail.
  */
-void pool_free(ExprPool* pool, Expr* e);
+void pool_free(Expr* e);
 
 #endif /* EXPR_POOL_H_ */

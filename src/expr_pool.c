@@ -38,15 +38,19 @@
 
 #include "include/expr_pool.h"
 
-ExprPool* pool_new(size_t pool_sz) {
-    ExprPool* pool = malloc(sizeof(ExprPool));
-    if (pool == NULL)
-        return NULL;
+ExprPool* g_expr_pool = NULL;
 
-    PoolNode* arr = pool->free_node = malloc(pool_sz * sizeof(PoolNode));
+bool pool_init(size_t pool_sz) {
+    SL_ASSERT(g_expr_pool == NULL);
+
+    g_expr_pool = malloc(sizeof(ExprPool));
+    if (g_expr_pool == NULL)
+        return false;
+
+    PoolNode* arr = g_expr_pool->free_node = malloc(pool_sz * sizeof(PoolNode));
     if (arr == NULL) {
-        free(pool);
-        return NULL;
+        free(g_expr_pool);
+        return false;
     }
 
     for (size_t i = 0; i < pool_sz - 1; i++) {
@@ -56,22 +60,21 @@ ExprPool* pool_new(size_t pool_sz) {
     arr[pool_sz - 1].val.next = NULL;
     arr[pool_sz - 1].flags    = NODE_FREE;
 
-    pool->array_starts = malloc(sizeof(LinkedPtr));
-    if (pool->array_starts == NULL) {
+    g_expr_pool->array_starts = malloc(sizeof(LinkedPtr));
+    if (g_expr_pool->array_starts == NULL) {
         free(arr);
-        free(pool);
-        return NULL;
+        free(g_expr_pool);
+        return false;
     }
 
-    pool->array_starts->next = NULL;
-    pool->array_starts->ptr  = arr;
+    g_expr_pool->array_starts->next = NULL;
+    g_expr_pool->array_starts->ptr  = arr;
 
-    return pool;
+    return true;
 }
 
-bool pool_expand(ExprPool* pool, size_t extra_sz) {
-    if (pool == NULL || extra_sz == 0)
-        return false;
+bool pool_expand(size_t extra_sz) {
+    SL_ASSERT(g_expr_pool != NULL && extra_sz > 0);
 
     LinkedPtr* array_start = malloc(sizeof(LinkedPtr));
     if (array_start == NULL)
@@ -90,23 +93,23 @@ bool pool_expand(ExprPool* pool, size_t extra_sz) {
     }
 
     /* Prepend the new node array to the linked list of free nodes */
-    extra_arr[extra_sz - 1].val.next = pool->free_node;
+    extra_arr[extra_sz - 1].val.next = g_expr_pool->free_node;
     extra_arr[extra_sz - 1].flags    = NODE_FREE;
-    pool->free_node                  = extra_arr;
+    g_expr_pool->free_node           = extra_arr;
 
     /* Prepend to the linked list of array starts */
-    array_start->ptr   = extra_arr;
-    array_start->next  = pool->array_starts;
-    pool->array_starts = array_start;
+    array_start->ptr          = extra_arr;
+    array_start->next         = g_expr_pool->array_starts;
+    g_expr_pool->array_starts = array_start;
 
     return true;
 }
 
-void pool_close(ExprPool* pool) {
-    if (pool == NULL)
+void pool_close(void) {
+    if (g_expr_pool == NULL)
         return;
 
-    LinkedPtr* linkedptr = pool->array_starts;
+    LinkedPtr* linkedptr = g_expr_pool->array_starts;
     while (linkedptr != NULL) {
         LinkedPtr* next = linkedptr->next;
         free(linkedptr->ptr);
@@ -114,39 +117,42 @@ void pool_close(ExprPool* pool) {
         linkedptr = next;
     }
 
-    free(pool);
+    free(g_expr_pool);
+    g_expr_pool = NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
-Expr* pool_alloc(ExprPool* pool) {
-    if (pool == NULL || pool->free_node == NULL)
+Expr* pool_alloc(void) {
+    SL_ASSERT(g_expr_pool != NULL);
+    if (g_expr_pool->free_node == NULL)
         return NULL;
 
-    PoolNode* result = pool->free_node;
-    pool->free_node  = pool->free_node->val.next;
+    PoolNode* result       = g_expr_pool->free_node;
+    g_expr_pool->free_node = g_expr_pool->free_node->val.next;
 
     result->flags &= ~NODE_FREE;
     return &result->val.expr;
 }
 
-Expr* pool_alloc_or_expand(ExprPool* pool, size_t extra_sz) {
-    if (pool == NULL ||
-        (pool->free_node == NULL && !pool_expand(pool, extra_sz)))
+Expr* pool_alloc_or_expand(size_t extra_sz) {
+    SL_ASSERT(g_expr_pool != NULL);
+    if (g_expr_pool->free_node == NULL && !pool_expand(extra_sz))
         return NULL;
 
-    return pool_alloc(pool);
+    return pool_alloc();
 }
 
-void pool_free(ExprPool* pool, Expr* e) {
-    if (pool == NULL || e == NULL)
+void pool_free(Expr* e) {
+    SL_ASSERT(g_expr_pool != NULL);
+    if (e == NULL)
         return;
 
     /*
      * We are able to cast an `Expr' pointer to a `PoolNode' one because the
      * expression is stored (inside a union) in the first member of `PoolNode'.
      */
-    PoolNode* node  = (PoolNode*)e;
-    node->val.next  = pool->free_node;
-    pool->free_node = node;
+    PoolNode* node         = (PoolNode*)e;
+    node->val.next         = g_expr_pool->free_node;
+    g_expr_pool->free_node = node;
 }
