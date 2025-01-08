@@ -189,5 +189,9 @@ Expr* parse(const Token* tokens) {
      */
     Expr* expr                 = expr_new(EXPR_UNKNOWN);
     const size_t tokens_parsed = parse_recur(expr, tokens);
-    return (tokens_parsed == 0) ? NULL : expr;
+    if (tokens_parsed == 0) {
+        expr_free(expr);
+        return NULL;
+    }
+    return expr;
 }
