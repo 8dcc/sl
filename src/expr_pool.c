@@ -135,8 +135,12 @@ void pool_close(void) {
 
     ArrayStart* array_start = g_expr_pool->array_starts;
     while (array_start != NULL) {
-        ArrayStart* next = array_start->next;
+        for (size_t i = 0; i < array_start->arr_sz; i++)
+            free_expr_members(&array_start->arr[i].val.expr);
+
         free(array_start->arr);
+
+        ArrayStart* next = array_start->next;
         free(array_start);
         array_start = next;
     }
