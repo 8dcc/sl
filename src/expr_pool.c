@@ -156,6 +156,7 @@ Expr* pool_alloc(void) {
     PoolNode* result       = g_expr_pool->free_node;
     g_expr_pool->free_node = g_expr_pool->free_node->val.next;
 
+    SL_ASSERT((result->flags & NODE_FREE) != 0);
     result->flags &= ~NODE_FREE;
     return &result->val.expr;
 }
@@ -179,7 +180,11 @@ void pool_free(Expr* e) {
      */
     free_expr_members(e);
 
-    PoolNode* node         = expr2node(e);
+    PoolNode* node = expr2node(e);
+
+    SL_ASSERT((node->flags & NODE_FREE) == 0);
+    node->flags |= NODE_FREE;
+
     node->val.next         = g_expr_pool->free_node;
     g_expr_pool->free_node = node;
 }
