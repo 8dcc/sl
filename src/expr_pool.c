@@ -56,6 +56,11 @@ static void free_expr_members(Expr* e) {
 
     switch (e->type) {
         case EXPR_PARENT:
+            /*
+             * TODO: After switching to cons pairs, ensure the 'car' and 'cdr'
+             * are not free here. Now we check it from 'pool_free' instead, but
+             * it should be temporary.
+             */
             expr_list_free(e->val.children);
             break;
 
@@ -182,8 +187,12 @@ void pool_free(Expr* e) {
 
     /*
      * Avoid double-frees.
+     *
+     * TODO: After we switch to cons pairs, we should turn this back into an
+     * assertion.
      */
-    SL_ASSERT((node->flags & NODE_FLAG_FREE) == 0);
+    if ((node->flags & NODE_FLAG_FREE) == 0)
+        return;
     node->flags |= NODE_FLAG_FREE;
 
     /*
