@@ -19,8 +19,8 @@
 #ifndef GARBAGE_COLLECTION_H_
 #define GARBAGE_COLLECTION_H_ 1
 
-#include "env.h"
-#include "expr.h"
+struct Env;  /* env.h */
+struct Expr; /* expr.h */
 
 /*
  * Unmark all nodes in 'g_expr_pool', declared in 'expr_pool.h'.
@@ -35,14 +35,14 @@ void gc_unmark_all(void);
  * This only marks the expressions directly in the specified environment, it
  * does not mark parent environments.
  */
-void gc_mark_env(Env* env);
+void gc_mark_env(struct Env* env);
 
 /*
  * Mark the specified expression as currently used, recursively. This function
  * doesn't free or collect anything, use 'gc_collect' for that. Multiple
  * expressions can be marked before collecting.
  */
-void gc_mark_expr(Expr* expr);
+void gc_mark_expr(struct Expr* expr);
 
 /*
  * Collect all unmarked expressions (i.e. all nodes whose 'NODE_GCMARKED' flag
