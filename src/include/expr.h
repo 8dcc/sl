@@ -118,7 +118,7 @@ Expr* expr_new(enum EExprType type);
  * Doesn't free adjacent expressions (i.e. ignores `e->next'). For freeing a
  * linked list of expressions, use `expr_list_free'.
  *
- * TODO: Replace 'expr_free' and 'expr_list_free' with garbage collection.
+ * TODO: Make 'expr_free' inline.
  */
 void expr_free(Expr* e);
 
