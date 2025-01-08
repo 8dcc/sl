@@ -28,6 +28,7 @@
 #include "include/expr.h"
 #include "include/expr_pool.h"
 #include "include/util.h"
+#include "include/garbage_collection.h"
 #include "include/read.h"
 #include "include/lexer.h"
 #include "include/parser.h"
@@ -99,6 +100,11 @@ static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
 
         /* Free the evaluated expression */
         expr_free(evaluated);
+
+        /* Collect all garbage that is not in the current environment */
+        gc_unmark_all();
+        gc_mark_env(env);
+        gc_collect();
     }
 }
 
