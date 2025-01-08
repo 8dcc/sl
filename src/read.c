@@ -23,6 +23,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 
 #include "include/util.h"
@@ -235,6 +236,29 @@ static char* read_isolated_atom(FILE* fp) {
     return result;
 }
 
+/*
+ * Read an expression, starting with a quote-like character. Assumes the caller
+ * just received a quote, but did not write it anywhere.
+ *
+ * First, we store the quote character, then we read an expression
+ * (independently of the type) and we prepend the character we stored to the
+ * string. Technically, this uses more allocations than necessary, but it keeps
+ * the code clean and modular.
+ */
+static char* read_quoted_expr(FILE* fp) {
+    const char quote_char = get_next_non_comment(fp);
+
+    char* expr_str        = read_expr(fp);
+    const size_t expr_len = strlen(expr_str);
+
+    char* result = mem_alloc(1 + expr_len + 1);
+    result[0]    = quote_char;
+    memcpy(&result[1], expr_str, expr_len + 1);
+
+    free(expr_str);
+    return result;
+}
+
 /*----------------------------------------------------------------------------*/
 
 char* read_expr(FILE* fp) {
@@ -272,6 +296,11 @@ char* read_expr(FILE* fp) {
 
         default:
             return read_isolated_atom(fp);
+
+        case '\'':
+        case '`':
+        case ',':
+            return read_quoted_expr(fp);
 
         case ')':
             SL_ERR("Encountered unmatched ')'.");
