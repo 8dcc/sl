@@ -178,16 +178,19 @@ void pool_free(Expr* e) {
     if (e == NULL)
         return;
 
+    PoolNode* node = expr2node(e);
+
+    /*
+     * Avoid double-frees.
+     */
+    SL_ASSERT((node->flags & NODE_FLAG_FREE) == 0);
+    node->flags |= NODE_FLAG_FREE;
+
     /*
      * Before freeing the expression we have to free all its members. They are
      * currently allocated using the functions in 'memory.c', not with a pool.
      */
     free_expr_members(e);
-
-    PoolNode* node = expr2node(e);
-
-    SL_ASSERT((node->flags & NODE_FLAG_FREE) == 0);
-    node->flags |= NODE_FLAG_FREE;
 
     node->val.next         = g_expr_pool->free_node;
     g_expr_pool->free_node = node;
