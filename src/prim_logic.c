@@ -37,7 +37,7 @@ Expr* prim_equal(Env* env, Expr* e) {
         }
     }
 
-    return (result) ? expr_clone(tru) : expr_clone(nil);
+    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
 Expr* prim_equal_num(Env* env, Expr* e) {
@@ -55,7 +55,7 @@ Expr* prim_equal_num(Env* env, Expr* e) {
         }
     }
 
-    return (result) ? expr_clone(tru) : expr_clone(nil);
+    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
 Expr* prim_lt(Env* env, Expr* e) {
@@ -72,7 +72,7 @@ Expr* prim_lt(Env* env, Expr* e) {
         }
     }
 
-    return (result) ? expr_clone(tru) : expr_clone(nil);
+    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
 Expr* prim_gt(Env* env, Expr* e) {
@@ -89,5 +89,5 @@ Expr* prim_gt(Env* env, Expr* e) {
         }
     }
 
-    return (result) ? expr_clone(tru) : expr_clone(nil);
+    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }

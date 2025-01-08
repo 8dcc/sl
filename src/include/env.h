@@ -56,10 +56,19 @@ struct Env {
 };
 
 /*----------------------------------------------------------------------------*/
-/* Global constants */
 
-extern const struct Expr* nil;
-extern const struct Expr* tru;
+/*
+ * Globals, initialized (if necessary) on 'env_init_defaults'.
+ *
+ *   - nil: Empty list, used to represent "false".
+ *   - tru: Symbol that evaluates to itself, used for explicit truth in
+ *     boolean functions (predicates).
+ *   - *debug-trace*: List of functions that are currently being traced by
+ *     the debugger.
+ */
+extern struct Expr* g_nil;
+extern struct Expr* g_tru;
+extern struct Expr* g_debug_trace_list;
 
 /*----------------------------------------------------------------------------*/
 

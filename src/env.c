@@ -30,12 +30,9 @@
 /* Used in `env_init_defaults' */
 #define BIND_PRIM_FLAGS(ENV, SYM, FUNC, FLAGS)                                 \
     do {                                                                       \
-        Expr FUNC##_expr = {                                                   \
-            .type     = EXPR_PRIM,                                             \
-            .val.prim = prim_##FUNC,                                           \
-            .next     = NULL,                                                  \
-        };                                                                     \
-        SL_ASSERT(env_bind(ENV, SYM, &FUNC##_expr, FLAGS));                    \
+        Expr* e     = expr_new(EXPR_PRIM);                                     \
+        e->val.prim = prim_##FUNC;                                             \
+        SL_ASSERT(env_bind(ENV, SYM, e, FLAGS));                               \
     } while (0)
 
 #define BIND_PRIM(ENV, SYM, FUNC) BIND_PRIM_FLAGS(ENV, SYM, FUNC, ENV_FLAG_NONE)
@@ -43,22 +40,11 @@
     BIND_PRIM_FLAGS(ENV, SYM, FUNC, ENV_FLAG_CONST | ENV_FLAG_SPECIAL)
 
 /*----------------------------------------------------------------------------*/
-/* Global constants */
 
-static Expr nil_expr = {
-    .type         = EXPR_PARENT,
-    .val.children = NULL,
-    .next         = NULL,
-};
-
-static Expr tru_expr = {
-    .type  = EXPR_SYMBOL,
-    .val.s = "tru",
-    .next  = NULL,
-};
-
-const Expr* nil = &nil_expr;
-const Expr* tru = &tru_expr;
+/* Globals, initialized in 'env_init_defaults' if necessary. */
+Expr* g_nil              = NULL;
+Expr* g_tru              = NULL;
+Expr* g_debug_trace_list = NULL;
 
 /*----------------------------------------------------------------------------*/
 
@@ -72,28 +58,28 @@ Env* env_new(void) {
 
 void env_init_defaults(Env* env) {
     /*
-     * The default environment has very little constants appart from C
-     * primitives:
+     * The default environment has very little variables appart from C
+     * primitives. See the 'env.h' header for more information on them.
      *
-     *   - nil: Empty list, used to represent "false". Parent expression with
-     *     NULL as `val.children'.
-     *   - tru: Symbol that evaluates to itself, used for explicit truth in
-     *     boolean functions.
-     *   - *debug-trace*: List of functions that are currently being traced by
-     *     the debugger.
-     *
-     * Since the expressions will be cloned, it's safe to pass the stack address
-     * to `env_bind'.
+     * First, we initialize the C pointers if necessary, and then we bind them
+     * to the environment.
      */
-    SL_ASSERT(env_bind(env, "nil", nil, ENV_FLAG_CONST));
-    SL_ASSERT(env_bind(env, "tru", tru, ENV_FLAG_CONST));
-
-    Expr debug_trace_list = {
-        .type         = EXPR_PARENT,
-        .val.children = NULL,
-        .next         = NULL,
-    };
-    SL_ASSERT(env_bind(env, "*debug-trace*", &debug_trace_list, ENV_FLAG_NONE));
+    if (g_nil == NULL) {
+        g_nil               = expr_new(EXPR_PARENT);
+        g_nil->val.children = NULL;
+    }
+    if (g_tru == NULL) {
+        g_tru        = expr_new(EXPR_SYMBOL);
+        g_tru->val.s = mem_strdup("tru");
+    }
+    if (g_debug_trace_list == NULL) {
+        g_debug_trace_list               = expr_new(EXPR_PARENT);
+        g_debug_trace_list->val.children = NULL;
+    }
+    SL_ASSERT(env_bind(env, "nil", g_nil, ENV_FLAG_CONST));
+    SL_ASSERT(env_bind(env, "tru", g_tru, ENV_FLAG_CONST));
+    SL_ASSERT(
+      env_bind(env, "*debug-trace*", g_debug_trace_list, ENV_FLAG_NONE));
 
     /* Special forms */
     BIND_SPECIAL(env, "quote", quote);
