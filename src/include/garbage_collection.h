@@ -31,6 +31,9 @@ void gc_unmark_all(void);
  * Mark all expressions in the specified environment as currently used. This
  * function doesn't free or collect anything, use 'gc_collect' for that.
  * Multiple environments can be marked before collecting.
+ *
+ * This only marks the expressions directly in the specified environment, it
+ * does not mark parent environments.
  */
 void gc_mark_env(Env* env);
 
