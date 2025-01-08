@@ -188,3 +188,32 @@ void pool_free(Expr* e) {
     node->val.next         = g_expr_pool->free_node;
     g_expr_pool->free_node = node;
 }
+
+/*----------------------------------------------------------------------------*/
+
+void pool_print_stats(FILE* fp) {
+    size_t total_free = 0, total_nodes = 0, total_arrays = 0;
+
+    for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
+        size_t num_free = 0;
+        for (size_t i = 0; i < a->arr_sz; i++)
+            if ((a->arr[i].flags & NODE_FLAG_FREE) != 0)
+                num_free++;
+
+        fprintf(fp,
+                "Array %zu: %zu/%zu free.\n",
+                total_arrays,
+                num_free,
+                a->arr_sz);
+
+        total_nodes += a->arr_sz;
+        total_free += num_free;
+        total_arrays++;
+    }
+
+    fprintf(fp,
+            "Total: %zu/%zu free in %zu arrays.\n",
+            total_free,
+            total_nodes,
+            total_arrays);
+}

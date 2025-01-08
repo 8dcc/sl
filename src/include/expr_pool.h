@@ -153,6 +153,11 @@ Expr* pool_alloc_or_expand(size_t extra_sz);
  */
 void pool_free(Expr* e);
 
+/*
+ * Print stats about the global expression pool to the specified file.
+ */
+void pool_print_stats(FILE* fp);
+
 /*----------------------------------------------------------------------------*/
 /* Static functions */
 
