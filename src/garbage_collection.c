@@ -46,11 +46,9 @@ static void mark_lambdactx(LambdaCtx* ctx) {
 /*----------------------------------------------------------------------------*/
 
 void gc_unmark_all(void) {
-    for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
-        PoolNode* cur_arr = a->arr;
+    for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next)
         for (size_t i = 0; i < a->arr_sz; i++)
-            cur_arr[i].flags &= ~NODE_FLAG_GCMARKED;
-    }
+            a->arr[i].flags &= ~NODE_FLAG_GCMARKED;
 }
 
 void gc_mark_env(Env* env) {
