@@ -56,12 +56,25 @@ enum EExprType {
     EXPR_MACRO   = (1 << 8),
 };
 
+/*
+ * The main expression type. This will be used to hold basically all data in our
+ * Lisp.
+ *
+ * The `type' member will determine what member we should access in the `val'
+ * union. Some types use the same union member (e.g. EXPR_STRING and
+ * EXPR_SYMBOL). See the enum above for more information.
+ *
+ * Note that the expressions whose value is allocated (e.g. EXPR_STRING,
+ * EXPR_LAMBDA, etc.) should own a unique pointer that is not being used by any
+ * other expression. Therefore, we should be able to modify or free these
+ * pointers without affecting other expressions.
+ *
+ * TODO: Use traditional cons-pair approach (used by most Lisps), rather than a
+ * linked list (which is what clojure uses, basically).
+ */
 typedef struct Expr Expr;
 struct Expr {
-    /* Type */
     enum EExprType type;
-
-    /* Value of the expression */
     union {
         long long n;
         double f;
@@ -71,7 +84,6 @@ struct Expr {
         struct LambdaCtx* lambda;
     } val;
 
-    /* Next expression in the linked list */
     Expr* next;
 };
 
