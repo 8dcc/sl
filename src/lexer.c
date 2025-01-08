@@ -197,6 +197,9 @@ void tokens_free(Token* arr) {
 }
 
 bool is_token_separator(char c) {
+    /*
+     * TODO: Should we add quote-like characters? E.g. '\'', '`' and ','.
+     */
     return isspace(c) || c == '\0' || c == '(' || c == ')';
 }
 
