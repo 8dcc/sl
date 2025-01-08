@@ -138,18 +138,30 @@ void pool_close(void) {
     if (g_expr_pool == NULL)
         return;
 
-    ArrayStart* array_start = g_expr_pool->array_starts;
-    while (array_start != NULL) {
+    /*
+     * First, free the members of all expressions in each array, because one
+     * might reference another from a separate array.
+     */
+    ArrayStart* array_start;
+    for (array_start = g_expr_pool->array_starts; array_start != NULL;
+         array_start = array_start->next)
         for (size_t i = 0; i < array_start->arr_sz; i++)
             free_expr_members(&array_start->arr[i].val.expr);
 
-        free(array_start->arr);
-
+    /*
+     * Then we can actually free the expression arrays, along with the
+     * 'ArrayStart' structures themselves.
+     */
+    for (array_start = g_expr_pool->array_starts; array_start != NULL;) {
         ArrayStart* next = array_start->next;
+        free(array_start->arr);
         free(array_start);
         array_start = next;
     }
 
+    /*
+     * And the 'ExprPool' structure.
+     */
     free(g_expr_pool);
     g_expr_pool = NULL;
 }
