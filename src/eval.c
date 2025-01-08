@@ -62,10 +62,8 @@ static Expr* eval_list(Env* env, Expr* list) {
          * argument in our linked list.
          */
         Expr* evaluated = eval(env, cur);
-        if (EXPRP_ERR(evaluated)) {
-            expr_list_free(dummy_copy.next);
+        if (EXPRP_ERR(evaluated))
             return evaluated;
-        }
 
         cur_copy->next = evaluated;
         cur_copy       = cur_copy->next;
@@ -127,10 +125,8 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* args;
     if (should_eval_args) {
         args = eval_list(env, cdr);
-        if (EXPRP_ERR(args)) {
-            expr_free(func);
+        if (EXPRP_ERR(args))
             return args;
-        }
     } else {
         args = cdr;
     }
@@ -142,11 +138,6 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* applied = apply(env, func, args);
     if (applied == NULL)
         applied = err("Unknown error (?)");
-
-    /* The evaluations of `func' and `args' returned clones */
-    expr_free(func);
-    if (should_eval_args)
-        expr_list_free(args);
 
     if (should_print_trace)
         debug_trace_print_post(stdout, applied);

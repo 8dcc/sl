@@ -60,10 +60,7 @@ Expr* prim_macroexpand(Env* env, Expr* e) {
     SL_EXPECT_TYPE(func, EXPR_MACRO);
 
     Expr* args     = e->val.children->next;
-    Expr* expanded = macro_expand(env, func, args);
-
-    expr_free(func);
-    return expanded;
+    return macro_expand(env, func, args);
 }
 
 Expr* prim_random(Env* env, Expr* e) {

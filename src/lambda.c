@@ -157,19 +157,25 @@ LambdaCtx* lambda_ctx_clone(const LambdaCtx* ctx) {
 }
 
 void lambda_ctx_free(LambdaCtx* ctx) {
-    /* First, free the environment and the body of the lambda */
+    /*
+     * 1. Free the lambda environment, which shouldn't be in use anymore.
+     *    Expressions in that environment are not freed, so they can still be
+     *    used somewhere else.
+     * 2. Free each formal argument string, and the pointer to the array itself.
+     * 3. Free the "&rest" formal string. This might be NULL, but it's a valid
+     *    value for 'free'.
+     * 4. Finally, free the 'LambdaCtx' structure itself.
+     *
+     * Note how we don't free the body, since those expressions might be in use
+     * somewhere else, and they will be garbage-collected if necessary.
+     */
     env_free(ctx->env);
-    expr_list_free(ctx->body);
 
-    /* Free each formal argument string, and the array itself */
     for (size_t i = 0; i < ctx->formals_num; i++)
         free(ctx->formals[i]);
     free(ctx->formals);
 
-    /* Free the "&rest" formal */
     free(ctx->formal_rest);
-
-    /* And finally, the LambdaCtx structure itself */
     free(ctx);
 }
 
@@ -252,9 +258,6 @@ static Expr* lambda_ctx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
         const bool bound =
           env_bind(ctx->env, ctx->formal_rest, rest_list, ENV_FLAG_NONE);
         SL_EXPECT(bound, "Could not bind symbol `%s'.", ctx->formal_rest);
-
-        rest_list->val.children = NULL;
-        expr_free(rest_list);
     }
 
     /*
@@ -271,7 +274,6 @@ static Expr* lambda_ctx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
      */
     Expr* last_evaluated = NULL;
     for (Expr* cur = ctx->body; cur != NULL; cur = cur->next) {
-        expr_free(last_evaluated);
         last_evaluated = eval(ctx->env, cur);
         if (EXPRP_ERR(last_evaluated))
             break;
@@ -296,8 +298,5 @@ Expr* macro_call(Env* env, Expr* func, Expr* args) {
         return expansion;
 
     /* Calling a macro is just evaluation its macro exansion */
-    Expr* evaluated = eval(env, expansion);
-    expr_free(expansion);
-
-    return evaluated;
+    return eval(env, expansion);
 }

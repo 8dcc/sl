@@ -88,18 +88,11 @@ static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
 
         /* Evaluate expression recursivelly */
         Expr* evaluated = eval(env, expr);
-
-        /* We are done with the original expression */
-        expr_free(expr);
-
         if (evaluated == NULL)
             continue;
 
         if (print_evaluated)
             expr_println(stdout, evaluated);
-
-        /* Free the evaluated expression */
-        expr_free(evaluated);
 
         /* Collect all garbage that is not in the current environment */
         gc_unmark_all();

@@ -188,10 +188,12 @@ void env_free(Env* env) {
     if (env == NULL)
         return;
 
-    for (size_t i = 0; i < env->size; i++) {
+    /*
+     * No need to free the expressions, they might be in use somewhere else, and
+     * they will be garbage-collected if necessary.
+     */
+    for (size_t i = 0; i < env->size; i++)
         free(env->bindings[i].sym);
-        expr_free(env->bindings[i].val);
-    }
 
     free(env->bindings);
     free(env);
