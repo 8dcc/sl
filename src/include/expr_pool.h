@@ -39,9 +39,9 @@
  *     exclusively by the garbage collector.
  */
 enum EPoolNodeFlags {
-    NODE_NONE     = 0,
-    NODE_FREE     = (1 << 0),
-    NODE_GCMARKED = (1 << 1),
+    NODE_FLAG_NONE     = 0,
+    NODE_FLAG_FREE     = (1 << 0),
+    NODE_FLAG_GCMARKED = (1 << 1),
 };
 
 /*
