@@ -65,7 +65,7 @@ Expr* prim_write(Env* env, Expr* e) {
               "Couldn't write expression of type '%s'.",
               exprtype2str(e->type));
 
-    return expr_clone(g_tru);
+    return g_tru;
 }
 
 Expr* prim_scan_str(Env* env, Expr* e) {

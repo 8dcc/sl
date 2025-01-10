@@ -334,7 +334,7 @@ Expr* prim_or(Env* env, Expr* e) {
      * (false).
      */
     if (e == NULL)
-        return expr_clone(g_nil);
+        return g_nil;
 
     Expr* result = NULL;
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
@@ -354,7 +354,7 @@ Expr* prim_and(Env* env, Expr* e) {
      * This is the standard behavior in Scheme.
      */
     if (e == NULL)
-        return expr_clone(g_tru);
+        return g_tru;
 
     Expr* result = NULL;
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
