@@ -71,6 +71,8 @@ enum EExprType {
  *
  * TODO: Use traditional cons-pair approach (used by most Lisps), rather than a
  * linked list (which is what clojure uses, basically).
+ *
+ * TODO: Don't hard-code types like 'long long' or 'double', typedef new ones.
  */
 typedef struct Expr Expr;
 struct Expr {

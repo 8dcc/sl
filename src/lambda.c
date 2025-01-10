@@ -113,6 +113,9 @@ enum ELambdaCtxErr lambda_ctx_init(LambdaCtx* ctx, const Expr* formals,
     ctx->formals_num = mandatory;
     ctx->formals     = mem_alloc(mandatory * sizeof(char*));
     ctx->formal_rest = NULL;
+    /*
+     * TODO: Should we clone the expressions, or store the original references?
+     */
     ctx->body        = expr_list_clone(body);
 
     /*
@@ -141,6 +144,9 @@ LambdaCtx* lambda_ctx_clone(const LambdaCtx* ctx) {
 
     /* Copy the environment and the list of body expressions */
     ret->env  = env_clone(ctx->env);
+    /*
+     * TODO: Should we clone the expressions, or store the original references?
+     */
     ret->body = expr_list_clone(ctx->body);
 
     /* Allocate a new string array for the mandatory formals, and copy them */

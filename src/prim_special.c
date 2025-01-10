@@ -41,6 +41,10 @@ static inline bool is_call_to(const Expr* e, const char* func) {
 static Expr* handle_backquote_arg(Env* env, const Expr* e) {
     /* Not a list, return unevaluated, just like `quote' */
     if (e->type != EXPR_PARENT)
+        /*
+         * TODO: Don't create a copy, return the reference directly (after
+         * adding cons).
+         */
         return expr_clone(e);
 
     if (is_call_to(e, ",")) {
@@ -128,6 +132,10 @@ Expr* prim_quote(Env* env, Expr* e) {
      */
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
+    /*
+     * TODO: Don't create a copy, return the reference directly (after
+     * adding cons).
+     */
     return expr_clone_recur(e);
 }
 
