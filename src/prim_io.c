@@ -120,7 +120,7 @@ Expr* prim_print_str(Env* env, Expr* e) {
     SL_EXPECT_TYPE(e, EXPR_STRING);
 
     printf("%s", e->val.s);
-    return expr_clone(e);
+    return e;
 }
 
 Expr* prim_error(Env* env, Expr* e) {

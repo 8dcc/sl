@@ -93,8 +93,9 @@ Env* env_clone(Env* env);
 void env_free(Env* env);
 
 /*
- * Bind the symbol `sym' to the expression `val' in environment `env', with the
- * specified `flags'.
+ * Bind the symbol string `sym' to the expression `val' in environment `env',
+ * with the specified `flags'. Note that the expression is stored by reference,
+ * so a copy is not created.
  *
  * Returns true on success, or false on failure. The caller is responsible for
  * checking the returned value and handling errors.
@@ -104,14 +105,14 @@ void env_free(Env* env);
  * return an error code. The caller should check if the function succeeded, and
  * if not, print the returned value of some `env_strerror' function.
  */
-bool env_bind(Env* env, const char* sym, const struct Expr* val,
+bool env_bind(Env* env, const char* sym, struct Expr* val,
               enum EEnvBindingFlags flags);
 
 /*
  * Bind the symbol `sym' to the expression `val' in the top-most parent of
  * environment `env', with the specified `flags'.
  */
-bool env_bind_global(Env* env, const char* sym, const struct Expr* val,
+bool env_bind_global(Env* env, const char* sym, struct Expr* val,
                      enum EEnvBindingFlags flags);
 
 /*

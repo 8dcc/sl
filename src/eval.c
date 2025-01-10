@@ -159,7 +159,7 @@ Expr* eval(Env* env, Expr* e) {
         case EXPR_PARENT: {
             /* `nil' evaluates to itself */
             if (expr_is_nil(e))
-                return expr_clone(e);
+                return e;
 
             /* Evaluate the list as a procedure/macro call */
             return eval_function_call(env, e);
@@ -180,7 +180,7 @@ Expr* eval(Env* env, Expr* e) {
         case EXPR_LAMBDA:
         case EXPR_MACRO:
             /* Not a parent nor a symbol, evaluates to itself */
-            return expr_clone(e);
+            return e;
 
         case EXPR_UNKNOWN:
             SL_FATAL("Tried to evaluate an expression of type 'Unknown'.");
