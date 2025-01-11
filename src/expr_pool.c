@@ -313,3 +313,34 @@ void pool_print_stats(FILE* fp) {
             total_nodes,
             total_arrays);
 }
+
+void pool_dump(FILE* fp) {
+    size_t array_count = 0;
+
+    ArrayStart* a;
+    POOL_FOREACH_ARRAYSTART(a) {
+        for (size_t i = 0; i < a->arr_sz; i++) {
+            const enum EPoolNodeFlags flags = pool_node_flags(&a->arr[i]);
+            fprintf(fp,
+                    "[%p] [%zu,%3zu] [F: %X] ",
+                    &a->arr[i],
+                    array_count,
+                    i,
+                    flags);
+            if ((flags & NODE_FLAG_FREE) == 0) {
+                expr_print(fp, &a->arr[i].val.expr);
+                const enum EExprType type = a->arr[i].val.expr.type;
+                if (type == EXPR_ERR || type == EXPR_SYMBOL ||
+                    type == EXPR_STRING || type == EXPR_LAMBDA ||
+                    type == EXPR_MACRO)
+                    printf(" [%p]", a->arr[i].val.expr.val.s);
+            } else {
+                fprintf(fp, "<invalid>");
+            }
+            fputc('\n', fp);
+        }
+
+        array_count++;
+    }
+    POOL_FOREACH_ARRAYSTART_END(a);
+}

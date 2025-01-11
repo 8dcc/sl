@@ -177,6 +177,11 @@ void pool_free(Expr* e);
  */
 void pool_print_stats(FILE* fp);
 
+/*
+ * Dump the contents of the global expression pool to the specified file.
+ */
+void pool_dump(FILE* fp);
+
 /*----------------------------------------------------------------------------*/
 /* Static functions */
 
