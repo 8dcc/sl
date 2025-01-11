@@ -227,7 +227,6 @@ bool env_bind(Env* env, const char* sym, const Expr* val,
             if ((env->bindings[i].flags & ENV_FLAG_CONST) != 0)
                 return false;
 
-            expr_free(env->bindings[i].val);
             env->bindings[i].val   = expr_clone_recur(val);
             env->bindings[i].flags = flags;
             return true;
