@@ -203,7 +203,7 @@ void pool_free(Expr* e) {
      * TODO: After we switch to cons pairs, we should turn this back into an
      * assertion.
      */
-    if ((node->flags & NODE_FLAG_FREE) == 0)
+    if ((node->flags & NODE_FLAG_FREE) != 0)
         return;
     node->flags |= NODE_FLAG_FREE;
 
