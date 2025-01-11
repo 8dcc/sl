@@ -39,6 +39,18 @@
 #include "include/memory.h"
 #include "include/error.h"
 
+#if defined(SL_NO_POOL_VALGRIND)
+#define VALGRIND_CREATE_MEMPOOL(a, b, c)
+#define VALGRIND_DESTROY_MEMPOOL(a)
+#define VALGRIND_MEMPOOL_ALLOC(a, b, c)
+#define VALGRIND_MEMPOOL_FREE(a, b)
+#define VALGRIND_MAKE_MEM_DEFINED(a, b)
+#define VALGRIND_MAKE_MEM_NOACCESS(a, b)
+#else
+#include <valgrind/valgrind.h>
+#include <valgrind/memcheck.h>
+#endif
+
 /*----------------------------------------------------------------------------*/
 /* Globals */
 
@@ -84,6 +96,28 @@ static void free_expr_members(Expr* e) {
 }
 
 /*----------------------------------------------------------------------------*/
+/* Public wrappers */
+
+enum EPoolNodeFlags pool_node_flags(PoolNode* node) {
+    VALGRIND_MAKE_MEM_DEFINED(&node->flags, sizeof(enum EPoolNodeFlags));
+    const enum EPoolNodeFlags result = node->flags;
+    VALGRIND_MAKE_MEM_NOACCESS(&node->flags, sizeof(enum EPoolNodeFlags));
+    return result;
+}
+
+void pool_node_flag_set(PoolNode* node, enum EPoolNodeFlags flag) {
+    VALGRIND_MAKE_MEM_DEFINED(&node->flags, sizeof(enum EPoolNodeFlags));
+    node->flags |= flag;
+    VALGRIND_MAKE_MEM_NOACCESS(&node->flags, sizeof(enum EPoolNodeFlags));
+}
+
+void pool_node_flag_unset(PoolNode* node, enum EPoolNodeFlags flag) {
+    VALGRIND_MAKE_MEM_DEFINED(&node->flags, sizeof(enum EPoolNodeFlags));
+    node->flags &= ~flag;
+    VALGRIND_MAKE_MEM_NOACCESS(&node->flags, sizeof(enum EPoolNodeFlags));
+}
+
+/*----------------------------------------------------------------------------*/
 /* Public pool-related functions */
 
 bool pool_init(size_t pool_sz) {
@@ -105,11 +139,17 @@ bool pool_init(size_t pool_sz) {
     g_expr_pool->array_starts->arr    = arr;
     g_expr_pool->array_starts->arr_sz = pool_sz;
 
+    VALGRIND_MAKE_MEM_NOACCESS(arr, pool_sz * sizeof(PoolNode));
+    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool->array_starts, sizeof(ArrayStart));
+    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool, sizeof(ExprPool));
+    VALGRIND_CREATE_MEMPOOL(g_expr_pool, sizeof(enum EPoolNodeFlags), 0);
+
     return true;
 }
 
 bool pool_expand(size_t extra_sz) {
     SL_ASSERT(g_expr_pool != NULL && extra_sz > 0);
+    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
 
     ArrayStart* array_start = mem_alloc(sizeof(ArrayStart));
     PoolNode* extra_arr     = mem_alloc(extra_sz * sizeof(PoolNode));
@@ -131,6 +171,10 @@ bool pool_expand(size_t extra_sz) {
     array_start->next         = g_expr_pool->array_starts;
     g_expr_pool->array_starts = array_start;
 
+    VALGRIND_MAKE_MEM_NOACCESS(extra_arr, extra_sz * sizeof(PoolNode));
+    VALGRIND_MAKE_MEM_NOACCESS(array_start, sizeof(ArrayStart));
+    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool, sizeof(ExprPool));
+
     return true;
 }
 
@@ -138,15 +182,22 @@ void pool_close(void) {
     if (g_expr_pool == NULL)
         return;
 
+    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
+
     /*
      * First, free the members of all expressions in each array, because one
      * might reference another from a separate array.
      */
     ArrayStart* array_start;
     for (array_start = g_expr_pool->array_starts; array_start != NULL;
-         array_start = array_start->next)
+         array_start = array_start->next) {
+        VALGRIND_MAKE_MEM_DEFINED(array_start, sizeof(ArrayStart));
+        VALGRIND_MAKE_MEM_DEFINED(array_start->arr,
+                                  array_start->arr_sz * sizeof(PoolNode));
+
         for (size_t i = 0; i < array_start->arr_sz; i++)
             free_expr_members(&array_start->arr[i].val.expr);
+    }
 
     /*
      * Then we can actually free the expression arrays, along with the
@@ -162,6 +213,7 @@ void pool_close(void) {
     /*
      * And the 'ExprPool' structure.
      */
+    VALGRIND_DESTROY_MEMPOOL(g_expr_pool);
     free(g_expr_pool);
     g_expr_pool = NULL;
 }
@@ -171,19 +223,28 @@ void pool_close(void) {
 
 Expr* pool_alloc(void) {
     SL_ASSERT(g_expr_pool != NULL);
+    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
+
     if (g_expr_pool->free_node == NULL)
         return NULL;
+    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool->free_node, sizeof(PoolNode*));
 
     PoolNode* result       = g_expr_pool->free_node;
     g_expr_pool->free_node = g_expr_pool->free_node->val.next;
 
-    SL_ASSERT((result->flags & NODE_FLAG_FREE) != 0);
-    result->flags &= ~NODE_FLAG_FREE;
+    SL_ASSERT((pool_node_flags(result) & NODE_FLAG_FREE) != 0);
+    pool_node_flag_unset(result, NODE_FLAG_FREE);
+
+    VALGRIND_MEMPOOL_ALLOC(g_expr_pool, &result->val.expr, sizeof(Expr));
+    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool->free_node, sizeof(PoolNode*));
+    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool, sizeof(ExprPool));
+
     return &result->val.expr;
 }
 
 Expr* pool_alloc_or_expand(size_t extra_sz) {
     SL_ASSERT(g_expr_pool != NULL);
+    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
     if (g_expr_pool->free_node == NULL && !pool_expand(extra_sz))
         return NULL;
 
@@ -203,9 +264,9 @@ void pool_free(Expr* e) {
      * TODO: After we switch to cons pairs, we should turn this back into an
      * assertion.
      */
-    if ((node->flags & NODE_FLAG_FREE) != 0)
+    if ((pool_node_flags(node) & NODE_FLAG_FREE) != 0)
         return;
-    node->flags |= NODE_FLAG_FREE;
+    pool_node_flag_set(node, NODE_FLAG_FREE);
 
     /*
      * Before freeing the expression we have to free all its members. They are
@@ -213,8 +274,13 @@ void pool_free(Expr* e) {
      */
     free_expr_members(e);
 
+    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
+
     node->val.next         = g_expr_pool->free_node;
     g_expr_pool->free_node = node;
+
+    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool, sizeof(ExprPool));
+    VALGRIND_MEMPOOL_FREE(g_expr_pool, e);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -222,10 +288,11 @@ void pool_free(Expr* e) {
 void pool_print_stats(FILE* fp) {
     size_t total_free = 0, total_nodes = 0, total_arrays = 0;
 
-    for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
+    ArrayStart* a;
+    POOL_FOREACH_ARRAYSTART(a) {
         size_t num_free = 0;
         for (size_t i = 0; i < a->arr_sz; i++)
-            if ((a->arr[i].flags & NODE_FLAG_FREE) != 0)
+            if ((pool_node_flags(&a->arr[i]) & NODE_FLAG_FREE) != 0)
                 num_free++;
 
         fprintf(fp,
@@ -238,6 +305,7 @@ void pool_print_stats(FILE* fp) {
         total_free += num_free;
         total_arrays++;
     }
+    POOL_FOREACH_ARRAYSTART_END(a);
 
     fprintf(fp,
             "Total: %zu/%zu free in %zu arrays.\n",

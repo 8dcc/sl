@@ -1,5 +1,6 @@
 
 CC=gcc
+CPPFLAGS=-DSL_NO_POOL_VALGRIND
 CFLAGS=-std=gnu99 -Wall -Wextra -ggdb3
 LDLIBS=-lm
 
@@ -42,8 +43,8 @@ doc:
 #-------------------------------------------------------------------------------
 
 $(BIN): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
 obj/%.c.o : src/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<

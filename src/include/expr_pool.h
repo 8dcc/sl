@@ -7,6 +7,13 @@
 
 #include "expr.h"
 
+#if defined(SL_NO_POOL_VALGRIND)
+#define VALGRIND_MAKE_MEM_DEFINED(a, b)
+#define VALGRIND_MAKE_MEM_NOACCESS(a, b)
+#else
+#include <valgrind/memcheck.h>
+#endif
+
 /*----------------------------------------------------------------------------*/
 /* Macros */
 
@@ -50,8 +57,8 @@ enum EPoolNodeFlags {
  * list). For more information on the advantages of this method, along with a
  * simpler implementation, see my pool allocation article, linked above.
  *
- * We also need a `flags' member to store, for example, whether specific node is
- * free or should be garbage-collected.
+ * We also need a `flags' member to store whether a specific node is free, if it
+ * should be garbage-collected, etc.
  */
 typedef struct PoolNode {
     union {
@@ -104,6 +111,18 @@ extern ExprPool* g_expr_pool;
 
 /*----------------------------------------------------------------------------*/
 /* Public functions */
+
+/*
+ * Wrappers for getting and setting node flags. Useful for setting the memory
+ * access with valgrind, since they mark the node as 'DEFINED' temporarily,
+ * before setting it back as 'NOACCESS'.
+ *
+ * NOTE: This means that if the node was previously marked as 'DEFINED', you
+ * will need to set it again.
+ */
+enum EPoolNodeFlags pool_node_flags(PoolNode* node);
+void pool_node_flag_set(PoolNode* node, enum EPoolNodeFlags flag);
+void pool_node_flag_unset(PoolNode* node, enum EPoolNodeFlags flag);
 
 /*
  * Allocate and initialize the global expression pool with the specified number
@@ -171,5 +190,32 @@ void pool_print_stats(FILE* fp);
 static inline PoolNode* expr2node(Expr* e) {
     return (PoolNode*)e;
 }
+
+/*----------------------------------------------------------------------------*/
+/* Callable macros */
+
+/*
+ * Open a "foreach" loop that will iterate all 'ArrayStart' structures in
+ * 'g_expr_pool'. The 'ITERATOR' argument must be an 'ArrayStart' pointer.
+ *
+ * FIXME: These look ugly when used, but I am not sure if there is something
+ * that could be done about it.
+ */
+#define POOL_FOREACH_ARRAYSTART(ITERATOR)                                      \
+    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));                  \
+    ITERATOR = g_expr_pool->array_starts;                                      \
+    while ((ITERATOR) != NULL) { /* Open while */                              \
+        VALGRIND_MAKE_MEM_DEFINED((ITERATOR), sizeof(ArrayStart));
+
+/*
+ * Close a call to 'POOL_FOREACH_ARRAYSTART'. The 'ITERATOR' argument must match
+ * the one used when opening the "foreach" loop.
+ */
+#define POOL_FOREACH_ARRAYSTART_END(ITERATOR)                                  \
+    ArrayStart* _next = (ITERATOR)->next;                                      \
+    VALGRIND_MAKE_MEM_NOACCESS((ITERATOR), sizeof(ArrayStart));                \
+    (ITERATOR) = _next;                                                        \
+    } /* Close while */                                                        \
+    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool, sizeof(ExprPool))
 
 #endif /* EXPR_POOL_H_ */
