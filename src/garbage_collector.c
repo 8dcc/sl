@@ -25,7 +25,7 @@
 #include "include/lambda.h"
 #include "include/util.h"
 #include "include/memory.h"
-#include "include/garbage_collection.h"
+#include "include/garbage_collector.h"
 #include "include/error.h"
 
 /*----------------------------------------------------------------------------*/
