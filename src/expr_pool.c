@@ -68,21 +68,13 @@ static inline bool pool_node_is_free(PoolNode* node) {
 
 /*
  * Free all previously-allocated members of an expression when necessary.
- * Doesn't free the `Expr' structure itself.
+ * Doesn't free other expressions, just members that were allocated using
+ * 'mem_alloc' or similar. Doesn't free the `Expr' structure itself.
  */
-static void free_expr_members(Expr* e) {
+static void free_heap_expr_members(Expr* e) {
     SL_ASSERT(e != NULL);
 
     switch (e->type) {
-        case EXPR_PARENT:
-            /*
-             * TODO: After switching to cons pairs, ensure the 'car' and 'cdr'
-             * are not free here. Now we check it from 'pool_free' instead, but
-             * it should be temporary.
-             */
-            expr_list_free(e->val.children);
-            break;
-
         case EXPR_ERR:
         case EXPR_SYMBOL:
         case EXPR_STRING:
@@ -98,6 +90,7 @@ static void free_expr_members(Expr* e) {
         case EXPR_NUM_INT:
         case EXPR_NUM_FLT:
         case EXPR_PRIM:
+        case EXPR_PARENT:
             break;
     }
 }
@@ -202,9 +195,12 @@ void pool_close(void) {
         VALGRIND_MAKE_MEM_DEFINED(array_start->arr,
                                   array_start->arr_sz * sizeof(PoolNode));
 
-        for (size_t i = 0; i < array_start->arr_sz; i++)
-            if (!pool_node_is_free(&array_start->arr[i]))
-                free_expr_members(&array_start->arr[i].val.expr);
+        for (size_t i = 0; i < array_start->arr_sz; i++) {
+            if (!pool_node_is_free(&array_start->arr[i])) {
+                pool_node_flag_set(&array_start->arr[i], NODE_FLAG_FREE);
+                free_heap_expr_members(&array_start->arr[i].val.expr);
+            }
+        }
     }
 
     /*
@@ -277,10 +273,11 @@ void pool_free(Expr* e) {
     pool_node_flag_set(node, NODE_FLAG_FREE);
 
     /*
-     * Before freeing the expression we have to free all its members. They are
+     * Before freeing the expression we have to free its heap members. They are
      * currently allocated using the functions in 'memory.c', not with a pool.
+     * Note that this function doesn't try to free any 'Expr' at all.
      */
-    free_expr_members(e);
+    free_heap_expr_members(e);
 
     VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
 
