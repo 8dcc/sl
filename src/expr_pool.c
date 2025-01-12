@@ -203,7 +203,8 @@ void pool_close(void) {
                                   array_start->arr_sz * sizeof(PoolNode));
 
         for (size_t i = 0; i < array_start->arr_sz; i++)
-            free_expr_members(&array_start->arr[i].val.expr);
+            if (!pool_node_is_free(&array_start->arr[i]))
+                free_expr_members(&array_start->arr[i].val.expr);
     }
 
     /*
