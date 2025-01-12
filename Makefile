@@ -1,6 +1,6 @@
 
 CC=gcc
-CPPFLAGS=-DSL_NO_POOL_VALGRIND
+CPPFLAGS=
 CFLAGS=-std=gnu99 -Wall -Wextra -ggdb3
 LDLIBS=-lm
 
