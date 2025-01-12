@@ -60,6 +60,13 @@ ExprPool* g_expr_pool = NULL;
 /* Static functions */
 
 /*
+ * Is the specified node flagged as free?
+ */
+static inline bool pool_node_is_free(PoolNode* node) {
+    return (pool_node_flags(node) & NODE_FLAG_FREE) != 0;
+}
+
+/*
  * Free all previously-allocated members of an expression when necessary.
  * Doesn't free the `Expr' structure itself.
  */
@@ -232,7 +239,7 @@ Expr* pool_alloc(void) {
     PoolNode* result       = g_expr_pool->free_node;
     g_expr_pool->free_node = g_expr_pool->free_node->val.next;
 
-    SL_ASSERT((pool_node_flags(result) & NODE_FLAG_FREE) != 0);
+    SL_ASSERT(pool_node_is_free(result));
     pool_node_flag_unset(result, NODE_FLAG_FREE);
 
     VALGRIND_MEMPOOL_ALLOC(g_expr_pool, &result->val.expr, sizeof(Expr));
@@ -264,7 +271,7 @@ void pool_free(Expr* e) {
      * TODO: After we switch to cons pairs, we should turn this back into an
      * assertion.
      */
-    if ((pool_node_flags(node) & NODE_FLAG_FREE) != 0)
+    if (pool_node_is_free(node))
         return;
     pool_node_flag_set(node, NODE_FLAG_FREE);
 
@@ -292,7 +299,7 @@ void pool_print_stats(FILE* fp) {
     POOL_FOREACH_ARRAYSTART(a) {
         size_t num_free = 0;
         for (size_t i = 0; i < a->arr_sz; i++)
-            if ((pool_node_flags(&a->arr[i]) & NODE_FLAG_FREE) != 0)
+            if (pool_node_is_free(&a->arr[i]))
                 num_free++;
 
         fprintf(fp,
