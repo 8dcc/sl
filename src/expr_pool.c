@@ -195,18 +195,16 @@ void pool_close(void) {
         VALGRIND_MAKE_MEM_DEFINED(array_start->arr,
                                   array_start->arr_sz * sizeof(PoolNode));
 
-        for (size_t i = 0; i < array_start->arr_sz; i++) {
-            if (!pool_node_is_free(&array_start->arr[i])) {
-                pool_node_flag_set(&array_start->arr[i], NODE_FLAG_FREE);
-                free_heap_expr_members(&array_start->arr[i].val.expr);
-            }
-        }
+        for (size_t i = 0; i < array_start->arr_sz; i++)
+            if (!pool_node_is_free(&array_start->arr[i]))
+                pool_free(&array_start->arr[i].val.expr);
     }
 
     /*
      * Then we can actually free the expression arrays, along with the
      * 'ArrayStart' structures themselves.
      */
+    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
     for (array_start = g_expr_pool->array_starts; array_start != NULL;) {
         ArrayStart* next = array_start->next;
         free(array_start->arr);
