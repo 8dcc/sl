@@ -7,6 +7,13 @@
 
 #include "expr.h"
 
+#if defined(SL_NO_POOL_VALGRIND)
+#define VALGRIND_MAKE_MEM_DEFINED(a, b)
+#define VALGRIND_MAKE_MEM_NOACCESS(a, b)
+#else
+#include <valgrind/memcheck.h>
+#endif
+
 /*----------------------------------------------------------------------------*/
 /* Macros */
 
@@ -50,8 +57,8 @@ enum EPoolNodeFlags {
  * list). For more information on the advantages of this method, along with a
  * simpler implementation, see my pool allocation article, linked above.
  *
- * We also need a `flags' member to store, for example, whether specific node is
- * free or should be garbage-collected.
+ * We also need a `flags' member to store whether a specific node is free, if it
+ * should be garbage-collected, etc.
  */
 typedef struct PoolNode {
     union {
@@ -106,6 +113,18 @@ extern ExprPool* g_expr_pool;
 /* Public functions */
 
 /*
+ * Wrappers for getting and setting node flags. Useful for setting the memory
+ * access with valgrind, since they mark the node as 'DEFINED' temporarily,
+ * before setting it back as 'NOACCESS'.
+ *
+ * NOTE: This means that if the node was previously marked as 'DEFINED', you
+ * will need to set it again.
+ */
+enum EPoolNodeFlags pool_node_flags(PoolNode* node);
+void pool_node_flag_set(PoolNode* node, enum EPoolNodeFlags flag);
+void pool_node_flag_unset(PoolNode* node, enum EPoolNodeFlags flag);
+
+/*
  * Allocate and initialize the global expression pool with the specified number
  * of expressions. True is returned on success, or false otherwise.
  *
@@ -157,6 +176,11 @@ void pool_free(Expr* e);
  * Print stats about the global expression pool to the specified file.
  */
 void pool_print_stats(FILE* fp);
+
+/*
+ * Dump the contents of the global expression pool to the specified file.
+ */
+void pool_dump(FILE* fp);
 
 /*----------------------------------------------------------------------------*/
 /* Static functions */

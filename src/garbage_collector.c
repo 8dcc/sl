@@ -25,7 +25,7 @@
 #include "include/lambda.h"
 #include "include/util.h"
 #include "include/memory.h"
-#include "include/garbage_collection.h"
+#include "include/garbage_collector.h"
 #include "include/error.h"
 
 /*----------------------------------------------------------------------------*/
@@ -48,7 +48,7 @@ static void mark_lambdactx(LambdaCtx* ctx) {
 void gc_unmark_all(void) {
     for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next)
         for (size_t i = 0; i < a->arr_sz; i++)
-            a->arr[i].flags &= ~NODE_FLAG_GCMARKED;
+            pool_node_flag_unset(&a->arr[i], NODE_FLAG_GCMARKED);
 }
 
 void gc_mark_env(Env* env) {
@@ -83,7 +83,7 @@ void gc_mark_expr(Expr* e) {
     }
 
     PoolNode* node = expr2node(e);
-    node->flags |= NODE_FLAG_GCMARKED;
+    pool_node_flag_set(node, NODE_FLAG_GCMARKED);
 }
 
 void gc_collect(void) {
@@ -94,7 +94,8 @@ void gc_collect(void) {
     for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
         PoolNode* cur_arr = a->arr;
         for (size_t i = 0; i < a->arr_sz; i++)
-            if ((cur_arr[i].flags & (NODE_FLAG_GCMARKED | NODE_FLAG_FREE)) == 0)
+            if ((pool_node_flags(&cur_arr[i]) &
+                 (NODE_FLAG_GCMARKED | NODE_FLAG_FREE)) == 0)
                 pool_free(&cur_arr[i].val.expr);
     }
 }

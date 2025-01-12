@@ -28,7 +28,7 @@
 #include "include/expr.h"
 #include "include/expr_pool.h"
 #include "include/util.h"
-#include "include/garbage_collection.h"
+#include "include/garbage_collector.h"
 #include "include/read.h"
 #include "include/lexer.h"
 #include "include/parser.h"
