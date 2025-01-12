@@ -94,8 +94,16 @@ static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
         if (print_evaluated)
             expr_println(stdout, evaluated);
 
-        /* Collect all garbage that is not in the current environment */
+        /*
+         * Collect all garbage that is not in the current environment.
+         *
+         * TODO: Marking globals is temporary, until we save references directly
+         * in the environment.
+         */
         gc_unmark_all();
+        gc_mark_expr(g_nil);
+        gc_mark_expr(g_tru);
+        gc_mark_expr(g_debug_trace_list);
         gc_mark_env(env);
         gc_collect();
     }
