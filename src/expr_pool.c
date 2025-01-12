@@ -140,8 +140,6 @@ bool pool_init(size_t pool_sz) {
     g_expr_pool->array_starts->arr_sz = pool_sz;
 
     VALGRIND_MAKE_MEM_NOACCESS(arr, pool_sz * sizeof(PoolNode));
-    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool->array_starts, sizeof(ArrayStart));
-    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool, sizeof(ExprPool));
     VALGRIND_CREATE_MEMPOOL(g_expr_pool, sizeof(enum EPoolNodeFlags), 0);
 
     return true;
@@ -149,7 +147,6 @@ bool pool_init(size_t pool_sz) {
 
 bool pool_expand(size_t extra_sz) {
     SL_ASSERT(g_expr_pool != NULL && extra_sz > 0);
-    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
 
     ArrayStart* array_start = mem_alloc(sizeof(ArrayStart));
     PoolNode* extra_arr     = mem_alloc(extra_sz * sizeof(PoolNode));
@@ -172,8 +169,6 @@ bool pool_expand(size_t extra_sz) {
     g_expr_pool->array_starts = array_start;
 
     VALGRIND_MAKE_MEM_NOACCESS(extra_arr, extra_sz * sizeof(PoolNode));
-    VALGRIND_MAKE_MEM_NOACCESS(array_start, sizeof(ArrayStart));
-    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool, sizeof(ExprPool));
 
     return true;
 }
@@ -182,8 +177,6 @@ void pool_close(void) {
     if (g_expr_pool == NULL)
         return;
 
-    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
-
     /*
      * First, free the members of all expressions in each array, because one
      * might reference another from a separate array.
@@ -191,7 +184,6 @@ void pool_close(void) {
     ArrayStart* array_start;
     for (array_start = g_expr_pool->array_starts; array_start != NULL;
          array_start = array_start->next) {
-        VALGRIND_MAKE_MEM_DEFINED(array_start, sizeof(ArrayStart));
         VALGRIND_MAKE_MEM_DEFINED(array_start->arr,
                                   array_start->arr_sz * sizeof(PoolNode));
 
@@ -204,7 +196,6 @@ void pool_close(void) {
      * Then we can actually free the expression arrays, along with the
      * 'ArrayStart' structures themselves.
      */
-    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
     for (array_start = g_expr_pool->array_starts; array_start != NULL;) {
         ArrayStart* next = array_start->next;
         free(array_start->arr);
@@ -225,7 +216,6 @@ void pool_close(void) {
 
 Expr* pool_alloc(void) {
     SL_ASSERT(g_expr_pool != NULL);
-    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
 
     if (g_expr_pool->free_node == NULL)
         return NULL;
@@ -239,14 +229,12 @@ Expr* pool_alloc(void) {
 
     VALGRIND_MEMPOOL_ALLOC(g_expr_pool, &result->val.expr, sizeof(Expr));
     VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool->free_node, sizeof(PoolNode*));
-    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool, sizeof(ExprPool));
 
     return &result->val.expr;
 }
 
 Expr* pool_alloc_or_expand(size_t extra_sz) {
     SL_ASSERT(g_expr_pool != NULL);
-    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
     if (g_expr_pool->free_node == NULL && !pool_expand(extra_sz))
         return NULL;
 
@@ -273,12 +261,9 @@ void pool_free(Expr* e) {
      */
     free_heap_expr_members(e);
 
-    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));
-
     node->val.next         = g_expr_pool->free_node;
     g_expr_pool->free_node = node;
 
-    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool, sizeof(ExprPool));
     VALGRIND_MEMPOOL_FREE(g_expr_pool, e);
 }
 
@@ -287,8 +272,7 @@ void pool_free(Expr* e) {
 void pool_print_stats(FILE* fp) {
     size_t total_free = 0, total_nodes = 0, total_arrays = 0;
 
-    ArrayStart* a;
-    POOL_FOREACH_ARRAYSTART(a) {
+    for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
         size_t num_free = 0;
         for (size_t i = 0; i < a->arr_sz; i++)
             if (pool_node_is_free(&a->arr[i]))
@@ -304,7 +288,6 @@ void pool_print_stats(FILE* fp) {
         total_free += num_free;
         total_arrays++;
     }
-    POOL_FOREACH_ARRAYSTART_END(a);
 
     fprintf(fp,
             "Total: %zu/%zu free in %zu arrays.\n",
@@ -316,8 +299,7 @@ void pool_print_stats(FILE* fp) {
 void pool_dump(FILE* fp) {
     size_t array_count = 0;
 
-    ArrayStart* a;
-    POOL_FOREACH_ARRAYSTART(a) {
+    for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
         for (size_t i = 0; i < a->arr_sz; i++) {
             const enum EPoolNodeFlags flags = pool_node_flags(&a->arr[i]);
             fprintf(fp,
@@ -326,8 +308,10 @@ void pool_dump(FILE* fp) {
                     array_count,
                     i,
                     flags);
+
             if ((flags & NODE_FLAG_FREE) == 0) {
                 expr_print(fp, &a->arr[i].val.expr);
+
                 const enum EExprType type = a->arr[i].val.expr.type;
                 if (type == EXPR_ERR || type == EXPR_SYMBOL ||
                     type == EXPR_STRING || type == EXPR_LAMBDA ||
@@ -336,10 +320,10 @@ void pool_dump(FILE* fp) {
             } else {
                 fprintf(fp, "<invalid>");
             }
+
             fputc('\n', fp);
         }
 
         array_count++;
     }
-    POOL_FOREACH_ARRAYSTART_END(a);
 }

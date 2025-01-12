@@ -196,31 +196,4 @@ static inline PoolNode* expr2node(Expr* e) {
     return (PoolNode*)e;
 }
 
-/*----------------------------------------------------------------------------*/
-/* Callable macros */
-
-/*
- * Open a "foreach" loop that will iterate all 'ArrayStart' structures in
- * 'g_expr_pool'. The 'ITERATOR' argument must be an 'ArrayStart' pointer.
- *
- * FIXME: These look ugly when used, but I am not sure if there is something
- * that could be done about it.
- */
-#define POOL_FOREACH_ARRAYSTART(ITERATOR)                                      \
-    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool, sizeof(ExprPool));                  \
-    ITERATOR = g_expr_pool->array_starts;                                      \
-    while ((ITERATOR) != NULL) { /* Open while */                              \
-        VALGRIND_MAKE_MEM_DEFINED((ITERATOR), sizeof(ArrayStart));
-
-/*
- * Close a call to 'POOL_FOREACH_ARRAYSTART'. The 'ITERATOR' argument must match
- * the one used when opening the "foreach" loop.
- */
-#define POOL_FOREACH_ARRAYSTART_END(ITERATOR)                                  \
-    ArrayStart* _next = (ITERATOR)->next;                                      \
-    VALGRIND_MAKE_MEM_NOACCESS((ITERATOR), sizeof(ArrayStart));                \
-    (ITERATOR) = _next;                                                        \
-    } /* Close while */                                                        \
-    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool, sizeof(ExprPool))
-
 #endif /* EXPR_POOL_H_ */

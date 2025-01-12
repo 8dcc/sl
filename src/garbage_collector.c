@@ -46,12 +46,9 @@ static void mark_lambdactx(LambdaCtx* ctx) {
 /*----------------------------------------------------------------------------*/
 
 void gc_unmark_all(void) {
-    ArrayStart* a;
-    POOL_FOREACH_ARRAYSTART(a) {
+    for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next)
         for (size_t i = 0; i < a->arr_sz; i++)
             pool_node_flag_unset(&a->arr[i], NODE_FLAG_GCMARKED);
-    }
-    POOL_FOREACH_ARRAYSTART_END(a);
 }
 
 void gc_mark_env(Env* env) {
@@ -94,13 +91,11 @@ void gc_collect(void) {
      * Iterate the list of array starts, then iterate the arrays themselves. We
      * collect (free) all expressions that are not marked (and not free).
      */
-    ArrayStart* a;
-    POOL_FOREACH_ARRAYSTART(a) {
+    for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
         PoolNode* cur_arr = a->arr;
         for (size_t i = 0; i < a->arr_sz; i++)
             if ((pool_node_flags(&cur_arr[i]) &
                  (NODE_FLAG_GCMARKED | NODE_FLAG_FREE)) == 0)
                 pool_free(&cur_arr[i].val.expr);
     }
-    POOL_FOREACH_ARRAYSTART_END(a);
 }
