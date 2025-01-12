@@ -264,12 +264,8 @@ void pool_free(Expr* e) {
 
     /*
      * Avoid double-frees.
-     *
-     * TODO: After we switch to cons pairs, we should turn this back into an
-     * assertion.
      */
-    if (pool_node_is_free(node))
-        return;
+    SL_ASSERT(!pool_node_is_free(node));
     pool_node_flag_set(node, NODE_FLAG_FREE);
 
     /*
