@@ -36,18 +36,6 @@ Expr* expr_new(enum EExprType type) {
     return ret;
 }
 
-void expr_free(Expr* e) {
-    pool_free(e);
-}
-
-void expr_list_free(Expr* e) {
-    while (e != NULL) {
-        Expr* next = e->next;
-        expr_free(e);
-        e = next;
-    }
-}
-
 /*----------------------------------------------------------------------------*/
 
 Expr* expr_clone(const Expr* e) {

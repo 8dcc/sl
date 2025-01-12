@@ -109,25 +109,10 @@ struct Expr {
 /*----------------------------------------------------------------------------*/
 
 /*
- * Allocate a new empty expression of the specified type. The returned pointer
- * should be freed by the caller using `expr_free'.
+ * Allocate and initialize a new empty expression of the specified type.
+ * Wrapper for 'pool_alloc_or_expand'.
  */
 Expr* expr_new(enum EExprType type);
-
-/*
- * Free expression, along with their children, if any.
- *
- * Doesn't free adjacent expressions (i.e. ignores `e->next'). For freeing a
- * linked list of expressions, use `expr_list_free'.
- *
- * TODO: Make 'expr_free' inline.
- */
-void expr_free(Expr* e);
-
-/*
- * Free a linked list of `Expr' structures.
- */
-void expr_list_free(Expr* e);
 
 /*----------------------------------------------------------------------------*/
 

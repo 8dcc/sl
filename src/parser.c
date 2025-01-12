@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "include/expr.h"
+#include "include/expr_pool.h"
 #include "include/util.h"
 #include "include/memory.h"
 #include "include/lexer.h"
@@ -191,7 +192,7 @@ Expr* parse(const Token* tokens) {
     Expr* expr                 = expr_new(EXPR_UNKNOWN);
     const size_t tokens_parsed = parse_recur(expr, tokens);
     if (tokens_parsed == 0) {
-        expr_free(expr);
+        pool_free(expr);
         return NULL;
     }
     return expr;
