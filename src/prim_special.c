@@ -233,14 +233,14 @@ Expr* prim_lambda(Env* env, Expr* e) {
      * lambda definition, and finally store that context structure in the actual
      * expression we will return.
      */
-    LambdaCtx* ctx = lambda_ctx_new();
+    LambdaCtx* ctx = lambdactx_new();
 
     const Expr* formals                 = e;
     const Expr* body                    = e->next;
-    const enum ELambdaCtxErr lambda_err = lambda_ctx_init(ctx, formals, body);
+    const enum ELambdaCtxErr lambda_err = lambdactx_init(ctx, formals, body);
     if (lambda_err != LAMBDACTX_ERR_NONE) {
-        lambda_ctx_free(ctx);
-        return err(lambda_ctx_strerror(lambda_err));
+        lambdactx_free(ctx);
+        return err(lambdactx_strerror(lambda_err));
     }
 
     Expr* ret       = expr_new(EXPR_LAMBDA);
@@ -255,14 +255,14 @@ Expr* prim_macro(Env* env, Expr* e) {
               "and body.");
     SL_EXPECT_TYPE(e, EXPR_PARENT);
 
-    LambdaCtx* ctx = lambda_ctx_new();
+    LambdaCtx* ctx = lambdactx_new();
 
     const Expr* formals                 = e;
     const Expr* body                    = e->next;
-    const enum ELambdaCtxErr lambda_err = lambda_ctx_init(ctx, formals, body);
+    const enum ELambdaCtxErr lambda_err = lambdactx_init(ctx, formals, body);
     if (lambda_err != LAMBDACTX_ERR_NONE) {
-        lambda_ctx_free(ctx);
-        return err(lambda_ctx_strerror(lambda_err));
+        lambdactx_free(ctx);
+        return err(lambdactx_strerror(lambda_err));
     }
 
     /*

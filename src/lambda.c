@@ -57,7 +57,7 @@ static enum ELambdaCtxErr count_formals(const Expr* list, size_t* mandatory,
 
 /*----------------------------------------------------------------------------*/
 
-const char* lambda_ctx_strerror(enum ELambdaCtxErr code) {
+const char* lambdactx_strerror(enum ELambdaCtxErr code) {
     const char* s;
     switch (code) {
         case LAMBDACTX_ERR_NONE:
@@ -75,7 +75,7 @@ const char* lambda_ctx_strerror(enum ELambdaCtxErr code) {
 
 /*----------------------------------------------------------------------------*/
 
-LambdaCtx* lambda_ctx_new(void) {
+LambdaCtx* lambdactx_new(void) {
     LambdaCtx* ret   = mem_alloc(sizeof(LambdaCtx));
     ret->env         = NULL;
     ret->formals_num = 0;
@@ -85,7 +85,7 @@ LambdaCtx* lambda_ctx_new(void) {
     return ret;
 }
 
-enum ELambdaCtxErr lambda_ctx_init(LambdaCtx* ctx, const Expr* formals,
+enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const Expr* formals,
                                    const Expr* body) {
     SL_ASSERT(formals->type == EXPR_PARENT);
 
@@ -138,7 +138,7 @@ enum ELambdaCtxErr lambda_ctx_init(LambdaCtx* ctx, const Expr* formals,
     return LAMBDACTX_ERR_NONE;
 }
 
-LambdaCtx* lambda_ctx_clone(const LambdaCtx* ctx) {
+LambdaCtx* lambdactx_clone(const LambdaCtx* ctx) {
     /* Allocate a new LambdaCtx structure */
     LambdaCtx* ret = mem_alloc(sizeof(LambdaCtx));
 
@@ -162,7 +162,7 @@ LambdaCtx* lambda_ctx_clone(const LambdaCtx* ctx) {
     return ret;
 }
 
-void lambda_ctx_free(LambdaCtx* ctx) {
+void lambdactx_free(LambdaCtx* ctx) {
     /*
      * 1. Free the lambda environment, which shouldn't be in use anymore.
      *    Expressions in that environment are not freed, so they can still be
@@ -187,7 +187,7 @@ void lambda_ctx_free(LambdaCtx* ctx) {
 
 /*----------------------------------------------------------------------------*/
 
-bool lambda_ctx_equal(const LambdaCtx* a, const LambdaCtx* b) {
+bool lambdactx_equal(const LambdaCtx* a, const LambdaCtx* b) {
     if (a->formals_num != b->formals_num)
         return false;
 
@@ -208,7 +208,7 @@ bool lambda_ctx_equal(const LambdaCtx* a, const LambdaCtx* b) {
 
 /*----------------------------------------------------------------------------*/
 
-void lambda_ctx_print_args(FILE* fp, const LambdaCtx* ctx) {
+void lambdactx_print_args(FILE* fp, const LambdaCtx* ctx) {
     /* Position in the `ctx->formals' array, shared across all argument types */
     size_t formals_pos = 0;
 
@@ -233,7 +233,7 @@ void lambda_ctx_print_args(FILE* fp, const LambdaCtx* ctx) {
 
 /*----------------------------------------------------------------------------*/
 
-static Expr* lambda_ctx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
+static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
     /* Count the number of arguments that we received */
     const size_t arg_num = expr_list_len(args);
 
@@ -290,12 +290,12 @@ static Expr* lambda_ctx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
 
 Expr* lambda_call(Env* env, Expr* func, Expr* args) {
     SL_ASSERT(func->type == EXPR_LAMBDA);
-    return lambda_ctx_eval_body(env, func->val.lambda, args);
+    return lambdactx_eval_body(env, func->val.lambda, args);
 }
 
 Expr* macro_expand(Env* env, Expr* func, Expr* args) {
     SL_ASSERT(func->type == EXPR_MACRO);
-    return lambda_ctx_eval_body(env, func->val.lambda, args);
+    return lambdactx_eval_body(env, func->val.lambda, args);
 }
 
 Expr* macro_call(Env* env, Expr* func, Expr* args) {

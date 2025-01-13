@@ -83,7 +83,7 @@ static void free_heap_expr_members(Expr* e) {
 
         case EXPR_LAMBDA:
         case EXPR_MACRO:
-            lambda_ctx_free(e->val.lambda);
+            lambdactx_free(e->val.lambda);
             break;
 
         case EXPR_UNKNOWN:

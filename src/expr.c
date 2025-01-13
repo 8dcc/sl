@@ -76,7 +76,7 @@ Expr* expr_clone(const Expr* e) {
 
         case EXPR_MACRO:
         case EXPR_LAMBDA:
-            ret->val.lambda = lambda_ctx_clone(e->val.lambda);
+            ret->val.lambda = lambdactx_clone(e->val.lambda);
             break;
 
         case EXPR_UNKNOWN:
@@ -202,7 +202,7 @@ bool expr_equal(const Expr* a, const Expr* b) {
 
         case EXPR_MACRO:
         case EXPR_LAMBDA:
-            return lambda_ctx_equal(a->val.lambda, b->val.lambda);
+            return lambdactx_equal(a->val.lambda, b->val.lambda);
 
         case EXPR_UNKNOWN:
             return false;
@@ -445,7 +445,7 @@ bool expr_write(FILE* fp, const Expr* e) {
                     (e->type == EXPR_LAMBDA)  ? "lambda"
                     : (e->type == EXPR_MACRO) ? "macro"
                                               : "ERROR");
-            lambda_ctx_print_args(fp, e->val.lambda);
+            lambdactx_print_args(fp, e->val.lambda);
             fputc(' ', fp);
             expr_list_write(fp, e->val.lambda->body);
             fputc(')', fp);
@@ -526,7 +526,7 @@ void expr_print_debug(FILE* fp, const Expr* e) {
             for (int i = 0; i < indent; i++)
                 fputc(' ', fp);
             fprintf(fp, "Formals: ");
-            lambda_ctx_print_args(fp, e->val.lambda);
+            lambdactx_print_args(fp, e->val.lambda);
             fputc('\n', fp);
 
             /* Print each expression in the body of the function */
