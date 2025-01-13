@@ -20,7 +20,7 @@
 
 #include <stdio.h> /* FILE */
 
-enum ETokenTypes {
+enum ETokenType {
     /*
      * Used to indicate the end of a `Token' array.
      */
@@ -51,7 +51,7 @@ enum ETokenTypes {
 };
 
 typedef struct Token {
-    enum ETokenTypes type;
+    enum ETokenType type;
     union {
         long long n;
         double f;
