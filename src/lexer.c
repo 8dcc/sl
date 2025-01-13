@@ -5,6 +5,7 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "include/lisp_types.h"
 #include "include/util.h"
 #include "include/memory.h"
 #include "include/error.h"
@@ -61,7 +62,7 @@ static void set_value_from_str(Token* dst, char* str) {
     char* endptr;
 
     /* Try to fully convert the string into a `long long' using `strtoll' */
-    long long int_num = strtoll(str, &endptr, STRTOLL_ANY_BASE);
+    LispInt int_num = strtoll(str, &endptr, STRTOLL_ANY_BASE);
     if (endptr != NULL && str != endptr && *endptr == '\0') {
         dst->type  = TOKEN_NUM_INT;
         dst->val.n = int_num;
@@ -69,7 +70,7 @@ static void set_value_from_str(Token* dst, char* str) {
     }
 
     /* Try to fully convert the string into a `double' using `strtod' */
-    double flt_num = strtod(str, &endptr);
+    LispFlt flt_num = strtod(str, &endptr);
     if (endptr != NULL && str != endptr && *endptr == '\0') {
         dst->type  = TOKEN_NUM_FLT;
         dst->val.f = flt_num;

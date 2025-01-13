@@ -20,6 +20,8 @@
 
 #include <stdio.h> /* FILE */
 
+#include "lisp_types.h" /* LispInt, LispFlt */
+
 enum ETokenType {
     /*
      * Used to indicate the end of a `Token' array.
@@ -29,8 +31,8 @@ enum ETokenType {
     /*
      * The following make use of `Token.val'
      */
-    TOKEN_NUM_INT, /* Number (long long) */
-    TOKEN_NUM_FLT, /* Number (double) */
+    TOKEN_NUM_INT, /* Number (LispInt) */
+    TOKEN_NUM_FLT, /* Number (LispFlt) */
     TOKEN_SYMBOL,  /* Symbol (string) */
     TOKEN_STRING,  /* String (string) */
 
@@ -53,11 +55,8 @@ enum ETokenType {
 typedef struct Token {
     enum ETokenType type;
     union {
-        /*
-         * TODO: Use 'LispInt' and 'LispFlt' from here.
-         */
-        long long n;
-        double f;
+        LispInt n;
+        LispFlt f;
         char* s;
     } val;
 } Token;
