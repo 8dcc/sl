@@ -372,10 +372,10 @@ and Interpretation of Computer Programs/[fn::
 
 - Special Form: define symbol expr :: <<define>>
 
-  Bind symbol to a value in the current environment.
+  Bind a symbol to a value in the current environment.
 
-  Evaluates the second argument, and binds it to the first one. Returns
-  the evaluated expression.
+  It binds the first argument (a symbol) to the result of evaluating the
+  second argument. Returns the evaluated expression.
 
   #+begin_src lisp
   n
@@ -411,7 +411,7 @@ and Interpretation of Computer Programs/[fn::
 
 - Special Form: define-global symbol expr :: <<define-global>>
 
-  Bind symbol to a value in the top-most environment. For more
+  Bind a symbol to a value in the top-most environment. For more
   information, see [[define][=define=]].
 
   #+begin_src lisp
