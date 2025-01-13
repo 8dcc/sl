@@ -23,39 +23,19 @@
 #include <stdbool.h>
 #include <stdio.h> /* FILE, fputc() */
 
-#include "error.h" /* SL_FATAL() */
+#include "lisp_types.h" /* LispInt, LispFlt, GenericNum */
+#include "error.h"      /* SL_FATAL() */
 
 struct Env;       /* env.h */
 struct LambdaCtx; /* lambda.h */
 
 /*----------------------------------------------------------------------------*/
+/* Types and enums */
 
 /*
- * Typedef C types used for representing integer and floating-point numbers in
- * Lisp.
- *
- * TODO: Move to a different header?
+ * Pointer to a Lisp primitive; that is, a C function that operates with
+ * expressions and that can be called from Lisp.
  */
-typedef long long LispInt;
-typedef double LispFlt;
-
-/*
- * Generic numeric type, used when performing operations between numeric
- * expressions that don't (necessarily) share a type.
- *
- * Expressions with 'EXPR_NUM_GENERIC' as the type are, for example, returned by
- * arithmetic functions when their parameters don't share a common type
- * (e.g. when calling '+' with an Integer and a Float).
- *
- * If this gets updated, you should also change the 'expr_*_generic_num'
- * functions below.
- */
-typedef LispFlt GenericNum;
-#define EXPR_NUM_GENERIC EXPR_NUM_FLT
-
-/*----------------------------------------------------------------------------*/
-
-/* Pointer to a primitive C function. */
 typedef struct Expr* (*PrimitiveFuncPtr)(struct Env*, struct Expr*);
 
 /*
@@ -80,6 +60,15 @@ enum EExprType {
     EXPR_LAMBDA  = (1 << 7),
     EXPR_MACRO   = (1 << 8),
 };
+
+/*
+ * Expression type whose value has the same C type as 'GenericNum'.
+ *
+ * Expressions with 'EXPR_NUM_GENERIC' as the type are, for example, returned by
+ * arithmetic functions when their parameters don't share a common type
+ * (e.g. when calling '+' with an Integer and a Float).
+ */
+#define EXPR_NUM_GENERIC EXPR_NUM_FLT
 
 /*
  * The main expression type. This will be used to hold basically all data in our
@@ -113,6 +102,7 @@ struct Expr {
 };
 
 /*----------------------------------------------------------------------------*/
+/* Macro predicates */
 
 /* Expression predicates */
 /* TODO: Rename to ERR_P, etc. */
@@ -130,14 +120,13 @@ struct Expr {
 #define EXPRP_APPLICABLE(E) (EXPRP_PRIM(E) || EXPRP_LAMBDA(E) || EXPRP_MACRO(E))
 
 /*----------------------------------------------------------------------------*/
+/* Functions for creating expressions */
 
 /*
  * Allocate and initialize a new empty expression of the specified type.
  * Wrapper for 'pool_alloc_or_expand'.
  */
 Expr* expr_new(enum EExprType type);
-
-/*----------------------------------------------------------------------------*/
 
 /*
  * Clone the specified `Expr' structure into an allocated copy, and return it.
@@ -163,6 +152,7 @@ Expr* expr_clone_recur(const Expr* e);
 Expr* expr_list_clone(const Expr* e);
 
 /*----------------------------------------------------------------------------*/
+/* Predicates for expressions */
 
 /*
  * Is the specified expression an empty list? Note that the empty list is also
@@ -188,6 +178,7 @@ bool expr_lt(const Expr* a, const Expr* b);
 bool expr_gt(const Expr* a, const Expr* b);
 
 /*----------------------------------------------------------------------------*/
+/* Predicates for expression lists */
 
 /*
  * Count the number of elements in a linked list of `Expr' structures.
@@ -229,6 +220,7 @@ static inline bool expr_list_has_only_type(const Expr* e, enum EExprType type) {
 }
 
 /*----------------------------------------------------------------------------*/
+/* Expression functions for I/O */
 
 /*
  * Print a linked list of expressions using `expr_print', wrapped in
@@ -282,7 +274,7 @@ static inline const char* exprtype2str(enum EExprType type) {
 }
 
 /*----------------------------------------------------------------------------*/
-/* Generic number functions */
+/* Numerical functions */
 
 /*
  * Set the value and type of an expression of type EXPR_NUM_GENERIC.
@@ -323,7 +315,5 @@ static inline void expr_negate_num_val(Expr* e) {
                      exprtype2str(e->type));
     }
 }
-
-/*----------------------------------------------------------------------------*/
 
 #endif /* EXPR_H_ */

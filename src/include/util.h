@@ -24,10 +24,7 @@
 #include <stdio.h> /* FILE */
 #include <regex.h> /* regmatch_t */
 
-/*
- * TODO: Only include header with 'LispInt' and 'LispFlt' type definitions.
- */
-#include "expr.h"
+#include "lisp_types.h" /* LispInt, LispFlt */
 
 /*----------------------------------------------------------------------------*/
 
