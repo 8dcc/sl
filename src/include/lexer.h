@@ -53,6 +53,9 @@ enum ETokenType {
 typedef struct Token {
     enum ETokenType type;
     union {
+        /*
+         * TODO: Use 'LispInt' and 'LispFlt' from here.
+         */
         long long n;
         double f;
         char* s;

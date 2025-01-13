@@ -51,14 +51,14 @@ Expr* prim_add(Env* env, Expr* e) {
         ret = expr_new(EXPR_NUM_GENERIC);
         expr_set_generic_num(ret, total);
     } else if (e->type == EXPR_NUM_INT) {
-        long long total = e->val.n;
+        LispInt total = e->val.n;
         for (Expr* arg = e->next; arg != NULL; arg = arg->next)
             total += arg->val.n;
 
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = total;
     } else if (e->type == EXPR_NUM_FLT) {
-        double total = e->val.f;
+        LispFlt total = e->val.f;
         for (Expr* arg = e->next; arg != NULL; arg = arg->next)
             total += arg->val.f;
 
@@ -103,14 +103,14 @@ Expr* prim_sub(Env* env, Expr* e) {
         ret = expr_new(EXPR_NUM_GENERIC);
         expr_set_generic_num(ret, total);
     } else if (e->type == EXPR_NUM_INT) {
-        long long total = e->val.n;
+        LispInt total = e->val.n;
         for (Expr* arg = e->next; arg != NULL; arg = arg->next)
             total -= arg->val.n;
 
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = total;
     } else if (e->type == EXPR_NUM_FLT) {
-        double total = e->val.f;
+        LispFlt total = e->val.f;
         for (Expr* arg = e->next; arg != NULL; arg = arg->next)
             total -= arg->val.f;
 
@@ -152,14 +152,14 @@ Expr* prim_mul(Env* env, Expr* e) {
         ret = expr_new(EXPR_NUM_GENERIC);
         expr_set_generic_num(ret, total);
     } else if (e->type == EXPR_NUM_INT) {
-        long long total = e->val.n;
+        LispInt total = e->val.n;
         for (Expr* arg = e->next; arg != NULL; arg = arg->next)
             total *= arg->val.n;
 
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = total;
     } else if (e->type == EXPR_NUM_FLT) {
-        double total = e->val.f;
+        LispFlt total = e->val.f;
         for (Expr* arg = e->next; arg != NULL; arg = arg->next)
             total *= arg->val.f;
 
@@ -236,7 +236,7 @@ Expr* prim_quotient(Env* env, Expr* e) {
      * integers.
      */
     SL_EXPECT_TYPE(e, EXPR_NUM_INT);
-    long long total = e->val.n;
+    LispInt total = e->val.n;
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
         SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
@@ -260,7 +260,7 @@ Expr* prim_remainder(Env* env, Expr* e) {
      *      (* (quotient dividend divisor) divisor))
      */
     SL_EXPECT_TYPE(e, EXPR_NUM_INT);
-    long long total = e->val.n;
+    LispInt total = e->val.n;
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
         SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");

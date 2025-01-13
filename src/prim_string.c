@@ -212,9 +212,9 @@ Expr* prim_substring(Env* env, Expr* e) {
               "Expected between 1 and 3 arguments.");
 
     SL_EXPECT_TYPE(e, EXPR_STRING);
-    const long long str_len = (long long)strlen(e->val.s);
-    long long start_idx     = 0;
-    long long end_idx       = str_len;
+    const size_t str_len = strlen(e->val.s);
+    LispInt start_idx    = 0;
+    LispInt end_idx      = str_len;
 
     /* Second argument, start index */
     if (arg_num >= 2 && !expr_is_nil(e->next)) {
@@ -246,7 +246,7 @@ Expr* prim_substring(Env* env, Expr* e) {
     Expr* ret  = expr_new(EXPR_STRING);
     ret->val.s = mem_alloc(end_idx - start_idx + 1);
 
-    long long dst_i, src_i;
+    LispInt dst_i, src_i;
     for (dst_i = 0, src_i = start_idx; src_i < end_idx; dst_i++, src_i++)
         ret->val.s[dst_i] = e->val.s[src_i];
     ret->val.s[dst_i] = '\0';

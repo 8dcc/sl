@@ -27,7 +27,7 @@ Expr* prim_bit_and(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT(e != NULL, "Missing arguments.");
 
-    long long total = e->val.n;
+    LispInt total = e->val.n;
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
         total &= arg->val.n;
@@ -42,7 +42,7 @@ Expr* prim_bit_or(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT(e != NULL, "Missing arguments.");
 
-    long long total = e->val.n;
+    LispInt total = e->val.n;
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
         total |= arg->val.n;
@@ -57,7 +57,7 @@ Expr* prim_bit_xor(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT(e != NULL, "Missing arguments.");
 
-    long long total = e->val.n;
+    LispInt total = e->val.n;
     for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
         SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
         total ^= arg->val.n;

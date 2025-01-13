@@ -21,8 +21,13 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdio.h>  /* FILE */
-#include <regex.h>  /* regmatch_t */
+#include <stdio.h> /* FILE */
+#include <regex.h> /* regmatch_t */
+
+/*
+ * TODO: Only include header with 'LispInt' and 'LispFlt' type definitions.
+ */
+#include "expr.h"
 
 /*----------------------------------------------------------------------------*/
 
@@ -110,7 +115,7 @@ bool sl_concat_format(char** dst, size_t* dst_sz, size_t* dst_offet,
  * Returns the size of the allocated string. On failure, `*dst' is set to NULL
  * and zero is returned.
  */
-size_t int2str(long long x, char** dst);
+size_t int2str(LispInt x, char** dst);
 
 /*
  * Allocate a string in `*dst' big enough to store the representation of the
@@ -119,6 +124,6 @@ size_t int2str(long long x, char** dst);
  * Returns the size of the allocated string. On failure, `*dst' is set to NULL
  * and zero is returned.
  */
-size_t flt2str(double x, char** dst);
+size_t flt2str(LispFlt x, char** dst);
 
 #endif /* UTIL_H_ */

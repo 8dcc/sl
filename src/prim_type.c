@@ -94,7 +94,7 @@ Expr* prim_int2flt(Env* env, Expr* e) {
     SL_EXPECT_TYPE(e, EXPR_NUM_INT);
 
     Expr* ret  = expr_new(EXPR_NUM_FLT);
-    ret->val.f = (double)e->val.n;
+    ret->val.f = (LispFlt)e->val.n;
     return ret;
 }
 
@@ -104,7 +104,7 @@ Expr* prim_flt2int(Env* env, Expr* e) {
     SL_EXPECT_TYPE(e, EXPR_NUM_FLT);
 
     Expr* ret  = expr_new(EXPR_NUM_INT);
-    ret->val.n = (long long)e->val.f;
+    ret->val.n = (LispInt)e->val.f;
     return ret;
 }
 

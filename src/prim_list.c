@@ -167,7 +167,7 @@ Expr* prim_length(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
 
-    long long result;
+    LispInt result;
     switch (e->type) {
         case EXPR_PARENT:
             result = expr_list_len(e->val.children);

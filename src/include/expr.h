@@ -30,6 +30,31 @@ struct LambdaCtx; /* lambda.h */
 
 /*----------------------------------------------------------------------------*/
 
+/*
+ * Typedef C types used for representing integer and floating-point numbers in
+ * Lisp.
+ *
+ * TODO: Move to a different header?
+ */
+typedef long long LispInt;
+typedef double LispFlt;
+
+/*
+ * Generic numeric type, used when performing operations between numeric
+ * expressions that don't (necessarily) share a type.
+ *
+ * Expressions with 'EXPR_NUM_GENERIC' as the type are, for example, returned by
+ * arithmetic functions when their parameters don't share a common type
+ * (e.g. when calling '+' with an Integer and a Float).
+ *
+ * If this gets updated, you should also change the 'expr_*_generic_num'
+ * functions below.
+ */
+typedef LispFlt GenericNum;
+#define EXPR_NUM_GENERIC EXPR_NUM_FLT
+
+/*----------------------------------------------------------------------------*/
+
 /* Pointer to a primitive C function. */
 typedef struct Expr* (*PrimitiveFuncPtr)(struct Env*, struct Expr*);
 
@@ -40,6 +65,8 @@ typedef struct Expr* (*PrimitiveFuncPtr)(struct Env*, struct Expr*);
  * if an expression is a number with:
  *
  *     (e->type & (EXPR_NUM_INT | EXPR_NUM_FLT)) != 0
+ *
+ * See also 'EXPR_NUM_GENERIC', defined above.
  */
 enum EExprType {
     EXPR_UNKNOWN = 0,
@@ -69,15 +96,13 @@ enum EExprType {
  *
  * TODO: Use traditional cons-pair approach (used by most Lisps), rather than a
  * linked list (which is what clojure uses, basically).
- *
- * TODO: Don't hard-code types like 'long long' or 'double', typedef new ones.
  */
 typedef struct Expr Expr;
 struct Expr {
     enum EExprType type;
     union {
-        long long n;
-        double f;
+        LispInt n;
+        LispFlt f;
         char* s;
         Expr* children;
         PrimitiveFuncPtr prim;
@@ -257,13 +282,7 @@ static inline const char* exprtype2str(enum EExprType type) {
 }
 
 /*----------------------------------------------------------------------------*/
-
-/*
- * Generic numeric type, used by `expr_set_generic_num' and
- * `expr_get_generic_num'.
- */
-typedef double GenericNum;
-#define EXPR_NUM_GENERIC EXPR_NUM_FLT
+/* Generic number functions */
 
 /*
  * Set the value and type of an expression of type EXPR_NUM_GENERIC.
@@ -288,6 +307,9 @@ static inline GenericNum expr_get_generic_num(const Expr* e) {
     }
 }
 
+/*
+ * Negate the value of an expression depending on its type.
+ */
 static inline void expr_negate_num_val(Expr* e) {
     switch (e->type) {
         case EXPR_NUM_INT:
