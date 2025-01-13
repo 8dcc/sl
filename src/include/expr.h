@@ -33,6 +33,16 @@ struct LambdaCtx; /* lambda.h */
 /* Pointer to a primitive C function. */
 typedef struct Expr* (*PrimitiveFuncPtr)(struct Env*, struct Expr*);
 
+/*
+ * Possible expression types. They are mutually exclusive (i.e. an expression
+ * can only have one type at a time), but we still use distinct bits for
+ * checking multiple expression types at once. For example, we can easily check
+ * if an expression is a number with:
+ *
+ *     (e->type & (EXPR_NUM_INT | EXPR_NUM_FLT)) != 0
+ *
+ * TODO: Rename to `EExprTypes' (plural).
+ */
 enum EExprType {
     EXPR_UNKNOWN = 0,
     EXPR_NUM_INT = (1 << 0),
@@ -46,9 +56,26 @@ enum EExprType {
     EXPR_MACRO   = (1 << 8),
 };
 
+/*
+ * The main expression type. This will be used to hold basically all data in our
+ * Lisp.
+ *
+ * The `type' member will determine what member we should access in the `val'
+ * union. Some types use the same union member (e.g. EXPR_STRING and
+ * EXPR_SYMBOL). See the enum above for more information.
+ *
+ * Note that the expressions whose value is allocated (e.g. EXPR_STRING,
+ * EXPR_LAMBDA, etc.) should own a unique pointer that is not being used by any
+ * other expression. Therefore, we should be able to modify or free these
+ * pointers without affecting other expressions.
+ *
+ * TODO: Use traditional cons-pair approach (used by most Lisps), rather than a
+ * linked list (which is what clojure uses, basically).
+ *
+ * TODO: Don't hard-code types like 'long long' or 'double', typedef new ones.
+ */
 typedef struct Expr Expr;
 struct Expr {
-    /* Type and value of the expression */
     enum EExprType type;
     union {
         long long n;
@@ -59,13 +86,13 @@ struct Expr {
         struct LambdaCtx* lambda;
     } val;
 
-    /* Next expression in the linked list */
     Expr* next;
 };
 
 /*----------------------------------------------------------------------------*/
 
 /* Expression predicates */
+/* TODO: Rename to ERR_P, etc. */
 #define EXPRP_ERR(E)    ((E)->type == EXPR_ERR)
 #define EXPRP_INT(E)    ((E)->type == EXPR_NUM_INT)
 #define EXPRP_FLT(E)    ((E)->type == EXPR_NUM_FLT)
@@ -82,23 +109,10 @@ struct Expr {
 /*----------------------------------------------------------------------------*/
 
 /*
- * Allocate a new empty expression of the specified type. The returned pointer
- * should be freed by the caller using `expr_free'.
+ * Allocate and initialize a new empty expression of the specified type.
+ * Wrapper for 'pool_alloc_or_expand'.
  */
 Expr* expr_new(enum EExprType type);
-
-/*
- * Free expression, along with their children, if any.
- *
- * Doesn't free adjacent expressions (i.e. ignores `e->next'). For freeing a
- * linked list of expressions, use `expr_list_free'.
- */
-void expr_free(Expr* e);
-
-/*
- * Free a linked list of `Expr' structures.
- */
-void expr_list_free(Expr* e);
 
 /*----------------------------------------------------------------------------*/
 

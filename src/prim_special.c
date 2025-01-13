@@ -41,6 +41,10 @@ static inline bool is_call_to(const Expr* e, const char* func) {
 static Expr* handle_backquote_arg(Env* env, const Expr* e) {
     /* Not a list, return unevaluated, just like `quote' */
     if (e->type != EXPR_PARENT)
+        /*
+         * TODO: Don't create a copy, return the reference directly (after
+         * adding cons).
+         */
         return expr_clone(e);
 
     if (is_call_to(e, ",")) {
@@ -80,23 +84,17 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
              * Therefore, `expr' must evaluate to a list.
              */
             Expr* splice_arg = cur->val.children->next;
-            if (splice_arg == NULL || splice_arg->next != NULL) {
-                expr_list_free(dummy_copy.next);
+            if (splice_arg == NULL || splice_arg->next != NULL)
                 return err("Call to splice (,@) expected exactly one"
                            "argument.");
-            }
 
             Expr* evaluated = eval(env, splice_arg);
-            if (EXPRP_ERR(evaluated)) {
-                expr_list_free(dummy_copy.next);
+            if (EXPRP_ERR(evaluated))
                 return evaluated;
-            }
 
-            if (evaluated->type != EXPR_PARENT) {
-                expr_list_free(dummy_copy.next);
+            if (evaluated->type != EXPR_PARENT)
                 return err("Can't splice (,@) a non-list expression. Use "
                            "unquote (,) instead.");
-            }
 
             if (evaluated->val.children != NULL) {
                 /* Append contents, not the list itself */
@@ -109,15 +107,11 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
                 /* Overwrite the children pointer so only the parent is freed */
                 evaluated->val.children = NULL;
             }
-
-            expr_free(evaluated);
         } else {
             /* Not splicing, handle the children and append to final list */
             Expr* handled = handle_backquote_arg(env, cur);
-            if (EXPRP_ERR(handled)) {
-                expr_list_free(dummy_copy.next);
+            if (EXPRP_ERR(handled))
                 return handled;
-            }
 
             cur_copy->next = handled;
             cur_copy       = cur_copy->next;
@@ -138,6 +132,10 @@ Expr* prim_quote(Env* env, Expr* e) {
      */
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
+    /*
+     * TODO: Don't create a copy, return the reference directly (after
+     * adding cons).
+     */
     return expr_clone_recur(e);
 }
 
@@ -298,7 +296,6 @@ Expr* prim_begin(Env* env, Expr* e) {
      */
     Expr* last_evaluated = NULL;
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
-        expr_free(last_evaluated);
         last_evaluated = eval(env, cur);
         if (EXPRP_ERR(last_evaluated))
             break;
@@ -324,7 +321,6 @@ Expr* prim_if(Env* env, Expr* e) {
         return evaluated_predicate;
 
     Expr* result = expr_is_nil(evaluated_predicate) ? e->next->next : e->next;
-    expr_free(evaluated_predicate);
     return eval(env, result);
 }
 
@@ -338,11 +334,10 @@ Expr* prim_or(Env* env, Expr* e) {
      * (false).
      */
     if (e == NULL)
-        return expr_clone(nil);
+        return expr_clone(g_nil);
 
     Expr* result = NULL;
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
-        expr_free(result);
         result = eval(env, cur);
         if (EXPRP_ERR(result) || !expr_is_nil(result))
             break;
@@ -359,11 +354,10 @@ Expr* prim_and(Env* env, Expr* e) {
      * This is the standard behavior in Scheme.
      */
     if (e == NULL)
-        return expr_clone(tru);
+        return expr_clone(g_tru);
 
     Expr* result = NULL;
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
-        expr_free(result);
         result = eval(env, cur);
         if (EXPRP_ERR(result) || expr_is_nil(result))
             break;

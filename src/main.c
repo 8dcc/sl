@@ -26,7 +26,9 @@
 
 #include "include/env.h"
 #include "include/expr.h"
+#include "include/expr_pool.h"
 #include "include/util.h"
+#include "include/garbage_collector.h"
 #include "include/read.h"
 #include "include/lexer.h"
 #include "include/parser.h"
@@ -86,24 +88,35 @@ static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
 
         /* Evaluate expression recursivelly */
         Expr* evaluated = eval(env, expr);
-
-        /* We are done with the original expression */
-        expr_free(expr);
-
         if (evaluated == NULL)
             continue;
 
         if (print_evaluated)
             expr_println(stdout, evaluated);
 
-        /* Free the evaluated expression */
-        expr_free(evaluated);
+        /*
+         * Collect all garbage that is not in the current environment.
+         *
+         * TODO: Marking globals is temporary, until we save references directly
+         * in the environment.
+         */
+        gc_unmark_all();
+        gc_mark_expr(g_nil);
+        gc_mark_expr(g_tru);
+        gc_mark_expr(g_debug_trace_list);
+        gc_mark_env(env);
+        gc_collect();
     }
 }
 
 int main(int argc, char** argv) {
     FILE* file_input        = get_input_file(argc, argv);
     const bool print_prompt = (file_input == stdin && isatty(0));
+
+    /* Allocate the expression pool. It will be expanded when needed. */
+    if (!pool_init(BASE_POOL_SZ))
+        SL_FATAL("Failed to initialize pool of %zu expressions.\n",
+                 BASE_POOL_SZ);
 
     /* Initialize global environment with symbols like "nil" */
     Env* global_env = env_new();
@@ -129,6 +142,7 @@ int main(int argc, char** argv) {
     repl_until_eof(global_env, file_input, print_prompt, true);
 
     env_free(global_env);
+    pool_close();
     fclose(file_input);
     return 0;
 }

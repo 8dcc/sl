@@ -24,6 +24,7 @@
 #include "include/env.h"
 #include "include/expr.h"
 #include "include/util.h"
+#include "include/memory.h"
 #include "include/primitives.h"
 
 Expr* prim_write_to_str(Env* env, Expr* e) {
@@ -66,12 +67,12 @@ Expr* prim_format(Env* env, Expr* e) {
 
     size_t dst_pos = 0;
     size_t dst_sz  = FORMAT_BUFSZ;
-    char* dst      = sl_safe_malloc(FORMAT_BUFSZ);
+    char* dst      = mem_alloc(FORMAT_BUFSZ);
 
     while (*fmt != '\0') {
         if (dst_pos >= dst_sz - 1) {
             dst_sz += FORMAT_BUFSZ;
-            sl_safe_realloc(dst, dst_sz);
+            mem_realloc(dst, dst_sz);
         }
 
         /*
@@ -243,7 +244,7 @@ Expr* prim_substring(Env* env, Expr* e) {
     start_idx = CLAMP(start_idx, 0, end_idx);
 
     Expr* ret  = expr_new(EXPR_STRING);
-    ret->val.s = sl_safe_malloc(end_idx - start_idx + 1);
+    ret->val.s = mem_alloc(end_idx - start_idx + 1);
 
     long long dst_i, src_i;
     for (dst_i = 0, src_i = start_idx; src_i < end_idx; dst_i++, src_i++)

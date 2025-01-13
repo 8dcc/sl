@@ -22,7 +22,9 @@
 #include <string.h>
 
 #include "include/expr.h"
+#include "include/expr_pool.h"
 #include "include/util.h"
+#include "include/memory.h"
 #include "include/lexer.h"
 #include "include/parser.h"
 
@@ -37,7 +39,7 @@ static size_t wrap_in_call(Expr* dst, const Token* tokens,
     /* Create a list whose `car' is `func_name' */
     dst->type                = EXPR_PARENT;
     dst->val.children        = expr_new(EXPR_SYMBOL);
-    dst->val.children->val.s = sl_safe_strdup(func_name);
+    dst->val.children->val.s = mem_strdup(func_name);
 
     /*
      * The second element is the actual expression, which might consist of
@@ -79,13 +81,13 @@ static size_t parse_recur(Expr* dst, const Token* tokens) {
 
         case TOKEN_STRING: {
             dst->type  = EXPR_STRING;
-            dst->val.s = sl_safe_strdup(tokens[0].val.s);
+            dst->val.s = mem_strdup(tokens[0].val.s);
             parsed++;
         } break;
 
         case TOKEN_SYMBOL: {
             dst->type  = EXPR_SYMBOL;
-            dst->val.s = sl_safe_strdup(tokens[0].val.s);
+            dst->val.s = mem_strdup(tokens[0].val.s);
             parsed++;
         } break;
 
@@ -190,7 +192,7 @@ Expr* parse(const Token* tokens) {
     Expr* expr                 = expr_new(EXPR_UNKNOWN);
     const size_t tokens_parsed = parse_recur(expr, tokens);
     if (tokens_parsed == 0) {
-        expr_free(expr);
+        pool_free(expr);
         return NULL;
     }
     return expr;

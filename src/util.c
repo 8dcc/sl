@@ -16,7 +16,6 @@
  * SL. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -25,37 +24,8 @@
 #include <regex.h>
 
 #include "include/util.h"
+#include "include/memory.h"
 #include "include/error.h"
-
-void* sl_safe_malloc(size_t size) {
-    void* result = malloc(size);
-    if (result == NULL)
-        SL_FATAL("Failed to allocate %zu bytes: %s (%d).",
-                 size,
-                 strerror(errno),
-                 errno);
-    return result;
-}
-
-void* sl_safe_calloc(size_t nmemb, size_t size) {
-    void* result = calloc(nmemb, size);
-    if (result == NULL)
-        SL_FATAL("Failed to allocate %zu elements of %zu bytes each: %s (%d).",
-                 nmemb,
-                 size,
-                 strerror(errno),
-                 errno);
-    return result;
-}
-
-char* sl_safe_strdup(const char* s) {
-    char* result = strdup(s);
-    if (result == NULL)
-        SL_FATAL("Failed to copy string: %s (%d).", strerror(errno), errno);
-    return result;
-}
-
-/*----------------------------------------------------------------------------*/
 
 /* clang-format off */
 char escaped2byte(char escaped) {
@@ -129,7 +99,7 @@ bool sl_regex_match_groups(const char* pat, const char* str, bool ignore_case,
      * extra item for the entire match, which will be at index 0.
      */
     *nmatch = r.re_nsub + 1;
-    *pmatch = sl_safe_malloc(*nmatch * sizeof(regmatch_t*));
+    *pmatch = mem_alloc(*nmatch * sizeof(regmatch_t*));
 
     const int code = regexec(&r, str, *nmatch, *pmatch, 0);
     regfree(&r);
@@ -161,7 +131,7 @@ bool sl_concat_format(char** dst, size_t* dst_sz, size_t* dst_offset,
 
     if (*dst_offset + data_size + 1 >= *dst_sz) {
         *dst_sz = *dst_offset + data_size + 1;
-        sl_safe_realloc(*dst, *dst_sz);
+        mem_realloc(*dst, *dst_sz);
     }
 
     char* real_dst = &(*dst)[*dst_offset];
@@ -188,7 +158,7 @@ size_t int2str(long long x, char** dst) {
         return 0;
     }
 
-    *dst = sl_safe_malloc(size + 1);
+    *dst = mem_alloc(size + 1);
     snprintf(*dst, size + 1, "%lld", x);
     return size;
 }
@@ -200,7 +170,7 @@ size_t flt2str(double x, char** dst) {
         return 0;
     }
 
-    *dst = sl_safe_malloc(size + 1);
+    *dst = mem_alloc(size + 1);
     snprintf(*dst, size + 1, "%f", x);
     return size;
 }

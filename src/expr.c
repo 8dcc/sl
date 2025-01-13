@@ -21,60 +21,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "include/expr.h"
 #include "include/env.h"
+#include "include/expr.h"
+#include "include/expr_pool.h"
 #include "include/lambda.h"
 #include "include/util.h"
+#include "include/memory.h"
 
 Expr* expr_new(enum EExprType type) {
-    Expr* ret         = sl_safe_malloc(sizeof(Expr));
+    Expr* ret         = pool_alloc_or_expand(BASE_POOL_SZ);
     ret->type         = type;
     ret->val.children = NULL;
     ret->next         = NULL;
     return ret;
-}
-
-void expr_free(Expr* e) {
-    if (e == NULL)
-        return;
-
-    /*
-     * First, check if the value of the current expression was allocated, and
-     * free it.  Then, free the `Expr' structure itself, usually allocated in
-     * `expr_new'.
-     */
-    switch (e->type) {
-        case EXPR_PARENT:
-            expr_list_free(e->val.children);
-            break;
-
-        case EXPR_ERR:
-        case EXPR_SYMBOL:
-        case EXPR_STRING:
-            free(e->val.s);
-            break;
-
-        case EXPR_LAMBDA:
-        case EXPR_MACRO:
-            lambda_ctx_free(e->val.lambda);
-            break;
-
-        case EXPR_UNKNOWN:
-        case EXPR_NUM_INT:
-        case EXPR_NUM_FLT:
-        case EXPR_PRIM:
-            break;
-    }
-
-    free(e);
-}
-
-void expr_list_free(Expr* e) {
-    while (e != NULL) {
-        Expr* next = e->next;
-        expr_free(e);
-        e = next;
-    }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -104,7 +63,7 @@ Expr* expr_clone(const Expr* e) {
         case EXPR_ERR:
         case EXPR_SYMBOL:
         case EXPR_STRING:
-            ret->val.s = sl_safe_strdup(e->val.s);
+            ret->val.s = mem_strdup(e->val.s);
             break;
 
         case EXPR_PARENT:

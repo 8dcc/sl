@@ -20,10 +20,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "include/expr.h"
 #include "include/env.h"
+#include "include/expr.h"
 #include "include/lambda.h"
 #include "include/util.h"
+#include "include/memory.h"
 #include "include/eval.h"
 
 /*
@@ -75,7 +76,7 @@ const char* lambda_ctx_strerror(enum ELambdaCtxErr code) {
 /*----------------------------------------------------------------------------*/
 
 LambdaCtx* lambda_ctx_new(void) {
-    LambdaCtx* ret   = sl_safe_malloc(sizeof(LambdaCtx));
+    LambdaCtx* ret   = mem_alloc(sizeof(LambdaCtx));
     ret->env         = NULL;
     ret->formals_num = 0;
     ret->formals     = NULL;
@@ -110,8 +111,11 @@ enum ELambdaCtxErr lambda_ctx_init(LambdaCtx* ctx, const Expr* formals,
      */
     ctx->env         = env_new();
     ctx->formals_num = mandatory;
-    ctx->formals     = sl_safe_malloc(mandatory * sizeof(char*));
+    ctx->formals     = mem_alloc(mandatory * sizeof(char*));
     ctx->formal_rest = NULL;
+    /*
+     * TODO: Should we clone the expressions, or store the original references?
+     */
     ctx->body        = expr_list_clone(body);
 
     /*
@@ -136,39 +140,48 @@ enum ELambdaCtxErr lambda_ctx_init(LambdaCtx* ctx, const Expr* formals,
 
 LambdaCtx* lambda_ctx_clone(const LambdaCtx* ctx) {
     /* Allocate a new LambdaCtx structure */
-    LambdaCtx* ret = sl_safe_malloc(sizeof(LambdaCtx));
+    LambdaCtx* ret = mem_alloc(sizeof(LambdaCtx));
 
     /* Copy the environment and the list of body expressions */
     ret->env  = env_clone(ctx->env);
+    /*
+     * TODO: Should we clone the expressions, or store the original references?
+     */
     ret->body = expr_list_clone(ctx->body);
 
     /* Allocate a new string array for the mandatory formals, and copy them */
     ret->formals_num = ctx->formals_num;
-    ret->formals     = sl_safe_malloc(ret->formals_num * sizeof(char*));
+    ret->formals     = mem_alloc(ret->formals_num * sizeof(char*));
     for (size_t i = 0; i < ret->formals_num; i++)
-        ret->formals[i] = sl_safe_strdup(ctx->formals[i]);
+        ret->formals[i] = mem_strdup(ctx->formals[i]);
 
     /* If it had a "&rest" formal, copy it */
     ret->formal_rest =
-      (ctx->formal_rest == NULL) ? NULL : sl_safe_strdup(ctx->formal_rest);
+      (ctx->formal_rest == NULL) ? NULL : mem_strdup(ctx->formal_rest);
 
     return ret;
 }
 
 void lambda_ctx_free(LambdaCtx* ctx) {
-    /* First, free the environment and the body of the lambda */
+    /*
+     * 1. Free the lambda environment, which shouldn't be in use anymore.
+     *    Expressions in that environment are not freed, so they can still be
+     *    used somewhere else.
+     * 2. Free each formal argument string, and the pointer to the array itself.
+     * 3. Free the "&rest" formal string. This might be NULL, but it's a valid
+     *    value for 'free'.
+     * 4. Finally, free the 'LambdaCtx' structure itself.
+     *
+     * Note how we don't free the body, since those expressions might be in use
+     * somewhere else, and they will be garbage-collected if necessary.
+     */
     env_free(ctx->env);
-    expr_list_free(ctx->body);
 
-    /* Free each formal argument string, and the array itself */
     for (size_t i = 0; i < ctx->formals_num; i++)
         free(ctx->formals[i]);
     free(ctx->formals);
 
-    /* Free the "&rest" formal */
     free(ctx->formal_rest);
-
-    /* And finally, the LambdaCtx structure itself */
     free(ctx);
 }
 
@@ -251,9 +264,6 @@ static Expr* lambda_ctx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
         const bool bound =
           env_bind(ctx->env, ctx->formal_rest, rest_list, ENV_FLAG_NONE);
         SL_EXPECT(bound, "Could not bind symbol `%s'.", ctx->formal_rest);
-
-        rest_list->val.children = NULL;
-        expr_free(rest_list);
     }
 
     /*
@@ -270,7 +280,6 @@ static Expr* lambda_ctx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
      */
     Expr* last_evaluated = NULL;
     for (Expr* cur = ctx->body; cur != NULL; cur = cur->next) {
-        expr_free(last_evaluated);
         last_evaluated = eval(ctx->env, cur);
         if (EXPRP_ERR(last_evaluated))
             break;
@@ -295,8 +304,5 @@ Expr* macro_call(Env* env, Expr* func, Expr* args) {
         return expansion;
 
     /* Calling a macro is just evaluation its macro exansion */
-    Expr* evaluated = eval(env, expansion);
-    expr_free(expansion);
-
-    return evaluated;
+    return eval(env, expansion);
 }

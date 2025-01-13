@@ -22,6 +22,7 @@
 #include "include/env.h"
 #include "include/expr.h"
 #include "include/util.h"
+#include "include/memory.h"
 #include "include/primitives.h"
 
 /* Used by `prim_append' when receiving list arguments */
@@ -70,7 +71,7 @@ static Expr* string_append(Expr* e) {
     }
 
     Expr* ret  = expr_new(EXPR_STRING);
-    ret->val.s = sl_safe_malloc(total_len + 1);
+    ret->val.s = mem_alloc(total_len + 1);
 
     char* last_copied = ret->val.s;
     for (Expr* arg = e; arg != NULL; arg = arg->next)
@@ -81,6 +82,10 @@ static Expr* string_append(Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
+/*
+ * TODO: This doesn't need to be a primitive, we can just `cons' the arguments
+ * with 'nil'.
+ */
 Expr* prim_list(Env* env, Expr* e) {
     SL_UNUSED(env);
 
@@ -94,6 +99,9 @@ Expr* prim_list(Env* env, Expr* e) {
     return ret;
 }
 
+/*
+ * TODO: Don't create copies, store the reference directly (after adding cons).
+ */
 Expr* prim_cons(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 2);
@@ -112,6 +120,9 @@ Expr* prim_cons(Env* env, Expr* e) {
     return ret;
 }
 
+/*
+ * TODO: Don't create a copy, return the reference directly (after adding cons).
+ */
 Expr* prim_car(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
@@ -128,6 +139,9 @@ Expr* prim_car(Env* env, Expr* e) {
     return expr_clone_recur(e->val.children);
 }
 
+/*
+ * TODO: Don't create a copy, return the reference directly (after adding cons).
+ */
 Expr* prim_cdr(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);

@@ -24,6 +24,7 @@
 #include "include/env.h"
 #include "include/expr.h"
 #include "include/util.h"
+#include "include/memory.h"
 #include "include/read.h"
 #include "include/lexer.h"
 #include "include/parser.h"
@@ -64,7 +65,7 @@ Expr* prim_write(Env* env, Expr* e) {
               "Couldn't write expression of type '%s'.",
               exprtype2str(e->type));
 
-    return expr_clone(tru);
+    return expr_clone(g_tru);
 }
 
 Expr* prim_scan_str(Env* env, Expr* e) {
@@ -91,12 +92,12 @@ Expr* prim_scan_str(Env* env, Expr* e) {
 
     size_t str_pos = 0;
     size_t str_sz  = 100;
-    char* str      = sl_safe_malloc(str_sz);
+    char* str      = mem_alloc(str_sz);
 
     for (;;) {
         if (str_pos >= str_sz - 1) {
             str_sz += 100;
-            sl_safe_realloc(str, str_sz);
+            mem_realloc(str, str_sz);
         }
 
         const char c = getchar();
