@@ -36,7 +36,7 @@ enum EEnvErr {
 };
 
 /*
- * Possible flags for each `EnvBinding' structure. They can be OR'd together.
+ * Possible flags for each 'EnvBinding' structure. They can be OR'd together.
  */
 enum EEnvBindingFlags {
     ENV_FLAG_NONE    = 0,
@@ -45,8 +45,8 @@ enum EEnvBindingFlags {
 };
 
 /*
- * An `EnvBinding' structure is used to bind a symbol to its expression, with
- * some specified flags from the `EEnvBindingFlags' enum.
+ * An 'EnvBinding' structure is used to bind a symbol to its expression, with
+ * some specified flags from the 'EEnvBindingFlags' enum.
  */
 typedef struct EnvBinding EnvBinding;
 struct EnvBinding {
@@ -56,7 +56,7 @@ struct EnvBinding {
 };
 
 /*
- * An environment is simply an array of `EnvBinding' structures, and a parent
+ * An environment is simply an array of 'EnvBinding' structures, and a parent
  * environment.
  */
 typedef struct Env Env;
@@ -84,7 +84,7 @@ extern struct Expr* g_debug_trace_list;
 /*----------------------------------------------------------------------------*/
 
 /*
- * Allocate and return an empty `Env' structure without specifying the parent.
+ * Allocate and return an empty 'Env' structure without specifying the parent.
  */
 Env* env_new(void);
 
@@ -106,8 +106,8 @@ void env_free(Env* env);
 /*----------------------------------------------------------------------------*/
 
 /*
- * Bind the symbol `sym' to the expression `val' in environment `env', with the
- * specified `flags'.
+ * Bind the symbol 'sym' to the expression 'val' in environment 'env', with the
+ * specified 'flags'.
  *
  * Returns 'ENV_ERR_NONE' (zero) on success, or non-zero on failure. The caller
  * is responsible for checking the returned value, handling errors and
@@ -117,15 +117,15 @@ enum EEnvErr env_bind(Env* env, const char* sym, const struct Expr* val,
                       enum EEnvBindingFlags flags);
 
 /*
- * Bind the symbol `sym' to the expression `val' in the top-most parent of
- * environment `env', with the specified `flags'.
+ * Bind the symbol 'sym' to the expression 'val' in the top-most parent of
+ * environment 'env', with the specified 'flags'.
  */
 enum EEnvErr env_bind_global(Env* env, const char* sym, const struct Expr* val,
                              enum EEnvBindingFlags flags);
 
 /*
- * Get a copy of the expression associated to the symbol `sym' in environment
- * `env', or in parent environments. The returned copy must be freed by the
+ * Get a copy of the expression associated to the symbol 'sym' in environment
+ * 'env', or in parent environments. The returned copy must be freed by the
  * caller.
  *
  * Returns NULL if the expression is not found.

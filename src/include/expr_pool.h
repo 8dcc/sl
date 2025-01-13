@@ -36,12 +36,12 @@
  *
  * Brief explanation of each flag:
  *
- *   - The `FREE' flag is used to indicate that the current expression is
+ *   - The 'FREE' flag is used to indicate that the current expression is
  *     free. This is not normally needed with pool allocators, since we directly
  *     look in the linked list. In this case, however, we will also iterate the
  *     whole pool when performing garbage collection, and we need to know which
  *     nodes are free without iterating the whole linked list each time
- *   - The `GCMARKED' flag is used to indicate that the current expression
+ *   - The 'GCMARKED' flag is used to indicate that the current expression
  *     should not be freed by the garbage collector. This flag is set/cleared
  *     exclusively by the garbage collector.
  */
@@ -57,7 +57,7 @@ enum EPoolNodeFlags {
  * list). For more information on the advantages of this method, along with a
  * simpler implementation, see my pool allocation article, linked above.
  *
- * We also need a `flags' member to store whether a specific node is free, if it
+ * We also need a 'flags' member to store whether a specific node is free, if it
  * should be garbage-collected, etc.
  */
 typedef struct PoolNode {
@@ -73,8 +73,8 @@ typedef struct PoolNode {
  * Structure used to store the start of each array inside a pool.
  *
  * We need to store them as a linked list, since there can be an arbitrary
- * number of them, one for each call to `pool_expand' plus the initial one from
- * `pool_new'. New pointers will be prepended to the linked list.
+ * number of them, one for each call to 'pool_expand' plus the initial one from
+ * 'pool_new'. New pointers will be prepended to the linked list.
  *
  * We also need to store the size of the current array, since the garbage
  * collector will have to iterate over it.
@@ -89,10 +89,10 @@ typedef struct ArrayStart {
  * The actual pool structure, which contains a pointer to the first node, and
  * a pointer to the start of the linked list of free nodes.
  *
- * We need to store a list of array starts for freeing the actual `PoolNode'
+ * We need to store a list of array starts for freeing the actual 'PoolNode'
  * arrays once the user is done with the pool.
  *
- * The user is able to allocate with O(1) time, because the `ExprPool.free_expr'
+ * The user is able to allocate with O(1) time, because the 'ExprPool.free_expr'
  * pointer always points to a free node without needing to iterate anything.
  */
 typedef struct ExprPool {
@@ -134,7 +134,7 @@ void pool_node_flag_unset(PoolNode* node, enum EPoolNodeFlags flag);
 bool pool_init(size_t pool_sz);
 
 /*
- * Expand the global expression pool, adding `extra_sz' free expressions.
+ * Expand the global expression pool, adding 'extra_sz' free expressions.
  */
 bool pool_expand(size_t extra_sz);
 
@@ -150,14 +150,14 @@ void pool_close(void);
  * Retrieve a free expression from the global expression pool.
  *
  * The caller is responsible for ensuring that the pool was previously
- * initialized with `pool_init' (or an assertion will fail).
+ * initialized with 'pool_init' (or an assertion will fail).
  */
 Expr* pool_alloc(void);
 
 /*
- * Like `pool_get_expr', but if there are no free nodes in the pool, try to
- * expand it by `extra_sz' nodes. If the pool can't be expanded (according to
- * `pool_expand'), NULL is returned.
+ * Like 'pool_get_expr', but if there are no free nodes in the pool, try to
+ * expand it by 'extra_sz' nodes. If the pool can't be expanded (according to
+ * 'pool_expand'), NULL is returned.
  */
 Expr* pool_alloc_or_expand(size_t extra_sz);
 
@@ -188,8 +188,8 @@ void pool_dump(FILE* fp);
 /*
  * Return the pool node for the specified expression.
  *
- * We are able to cast an `Expr' pointer to a `PoolNode' one because the
- * expression is stored (inside a union) in the first member of `PoolNode'. This
+ * We are able to cast an 'Expr' pointer to a 'PoolNode' one because the
+ * expression is stored (inside a union) in the first member of 'PoolNode'. This
  * might not always be the case, so it's useful to have this function.
  */
 static inline PoolNode* expr2node(Expr* e) {

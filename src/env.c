@@ -27,7 +27,7 @@
 #include "include/memory.h"
 #include "include/primitives.h"
 
-/* Used in `env_init_defaults' */
+/* Used in 'env_init_defaults' */
 #define BIND_PRIM_FLAGS(ENV, SYM, FUNC, FLAGS)                                 \
     do {                                                                       \
         Expr* e     = expr_new(EXPR_PRIM);                                     \
@@ -216,7 +216,7 @@ enum EEnvErr env_bind(Env* env, const char* sym, const Expr* val,
      * are trying to bind. If we find a match, and it's not a constant binding,
      * overwrite its value and flags.
      *
-     * Otherwise, reallocate the `bindings' array, add a clone of the symbol
+     * Otherwise, reallocate the 'bindings' array, add a clone of the symbol
      * string, a clone of the value expression, and the flags we received.
      *
      * NOTE: This method doesn't check for symbols in parent environments,

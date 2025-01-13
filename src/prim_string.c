@@ -193,7 +193,7 @@ done:
     dst[dst_pos] = '\0';
 
     /*
-     * NOTE: We could warn the user if `cur_arg != NULL', since that means he
+     * NOTE: We could warn the user if 'cur_arg != NULL', since that means he
      * specified to many arguments for this format.
      */
 
@@ -280,7 +280,7 @@ Expr* prim_re_match_groups(Env* env, Expr* e) {
      * expression.
      *
      * Each item in the returned list is a list of two integers corresponding to
-     * the start and end indexes of that match inside `string'.
+     * the start and end indexes of that match inside 'string'.
      *
      * It uses Extended Regular Expression (ERE) syntax. See:
      *   https://www.gnu.org/software/sed/manual/html_node/ERE-syntax.html

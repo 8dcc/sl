@@ -27,13 +27,13 @@ struct Expr; /* expr.h */
 /*----------------------------------------------------------------------------*/
 
 /*
- * Wrapper for `sl_print_err'. Should only be used for errors about the
- * interpreter itself; for Lisp errors, use the `err' function.
+ * Wrapper for 'sl_print_err'. Should only be used for errors about the
+ * interpreter itself; for Lisp errors, use the 'err' function.
  */
 #define SL_ERR(...) sl_print_err(__func__, __VA_ARGS__)
 
 /*
- * Show error message with `sl_print_ftl' and exit.
+ * Show error message with 'sl_print_ftl' and exit.
  */
 #define SL_FATAL(...)                                                          \
     do {                                                                       \
@@ -77,8 +77,8 @@ struct Expr; /* expr.h */
     } while (0)
 
 /*
- * Check if the specified linked list of `Expr' structures has a specific
- * length using `SL_EXPECT'.
+ * Check if the specified linked list of 'Expr' structures has a specific
+ * length using 'SL_EXPECT'.
  */
 #define SL_EXPECT_ARG_NUM(EXPR_LIST, NUM)                                      \
     SL_EXPECT(expr_list_len(EXPR_LIST) == (NUM),                               \
@@ -88,7 +88,7 @@ struct Expr; /* expr.h */
 
 /*
  * Check if the specified expression matches the expected type using
- * `SL_EXPECT'.
+ * 'SL_EXPECT'.
  */
 #define SL_EXPECT_TYPE(EXPR, TYPE)                                             \
     SL_EXPECT((EXPR)->type == (TYPE),                                          \
@@ -106,18 +106,18 @@ struct Expr; /* expr.h */
 struct Expr* err(const char* fmt, ...);
 
 /*
- * Print an expression of type `EXPR_ERR' into the specified file. Doesn't print
+ * Print an expression of type 'EXPR_ERR' into the specified file. Doesn't print
  * a final newline.
  *
- * Will use colors unless `SL_NO_COLOR' is defined.
+ * Will use colors unless 'SL_NO_COLOR' is defined.
  */
 void err_print(FILE* fp, const struct Expr* e);
 
 /*
- * Print different error messages to `stderr', along with some context
+ * Print different error messages to 'stderr', along with some context
  * information. Prints a final newline.
  *
- * Will use colors unless `SL_NO_COLOR' is defined.
+ * Will use colors unless 'SL_NO_COLOR' is defined.
  */
 void sl_print_err(const char* func, const char* fmt, ...);
 void sl_print_ftl(const char* file, int line, const char* func, const char* fmt,

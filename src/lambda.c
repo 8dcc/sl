@@ -80,7 +80,7 @@ enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const Expr* formals,
         return formal_err;
 
     /*
-     * Initialize the `LambdaCtx' structure with:
+     * Initialize the 'LambdaCtx' structure with:
      *   - A new environment whose parent will be set when making the actual
      *     function call.
      *   - A string array for the formal arguments of the function, the first
@@ -103,7 +103,7 @@ enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const Expr* formals,
     /*
      * For each formal argument we counted above, store the symbol as a C string
      * in the array we just allocated. Note that we already verified that all of
-     * the formals are symbols when counting them in `count_formals'.
+     * the formals are symbols when counting them in 'count_formals'.
      */
     const Expr* cur_formal = formals->val.children;
     for (size_t i = 0; i < mandatory; i++) {
@@ -191,7 +191,7 @@ bool lambdactx_equal(const LambdaCtx* a, const LambdaCtx* b) {
 /*----------------------------------------------------------------------------*/
 
 void lambdactx_print_args(FILE* fp, const LambdaCtx* ctx) {
-    /* Position in the `ctx->formals' array, shared across all argument types */
+    /* Position in the 'ctx->formals' array, shared across all argument types */
     size_t formals_pos = 0;
 
     fputc('(', fp);

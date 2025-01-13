@@ -63,8 +63,8 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
 
     /*
      * Handle each element of the list recursively. This allows calls to
-     * unquote from nested lists. See also `expr_clone_recur' and
-     * `eval_list'.
+     * unquote from nested lists. See also 'expr_clone_recur' and
+     * 'eval_list'.
      */
     Expr dummy_copy;
     dummy_copy.next = NULL;
@@ -81,7 +81,7 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
              *
              *   (append '(a b) (eval expr) '(c d))
              *
-             * Therefore, `expr' must evaluate to a list.
+             * Therefore, 'expr' must evaluate to a list.
              */
             Expr* splice_arg = cur->val.children->next;
             if (splice_arg == NULL || splice_arg->next != NULL)
@@ -152,7 +152,7 @@ Expr* prim_backquote(Env* env, Expr* e) {
 
 Expr* prim_unquote(Env* env, Expr* e) {
     /*
-     * The `unquote' function is only used inside `handle_backquote_arg'. Note
+     * The `unquote' function is only used inside 'handle_backquote_arg'. Note
      * that ,expr is converted to (, expr) by the parser.
      */
     SL_UNUSED(env);
@@ -162,7 +162,7 @@ Expr* prim_unquote(Env* env, Expr* e) {
 
 Expr* prim_splice(Env* env, Expr* e) {
     /*
-     * The `splice' function is only used inside `handle_backquote_arg'. Note
+     * The `splice' function is only used inside 'handle_backquote_arg'. Note
      * that ,@expr is converted to (,@ expr) by the parser.
      */
     SL_UNUSED(env);
@@ -231,7 +231,7 @@ Expr* prim_lambda(Env* env, Expr* e) {
     SL_EXPECT_TYPE(e, EXPR_PARENT);
 
     /*
-     * Allocate new `LambdaCtx' structure. Try to initialize it using the
+     * Allocate new 'LambdaCtx' structure. Try to initialize it using the
      * formals and the body expressions we received. Check for errors in the
      * lambda definition, and finally store that context structure in the actual
      * expression we will return.
@@ -333,7 +333,7 @@ Expr* prim_or(Env* env, Expr* e) {
      * `if' and macros. In any case, we can't use normal evaluation rules
      * because not all arguments of `or' are always evaluated. As soon as one of
      * them is true, we stop evaluating the arguments and return that one. The
-     * same is true for `prim_and', but we stop as soon as one of them is `nil'
+     * same is true for 'prim_and', but we stop as soon as one of them is `nil'
      * (false).
      */
     if (e == NULL)
@@ -351,7 +351,7 @@ Expr* prim_or(Env* env, Expr* e) {
 
 Expr* prim_and(Env* env, Expr* e) {
     /*
-     * For more information, see comment in `prim_or'.
+     * For more information, see comment in 'prim_or'.
      *
      * Also note that we are returning `tru' if we didn't receive any arguments.
      * This is the standard behavior in Scheme.

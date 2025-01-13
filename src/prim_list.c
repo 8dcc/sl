@@ -25,7 +25,7 @@
 #include "include/memory.h"
 #include "include/primitives.h"
 
-/* Used by `prim_append' when receiving list arguments */
+/* Used by 'prim_append' when receiving list arguments */
 static Expr* list_append(Expr* e) {
     SL_ASSERT(e != NULL);
 
@@ -49,17 +49,17 @@ static Expr* list_append(Expr* e) {
     return ret;
 }
 
-/* Used by `prim_append' when receiving string arguments */
+/* Used by 'prim_append' when receiving string arguments */
 static Expr* string_append(Expr* e) {
     SL_ASSERT(e != NULL);
 
     /*
      * Calculate the sum of the string lengths, allocate the destination buffer
-     * and  concatenate each string using `stpcpy'.
+     * and  concatenate each string using 'stpcpy'.
      *
-     * Since `stpcpy' returns a pointer to the null-terminator, we can store it
+     * Since 'stpcpy' returns a pointer to the null-terminator, we can store it
      * and keep calling the function repeatedly instead of calculating the
-     * string length each iteration, which is probably what `strcat' does
+     * string length each iteration, which is probably what 'strcat' does
      * internally.
      */
     size_t total_len = 0;

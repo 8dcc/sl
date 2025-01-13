@@ -24,12 +24,12 @@
 
 enum ETokenType {
     /*
-     * Used to indicate the end of a `Token' array.
+     * Used to indicate the end of a 'Token' array.
      */
     TOKEN_EOF,
 
     /*
-     * The following make use of `Token.val'
+     * The following make use of 'Token.val'
      */
     TOKEN_NUM_INT, /* Number (LispInt) */
     TOKEN_NUM_FLT, /* Number (LispFlt) */
@@ -37,7 +37,7 @@ enum ETokenType {
     TOKEN_STRING,  /* String (string) */
 
     /*
-     * The rest don't make use of `Token.val'.
+     * The rest don't make use of 'Token.val'.
      */
     TOKEN_LIST_OPEN,
     TOKEN_LIST_CLOSE,
@@ -75,7 +75,7 @@ Token* tokenize(char* input);
 void tokens_free(Token* arr);
 
 /*
- * Is `c' a token separator? Used by `get_token' and `read_expr'.
+ * Is 'c' a token separator? Used by 'get_token' and 'read_expr'.
  */
 bool is_token_separator(char c);
 

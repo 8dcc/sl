@@ -44,7 +44,7 @@ Expr* prim_macroexpand(Env* env, Expr* e) {
     SL_EXPECT_TYPE(e, EXPR_PARENT);
 
     /*
-     * Similar to how function calls are evaluated in the `eval_function_call'
+     * Similar to how function calls are evaluated in the 'eval_function_call'
      * static function in "eval.c", but the arguments are never evaluated.
      *
      * Note that we expect a quoted expression, so neither the arguments nor the

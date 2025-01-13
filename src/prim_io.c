@@ -74,7 +74,7 @@ Expr* prim_scan_str(Env* env, Expr* e) {
     /*
      * (scan-str &optional delimiters)
      *
-     * The `scan-str' primitive reads characters from `stdin' until one of the
+     * The 'scan-str' primitive reads characters from 'stdin' until one of the
      * following is encountered:
      *   - End-of-file (EOF)
      *   - Null character ('\0')
@@ -129,7 +129,7 @@ Expr* prim_error(Env* env, Expr* e) {
     SL_EXPECT_TYPE(e, EXPR_STRING);
 
     /*
-     * TODO: Use `prim_format' and `&rest'. Move outside of 'prim_io.c'.
+     * TODO: Use 'prim_format' and '&rest'. Move outside of 'prim_io.c'.
      */
     return err("%s", e->val.s);
 }

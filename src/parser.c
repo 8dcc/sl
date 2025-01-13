@@ -31,12 +31,12 @@
 static size_t parse_recur(Expr* dst, const Token* tokens);
 
 /*
- * Parse the next expression in `tokens', and wrap it in a list whose first
- * element is the symbol `func_name'. Return the number of parsed tokens.
+ * Parse the next expression in 'tokens', and wrap it in a list whose first
+ * element is the symbol 'func_name'. Return the number of parsed tokens.
  */
 static size_t wrap_in_call(Expr* dst, const Token* tokens,
                            const char* func_name) {
-    /* Create a list whose `car' is `func_name' */
+    /* Create a list whose `car' is 'func_name' */
     dst->type                = EXPR_PARENT;
     dst->val.children        = expr_new(EXPR_SYMBOL);
     dst->val.children->val.s = mem_strdup(func_name);
@@ -53,8 +53,8 @@ static size_t wrap_in_call(Expr* dst, const Token* tokens,
 }
 
 /*
- * Parse an expression recursively. Writes to `dst', and returns the number of
- * parsed tokens. See comment in `parse' below.
+ * Parse an expression recursively. Writes to 'dst', and returns the number of
+ * parsed tokens. See comment in 'parse' below.
  */
 static size_t parse_recur(Expr* dst, const Token* tokens) {
     SL_ASSERT(tokens != NULL);
@@ -163,17 +163,17 @@ static size_t parse_recur(Expr* dst, const Token* tokens) {
 
 Expr* parse(const Token* tokens) {
     /*
-     * We need another function that writes to an `Expr' parameter and that
+     * We need another function that writes to an 'Expr' parameter and that
      * returns the written bytes, since the function will call itself
-     * recursively, and the caller must know how many elements of the `Token'
+     * recursively, and the caller must know how many elements of the 'Token'
      * array were parsed inside that recursive call (to skip over them).
      *
-     * For example, if we received the following string from `input_read':
+     * For example, if we received the following string from 'input_read':
      *
      *   (list '(a b c) 123)
      *
-     * Would be converted into the following `Token' array (as printed by
-     * `tokens_print'):
+     * Would be converted into the following 'Token' array (as printed by
+     * 'tokens_print'):
      *
      *   [ LIST_OPEN, "list", QUOTE, LIST_OPEN, "a", "b", "c", LIST_CLOSE, 123,
      *     LIST_CLOSE, EOF ]
@@ -181,8 +181,8 @@ Expr* parse(const Token* tokens) {
      * When encountering QUOTE, we want to parse the next expression, but it
      * takes more than one token (the whole list, 5 tokens). In this case, the
      * expression next to the quote ends on the last LIST_CLOSE token. The
-     * recursive call to `parse_recur' will use its return value to let the
-     * caller know how many elements of the `Token' array were parsed, so it can
+     * recursive call to 'parse_recur' will use its return value to let the
+     * caller know how many elements of the 'Token' array were parsed, so it can
      * continue where it needs (in this case, at the number 123).
      *
      * Same concept applies when parsing the list itself. After the recursive

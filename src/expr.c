@@ -47,7 +47,7 @@ Expr* expr_clone(const Expr* e) {
      * expression, everything is allocated and copied again.
      *
      * Note that this function does NOT clone inferior or adjacent nodes. See
-     * `expr_clone_recur' and `expr_clone_list' respectively.
+     * 'expr_clone_recur' and 'expr_clone_list' respectively.
      */
     Expr* ret = expr_new(e->type);
 
@@ -96,8 +96,8 @@ Expr* expr_clone_recur(const Expr* e) {
 
     if (e->type == EXPR_PARENT) {
         /*
-         * The copy of the first child will be stored in `dummy_copy.next'. This
-         * will be stored in `val.children' below.
+         * The copy of the first child will be stored in 'dummy_copy.next'. This
+         * will be stored in 'val.children' below.
          */
         Expr dummy_copy;
         dummy_copy.next = NULL;
@@ -138,7 +138,7 @@ bool expr_is_nil(const Expr* e) {
 bool expr_list_equal(const Expr* a, const Expr* b) {
     /*
      * Keep iterating while both nodes are equal. We check this by
-     * calling `expr_equal', which allows NULL arguments.
+     * calling 'expr_equal', which allows NULL arguments.
      *
      * Since inside the loop both items are equal, if one of them is
      * NULL, it means we reached the end of both lists and they are
@@ -176,8 +176,8 @@ bool expr_equal(const Expr* a, const Expr* b) {
 
     /*
      * This function checks for isomorphism, so if they don't share the same
-     * type, they are not equal. For comparing numbers, see `prim_equal_num' or
-     * `expr_lt'.
+     * type, they are not equal. For comparing numbers, see 'prim_equal_num' or
+     * 'expr_lt'.
      */
     if (a->type != b->type)
         return false;
@@ -215,7 +215,7 @@ bool expr_lt(const Expr* a, const Expr* b) {
     if (a == NULL || b == NULL)
         return false;
 
-    /* See `prim_equal_num' */
+    /* See 'prim_equal_num' */
     if (a->type != b->type)
         return (EXPRP_NUMBER(a) && EXPRP_NUMBER(b))
                  ? (expr_get_generic_num(a) < expr_get_generic_num(b))

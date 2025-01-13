@@ -44,11 +44,11 @@ static inline bool is_special_form(const Env* env, const Expr* e) {
 }
 
 /*
- * Evaluate each expression in a linked list by calling `eval', and return
+ * Evaluate each expression in a linked list by calling 'eval', and return
  * another linked list with the results.
  */
 static Expr* eval_list(Env* env, Expr* list) {
-    /* The first item will be stored in `dummy_copy.next' */
+    /* The first item will be stored in 'dummy_copy.next' */
     Expr dummy_copy;
     dummy_copy.next = NULL;
     Expr* cur_copy  = &dummy_copy;
@@ -75,10 +75,10 @@ static Expr* eval_list(Env* env, Expr* list) {
 /*
  * Evaluate a list expression as a function call, applying the (evaluated) `car'
  * to the `cdr'. This function is responsible for evaluating the arguments
- * (using `eval_list') before applying the function, if necessary.
+ * (using 'eval_list') before applying the function, if necessary.
  */
 static Expr* eval_function_call(Env* env, Expr* e) {
-    /* Caller should have checked if `e' is `nil' */
+    /* Caller should have checked if 'e' is `nil' */
     SL_ASSERT(e->val.children != NULL);
 
     /* The `car' represents the function, and `cdr' represents the arguments */
@@ -193,12 +193,12 @@ Expr* eval(Env* env, Expr* e) {
 
 Expr* apply(Env* env, Expr* func, Expr* args) {
     /*
-     * Some important notes about the implementation of `apply':
+     * Some important notes about the implementation of 'apply':
      *   - It expects a valid environment and a valid applicable function (see
-     *     the `EXPRP_APPLICABLE' function in "expr.h").
+     *     the 'EXPRP_APPLICABLE' function in "expr.h").
      *   - The arguments, are expected to be evaluated by the caller whenever
      *     necessary. The arguments are passed to the function unchanged.
-     *   - The `args' pointer can be NULL, since some functions expect no
+     *   - The 'args' pointer can be NULL, since some functions expect no
      *     arguments. Again, the pointer is passed as-is.
      */
     SL_ASSERT(env != NULL);
@@ -214,7 +214,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
 
             /*
              * Call primitive C function with the evaluated arguments we got
-             * from `eval'.
+             * from 'eval'.
              */
             result = primitive(env, args);
         } break;

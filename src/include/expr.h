@@ -75,7 +75,7 @@ SL_ASSERT_TYPES(GenericNum, LispFlt);
  * The main expression type. This will be used to hold basically all data in our
  * Lisp.
  *
- * The `type' member will determine what member we should access in the `val'
+ * The 'type' member will determine what member we should access in the 'val'
  * union. Some types use the same union member (e.g. EXPR_STRING and
  * EXPR_SYMBOL). See the enum above for more information.
  *
@@ -130,25 +130,25 @@ struct Expr {
 Expr* expr_new(enum EExprType type);
 
 /*
- * Clone the specified `Expr' structure into an allocated copy, and return it.
- * The returned pointer must be freed by the caller using `expr_free'.
+ * Clone the specified 'Expr' structure into an allocated copy, and return it.
+ * The returned pointer must be freed by the caller using 'expr_free'.
  *
  * In the case of lists, it doesn't clone children. To clone recursively, use
- * `expr_clone_recur'.
+ * 'expr_clone_recur'.
  *
- * It also doesn't clone adjacent expressions (i.e. `e->next' is ignored and
- * `returned->next' is NULL). To clone a list of `Expr' structures, use
- * `expr_list_clone'.
+ * It also doesn't clone adjacent expressions (i.e. 'e->next' is ignored and
+ * 'returned->next' is NULL). To clone a list of 'Expr' structures, use
+ * 'expr_list_clone'.
  */
 Expr* expr_clone(const Expr* e);
 
 /*
- * Same as `expr_clone', but also clones children recursivelly.
+ * Same as 'expr_clone', but also clones children recursivelly.
  */
 Expr* expr_clone_recur(const Expr* e);
 
 /*
- * Clones a linked list of `Expr' structures by calling `expr_clone_recur'.
+ * Clones a linked list of 'Expr' structures by calling 'expr_clone_recur'.
  */
 Expr* expr_list_clone(const Expr* e);
 
@@ -162,18 +162,18 @@ Expr* expr_list_clone(const Expr* e);
 bool expr_is_nil(const Expr* e);
 
 /*
- * Check if two linked lists of `Expr' structures are identical in length and
- * content using `expr_equal'.
+ * Check if two linked lists of 'Expr' structures are identical in length and
+ * content using 'expr_equal'.
  */
 bool expr_list_equal(const Expr* a, const Expr* b);
 
 /*
- * Return true if `a' and `b' have the same effective value.
+ * Return true if 'a' and 'b' have the same effective value.
  */
 bool expr_equal(const Expr* a, const Expr* b);
 
 /*
- * Return true if `a' is lesser/greater than `b'.
+ * Return true if 'a' is lesser/greater than 'b'.
  */
 bool expr_lt(const Expr* a, const Expr* b);
 bool expr_gt(const Expr* a, const Expr* b);
@@ -182,13 +182,13 @@ bool expr_gt(const Expr* a, const Expr* b);
 /* Predicates for expression lists */
 
 /*
- * Count the number of elements in a linked list of `Expr' structures.
+ * Count the number of elements in a linked list of 'Expr' structures.
  */
 size_t expr_list_len(const Expr* e);
 
 /*
- * Is the expression `e' inside the linked list `lst'? Checks using
- * `expr_equal'.
+ * Is the expression 'e' inside the linked list 'lst'? Checks using
+ * 'expr_equal'.
  */
 bool expr_list_is_member(const Expr* lst, const Expr* e);
 
@@ -207,8 +207,8 @@ bool expr_list_has_type(const Expr* e, enum EExprType type);
 /*
  * Does the specified linked list contain ONLY expressions with numeric types?
  *
- * Uses the `EXPRP_NUMBER' inline function.
- * See also the `expr_list_has_only_type' inline function below.
+ * Uses the 'EXPRP_NUMBER' inline function.
+ * See also the 'expr_list_has_only_type' inline function below.
  */
 bool expr_list_has_only_numbers(const Expr* e);
 
@@ -224,7 +224,7 @@ static inline bool expr_list_has_only_type(const Expr* e, enum EExprType type) {
 /* Expression functions for I/O */
 
 /*
- * Print a linked list of expressions using `expr_print', wrapped in
+ * Print a linked list of expressions using 'expr_print', wrapped in
  * parentheses.
  */
 void expr_list_print(FILE* fp, const Expr* e);

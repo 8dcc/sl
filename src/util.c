@@ -148,7 +148,7 @@ bool sl_concat_format(char** dst, size_t* dst_sz, size_t* dst_offset,
 
 size_t int2str(LispInt x, char** dst) {
     /*
-     * A call to `snprintf' with (NULL, 0, ...) as arguments can be used to get
+     * A call to 'snprintf' with (NULL, 0, ...) as arguments can be used to get
      * the number of bytes to be written. We still have to add one for the
      * null-terminator.
      */

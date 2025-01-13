@@ -52,44 +52,44 @@ struct LambdaCtx {
 /*----------------------------------------------------------------------------*/
 
 /*
- * Allocate an empty `LambdaCtx' structure. Should be freed by the caller with
- * `lambdactx_free'. See also `lambdactx_init'.
+ * Allocate an empty 'LambdaCtx' structure. Should be freed by the caller with
+ * 'lambdactx_free'. See also 'lambdactx_init'.
  */
 LambdaCtx* lambdactx_new(void);
 
 /*
- * Initialize a new `LambdaCtx' structure using the specified formal arguments
- * and the specified body. Note that the `body' argument is a linked list of
+ * Initialize a new 'LambdaCtx' structure using the specified formal arguments
+ * and the specified body. Note that the 'body' argument is a linked list of
  * expressions.
  *
  * The function returns an error code, which the caller should check, and
- * optionally print with `lambdactx_strerror'.
+ * optionally print with 'lambdactx_strerror'.
  */
 enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const struct Expr* formals,
                                   const struct Expr* body);
 
 /*
- * Copy the specified `LambdaCtx' structure into an allocated copy, and return
+ * Copy the specified 'LambdaCtx' structure into an allocated copy, and return
  * it.
  */
 LambdaCtx* lambdactx_clone(const LambdaCtx* ctx);
 
 /*
- * Free all members of a `LambdaCtx' structure, and the structure itself.
+ * Free all members of a 'LambdaCtx' structure, and the structure itself.
  */
 void lambdactx_free(LambdaCtx* ctx);
 
 /*----------------------------------------------------------------------------*/
 
 /*
- * Are two `LambdaCtx' structures equal? Uses `strcmp' and `expr_list_equal'.
+ * Are two 'LambdaCtx' structures equal? Uses 'strcmp' and 'expr_list_equal'.
  */
 bool lambdactx_equal(const LambdaCtx* a, const LambdaCtx* b);
 
 /*----------------------------------------------------------------------------*/
 
 /*
- * Print all the formal arguments of a `LambdaCtx' structure, just like they
+ * Print all the formal arguments of a 'LambdaCtx' structure, just like they
  * would be written on a lambda declaration.
  */
 void lambdactx_print_args(FILE* fp, const LambdaCtx* ctx);
@@ -97,20 +97,20 @@ void lambdactx_print_args(FILE* fp, const LambdaCtx* ctx);
 /*----------------------------------------------------------------------------*/
 
 /*
- * Call the specified lambda `func' in the specified environment `env' with the
- * specified arguments `args'.
+ * Call the specified lambda 'func' in the specified environment 'env' with the
+ * specified arguments 'args'.
  */
 Expr* lambda_call(struct Env* env, struct Expr* func, struct Expr* args);
 
 /*
- * Expand the specified `macro' in the specified environment `env' with the
- * specified arguments `args'.
+ * Expand the specified 'macro' in the specified environment 'env' with the
+ * specified arguments 'args'.
  */
 Expr* macro_expand(struct Env* env, struct Expr* macro, struct Expr* args);
 
 /*
- * Call the specified `macro' in the specified environment `env' with the
- * specified arguments `args'.
+ * Call the specified 'macro' in the specified environment 'env' with the
+ * specified arguments 'args'.
  */
 Expr* macro_call(struct Env* env, struct Expr* func, struct Expr* args);
 

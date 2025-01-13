@@ -61,7 +61,7 @@ static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
             printf("\nsl> ");
 
         /*
-         * Allocate string and read an expression. If `read_expr' returned NULL,
+         * Allocate string and read an expression. If 'read_expr' returned NULL,
          * it encountered EOF.
          */
         char* input = read_expr(file);
@@ -74,7 +74,7 @@ static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
         /* Tokenize input. We don't need to check for NULL. */
         Token* tokens = tokenize(input);
 
-        /* We are done with the string from `read_expr', free it */
+        /* We are done with the string from 'read_expr', free it */
         free(input);
 
         /* Get expression (AST) from token array */
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
     SL_ASSERT(global_env != NULL);
     env_init_defaults(global_env);
 
-    /* Set unique random seed, can be overwritten with `prim_set_random_seed' */
+    /* Set unique random seed, can be overwritten with 'prim_set_random_seed' */
     srand(time(NULL));
 
 #ifndef SL_NO_STDLIB

@@ -61,7 +61,7 @@ static size_t parse_user_string(const char* input, char** dst) {
 static void set_value_from_str(Token* dst, char* str) {
     char* endptr;
 
-    /* Try to fully convert the string into a `long long' using `strtoll' */
+    /* Try to fully convert the string into a 'long long' using 'strtoll' */
     SL_ASSERT_TYPES(LispInt, long long);
     LispInt int_num = strtoll(str, &endptr, STRTOLL_ANY_BASE);
     if (endptr != NULL && str != endptr && *endptr == '\0') {
@@ -70,7 +70,7 @@ static void set_value_from_str(Token* dst, char* str) {
         return;
     }
 
-    /* Try to fully convert the string into a `double' using `strtod' */
+    /* Try to fully convert the string into a 'double' using 'strtod' */
     SL_ASSERT_TYPES(LispFlt, double);
     LispFlt flt_num = strtod(str, &endptr);
     if (endptr != NULL && str != endptr && *endptr == '\0') {
@@ -79,17 +79,17 @@ static void set_value_from_str(Token* dst, char* str) {
         return;
     }
 
-    /* If we couldn't convert it to a `double' or a `long long', assume it's a
+    /* If we couldn't convert it to a 'double' or a 'long long', assume it's a
      * symbol. */
     dst->type  = TOKEN_SYMBOL;
     dst->val.s = mem_strdup(str);
 }
 
 /*
- * Try to scan a Token in the string pointed by `input_ptr', and increase the
+ * Try to scan a Token in the string pointed by 'input_ptr', and increase the
  * pointer accordingly.
  *
- * If the end of the string is found, TOKEN_EOF is returned and `input_ptr' is
+ * If the end of the string is found, TOKEN_EOF is returned and 'input_ptr' is
  * set to NULL.
  */
 static Token get_token(char** input_ptr) {
@@ -183,7 +183,7 @@ Token* tokenize(char* input) {
             mem_realloc(tokens, tokens_num * sizeof(Token));
         }
 
-        /* Try to scan the token pointed to by `input', and increase the pointer
+        /* Try to scan the token pointed to by 'input', and increase the pointer
          * accordingly. */
         tokens[i] = get_token(&input);
     }

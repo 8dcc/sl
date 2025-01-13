@@ -23,10 +23,10 @@
  * <https://github.com/8dcc/libpool>, along with my blog article
  * <https://8dcc.github.io/programming/pool-allocator.html>.
  *
- * The pool is simply an array of `PoolNode' structures. This `PoolNode'
+ * The pool is simply an array of 'PoolNode' structures. This 'PoolNode'
  * structure is a bit different from the one used in the blog article, since it
  * contains the union (with the "next free" pointer and the expression itself),
- * but also a `flags' member, used for garbage collection. See the enum and
+ * but also a 'flags' member, used for garbage collection. See the enum and
  * structure definitions below for more information.
  */
 
@@ -69,7 +69,7 @@ static inline bool pool_node_is_free(PoolNode* node) {
 /*
  * Free all previously-allocated members of an expression when necessary.
  * Doesn't free other expressions, just members that were allocated using
- * 'mem_alloc' or similar. Doesn't free the `Expr' structure itself.
+ * 'mem_alloc' or similar. Doesn't free the 'Expr' structure itself.
  */
 static void free_heap_expr_members(Expr* e) {
     SL_ASSERT(e != NULL);

@@ -179,7 +179,7 @@ Expr* prim_div(Env* env, Expr* e) {
               "Unexpected non-numeric argument.");
 
     /*
-     * The `div' primitive always returns a `GenericNum' result. For integer
+     * The `div' primitive always returns a 'GenericNum' result. For integer
      * division, use `quotient'.
      */
     GenericNum total = expr_get_generic_num(e);
@@ -205,7 +205,7 @@ Expr* prim_mod(Env* env, Expr* e) {
      * See: https://8dcc.github.io/programming/fmod.html
      *
      * Similarly to how the Elisp manual describes `mod', the following should
-     * be equal to the `dividend':
+     * be equal to the 'dividend':
      *
      *   (+ (mod dividend divisor)
      *      (* (floor (/ dividend divisor)) divisor))
