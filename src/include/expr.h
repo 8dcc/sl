@@ -40,8 +40,6 @@ typedef struct Expr* (*PrimitiveFuncPtr)(struct Env*, struct Expr*);
  * if an expression is a number with:
  *
  *     (e->type & (EXPR_NUM_INT | EXPR_NUM_FLT)) != 0
- *
- * TODO: Rename to `EExprTypes' (plural).
  */
 enum EExprType {
     EXPR_UNKNOWN = 0,
