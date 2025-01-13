@@ -42,7 +42,7 @@ struct Expr; /* expr.h */
     } while (0)
 
 /*
- * If COND is zero, show error message and exit.
+ * If COND is zero at run-time, show error message and exit.
  */
 #define SL_ASSERT(COND)                                                        \
     do {                                                                       \
@@ -50,6 +50,20 @@ struct Expr; /* expr.h */
             SL_FATAL("Assertion `%s' failed.", #COND);                         \
         }                                                                      \
     } while (0)
+
+/*
+ * If COND is zero at compile-time, stop.
+ */
+#define SL_STATIC_ASSERT(COND)                                                 \
+    _Static_assert(COND, "Assertion `" #COND "' failed.")
+
+/*
+ * Assert that TYPEA is effectively equal to TYPEB.
+ */
+#define SL_ASSERT_TYPES(TYPEA, TYPEB)                                          \
+    SL_STATIC_ASSERT(__builtin_types_compatible_p(TYPEA, TYPEB))
+
+/*----------------------------------------------------------------------------*/
 
 /*
  * If COND is not true, return expression of type EXPR_ERR with the specified

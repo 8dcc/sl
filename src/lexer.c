@@ -62,6 +62,7 @@ static void set_value_from_str(Token* dst, char* str) {
     char* endptr;
 
     /* Try to fully convert the string into a `long long' using `strtoll' */
+    SL_ASSERT_TYPES(LispInt, long long);
     LispInt int_num = strtoll(str, &endptr, STRTOLL_ANY_BASE);
     if (endptr != NULL && str != endptr && *endptr == '\0') {
         dst->type  = TOKEN_NUM_INT;
@@ -70,6 +71,7 @@ static void set_value_from_str(Token* dst, char* str) {
     }
 
     /* Try to fully convert the string into a `double' using `strtod' */
+    SL_ASSERT_TYPES(LispFlt, double);
     LispFlt flt_num = strtod(str, &endptr);
     if (endptr != NULL && str != endptr && *endptr == '\0') {
         dst->type  = TOKEN_NUM_FLT;

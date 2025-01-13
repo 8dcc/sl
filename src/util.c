@@ -152,6 +152,7 @@ size_t int2str(LispInt x, char** dst) {
      * the number of bytes to be written. We still have to add one for the
      * null-terminator.
      */
+    SL_ASSERT_TYPES(LispInt, long long);
     const int size = snprintf(NULL, 0, "%lld", x);
     if (size < 0) {
         *dst = NULL;
@@ -164,6 +165,7 @@ size_t int2str(LispInt x, char** dst) {
 }
 
 size_t flt2str(LispFlt x, char** dst) {
+    SL_ASSERT_TYPES(LispFlt, double);
     const int size = snprintf(NULL, 0, "%f", x);
     if (size < 0) {
         *dst = NULL;

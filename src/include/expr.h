@@ -68,6 +68,7 @@ enum EExprType {
  * arithmetic functions when their parameters don't share a common type
  * (e.g. when calling '+' with an Integer and a Float).
  */
+SL_ASSERT_TYPES(GenericNum, LispFlt);
 #define EXPR_NUM_GENERIC EXPR_NUM_FLT
 
 /*
@@ -280,7 +281,7 @@ static inline const char* exprtype2str(enum EExprType type) {
  * Set the value and type of an expression of type EXPR_NUM_GENERIC.
  */
 static inline void expr_set_generic_num(Expr* e, GenericNum num) {
-    /* NOTE: This should change if `GenericNum' changes. */
+    SL_ASSERT_TYPES(GenericNum, LispFlt);
     e->val.f = num;
 }
 
