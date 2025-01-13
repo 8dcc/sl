@@ -174,8 +174,8 @@ Expr* prim_splice(Env* env, Expr* e) {
 
 Expr* prim_define(Env* env, Expr* e) {
     /*
-     * The `define' function binds a value (second argument) to a symbol (first
-     * argument).
+     * The `define' function binds a symbol (first argument) to a value (second
+     * argument) in the current environment.
      *
      * Since it's a special form, we must evaluate the second argument. We don't
      * bind it if there is an error in the evaluation.
@@ -200,13 +200,8 @@ Expr* prim_define(Env* env, Expr* e) {
 
 Expr* prim_define_global(Env* env, Expr* e) {
     /*
-     * The `define' function binds a value (second argument) to a symbol (first
-     * argument).
-     *
-     * Since it's a special form, we must evaluate the second argument. We don't
-     * bind it if there is an error in the evaluation.
-     *
-     * Returns the evaluated expression.
+     * The `define-global' function is just like `define', but it binds the
+     * symbol to the value in the top-most environment.
      */
     SL_EXPECT_ARG_NUM(e, 2);
     SL_EXPECT_TYPE(e, EXPR_SYMBOL);
