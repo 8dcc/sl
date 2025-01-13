@@ -57,24 +57,6 @@ static enum ELambdaCtxErr count_formals(const Expr* list, size_t* mandatory,
 
 /*----------------------------------------------------------------------------*/
 
-const char* lambdactx_strerror(enum ELambdaCtxErr code) {
-    const char* s;
-    switch (code) {
-        case LAMBDACTX_ERR_NONE:
-            s = "No error.";
-            break;
-        case LAMBDACTX_ERR_FORMALTYPE:
-            s = "Invalid type for formal argument. Expected 'Symbol'.";
-            break;
-        case LAMBDACTX_ERR_NOREST:
-            s = "Exactly 1 formal must appear after `&rest' keyword.";
-            break;
-    }
-    return s;
-}
-
-/*----------------------------------------------------------------------------*/
-
 LambdaCtx* lambdactx_new(void) {
     LambdaCtx* ret   = mem_alloc(sizeof(LambdaCtx));
     ret->env         = NULL;
@@ -86,7 +68,7 @@ LambdaCtx* lambdactx_new(void) {
 }
 
 enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const Expr* formals,
-                                   const Expr* body) {
+                                  const Expr* body) {
     SL_ASSERT(formals->type == EXPR_PARENT);
 
     /* Count and validate the formal arguments */
@@ -116,7 +98,7 @@ enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const Expr* formals,
     /*
      * TODO: Should we clone the expressions, or store the original references?
      */
-    ctx->body        = expr_list_clone(body);
+    ctx->body = expr_list_clone(body);
 
     /*
      * For each formal argument we counted above, store the symbol as a C string
@@ -143,7 +125,7 @@ LambdaCtx* lambdactx_clone(const LambdaCtx* ctx) {
     LambdaCtx* ret = mem_alloc(sizeof(LambdaCtx));
 
     /* Copy the environment and the list of body expressions */
-    ret->env  = env_clone(ctx->env);
+    ret->env = env_clone(ctx->env);
     /*
      * TODO: Should we clone the expressions, or store the original references?
      */
@@ -249,9 +231,12 @@ static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
      */
     Expr* cur_arg = args;
     for (size_t i = 0; i < ctx->formals_num && cur_arg != NULL; i++) {
-        const bool bound =
+        const enum EEnvErr code =
           env_bind(ctx->env, ctx->formals[i], cur_arg, ENV_FLAG_NONE);
-        SL_EXPECT(bound, "Could not bind symbol `%s'.", ctx->formals[i]);
+        SL_EXPECT(code == ENV_ERR_NONE,
+                  "Could not bind symbol `%s': %s",
+                  ctx->formals[i],
+                  env_strerror(code));
 
         cur_arg = cur_arg->next;
     }
@@ -261,9 +246,12 @@ static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
         Expr* rest_list         = expr_new(EXPR_PARENT);
         rest_list->val.children = cur_arg;
 
-        const bool bound =
+        const enum EEnvErr code =
           env_bind(ctx->env, ctx->formal_rest, rest_list, ENV_FLAG_NONE);
-        SL_EXPECT(bound, "Could not bind symbol `%s'.", ctx->formal_rest);
+        SL_EXPECT(code == ENV_ERR_NONE,
+                  "Could not bind symbol `%s': %s",
+                  ctx->formal_rest,
+                  env_strerror(code));
     }
 
     /*

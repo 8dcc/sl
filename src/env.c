@@ -32,7 +32,7 @@
     do {                                                                       \
         Expr* e     = expr_new(EXPR_PRIM);                                     \
         e->val.prim = prim_##FUNC;                                             \
-        SL_ASSERT(env_bind(ENV, SYM, e, FLAGS));                               \
+        SL_ASSERT(env_bind(ENV, SYM, e, FLAGS) == ENV_ERR_NONE);               \
     } while (0)
 
 #define BIND_PRIM(ENV, SYM, FUNC) BIND_PRIM_FLAGS(ENV, SYM, FUNC, ENV_FLAG_NONE)
@@ -76,10 +76,11 @@ void env_init_defaults(Env* env) {
         g_debug_trace_list               = expr_new(EXPR_PARENT);
         g_debug_trace_list->val.children = NULL;
     }
-    SL_ASSERT(env_bind(env, "nil", g_nil, ENV_FLAG_CONST));
-    SL_ASSERT(env_bind(env, "tru", g_tru, ENV_FLAG_CONST));
+    SL_ASSERT(env_bind(env, "nil", g_nil, ENV_FLAG_CONST) == ENV_ERR_NONE);
+    SL_ASSERT(env_bind(env, "tru", g_tru, ENV_FLAG_CONST) == ENV_ERR_NONE);
     SL_ASSERT(
-      env_bind(env, "*debug-trace*", g_debug_trace_list, ENV_FLAG_NONE));
+      env_bind(env, "*debug-trace*", g_debug_trace_list, ENV_FLAG_NONE) ==
+      ENV_ERR_NONE);
 
     /* Special forms */
     BIND_SPECIAL(env, "quote", quote);
@@ -204,8 +205,8 @@ void env_free(Env* env) {
 
 /*----------------------------------------------------------------------------*/
 
-bool env_bind(Env* env, const char* sym, const Expr* val,
-              enum EEnvBindingFlags flags) {
+enum EEnvErr env_bind(Env* env, const char* sym, const Expr* val,
+                      enum EEnvBindingFlags flags) {
     SL_ASSERT(env != NULL);
     SL_ASSERT(sym != NULL);
 
@@ -218,18 +219,18 @@ bool env_bind(Env* env, const char* sym, const Expr* val,
      * Otherwise, reallocate the `bindings' array, add a clone of the symbol
      * string, a clone of the value expression, and the flags we received.
      *
-     * NOTE: This method overwrites symbols in parent environments, ignoring
-     * their flags. In other words, you can overwrite special forms if you are
-     * not in the global environment.
+     * NOTE: This method doesn't check for symbols in parent environments,
+     * ignoring their flags. In other words, you can overwrite special forms or
+     * constants if you are not in the global environment.
      */
     for (size_t i = 0; i < env->size; i++) {
         if (strcmp(env->bindings[i].sym, sym) == 0) {
             if ((env->bindings[i].flags & ENV_FLAG_CONST) != 0)
-                return false;
+                return ENV_ERR_CONST;
 
             env->bindings[i].val   = expr_clone_recur(val);
             env->bindings[i].flags = flags;
-            return true;
+            return ENV_ERR_NONE;
         }
     }
 
@@ -240,11 +241,11 @@ bool env_bind(Env* env, const char* sym, const Expr* val,
     env->bindings[env->size - 1].val   = expr_clone_recur(val);
     env->bindings[env->size - 1].flags = flags;
 
-    return true;
+    return ENV_ERR_NONE;
 }
 
-bool env_bind_global(Env* env, const char* sym, const Expr* val,
-                     enum EEnvBindingFlags flags) {
+enum EEnvErr env_bind_global(Env* env, const char* sym, const Expr* val,
+                             enum EEnvBindingFlags flags) {
     while (env->parent != NULL)
         env = env->parent;
     return env_bind(env, sym, val, flags);

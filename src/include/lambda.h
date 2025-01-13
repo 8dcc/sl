@@ -52,13 +52,6 @@ struct LambdaCtx {
 /*----------------------------------------------------------------------------*/
 
 /*
- * Return an immutable string that describes the specified error.
- */
-const char* lambdactx_strerror(enum ELambdaCtxErr code);
-
-/*----------------------------------------------------------------------------*/
-
-/*
  * Allocate an empty `LambdaCtx' structure. Should be freed by the caller with
  * `lambdactx_free'. See also `lambdactx_init'.
  */
@@ -73,7 +66,7 @@ LambdaCtx* lambdactx_new(void);
  * optionally print with `lambdactx_strerror'.
  */
 enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const struct Expr* formals,
-                                   const struct Expr* body);
+                                  const struct Expr* body);
 
 /*
  * Copy the specified `LambdaCtx' structure into an allocated copy, and return
@@ -120,5 +113,26 @@ Expr* macro_expand(struct Env* env, struct Expr* macro, struct Expr* args);
  * specified arguments `args'.
  */
 Expr* macro_call(struct Env* env, struct Expr* func, struct Expr* args);
+
+/*----------------------------------------------------------------------------*/
+
+/*
+ * Return an immutable string that describes the specified lambda error.
+ */
+static inline const char* lambdactx_strerror(enum ELambdaCtxErr code) {
+    const char* s;
+    switch (code) {
+        case LAMBDACTX_ERR_NONE:
+            s = "No error.";
+            break;
+        case LAMBDACTX_ERR_FORMALTYPE:
+            s = "Invalid type for formal argument. Expected 'Symbol'.";
+            break;
+        case LAMBDACTX_ERR_NOREST:
+            s = "Exactly 1 formal must appear after `&rest' keyword.";
+            break;
+    }
+    return s;
+}
 
 #endif /* LAMBDA_H_ */

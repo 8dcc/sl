@@ -189,8 +189,11 @@ Expr* prim_define(Env* env, Expr* e) {
     if (EXPRP_ERR(evaluated))
         return evaluated;
 
-    const bool bound = env_bind(env, e->val.s, evaluated, ENV_FLAG_NONE);
-    SL_EXPECT(bound, "Could not bind symbol `%s'.", e->val.s);
+    const enum EEnvErr code = env_bind(env, e->val.s, evaluated, ENV_FLAG_NONE);
+    SL_EXPECT(code == ENV_ERR_NONE,
+              "Could not bind symbol `%s': %s",
+              e->val.s,
+              env_strerror(code));
 
     return evaluated;
 }
