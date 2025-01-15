@@ -3,11 +3,9 @@
 #+AUTHOR: 8dcc
 #+OPTIONS: toc:2
 #+STARTUP: nofold
-#+TEXINFO_DIR_CATEGORY: Software development
 #+TEXINFO_DIR_NAME: SL
 #+TEXINFO_DIR_DESC: Simple Lisp
-
-#+TOC: headlines 2
+#+TEXINFO_DIR_CATEGORY: Software development
 
 * COMMENT Meta
 ** Document manipulation
