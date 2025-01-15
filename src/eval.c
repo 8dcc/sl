@@ -44,8 +44,10 @@ static inline bool is_special_form(const Env* env, const Expr* e) {
 }
 
 /*
- * Evaluate each expression in a linked list by calling 'eval', and return
- * another linked list with the results.
+ * Evaluate each expression in a list by calling 'eval', and return another list
+ * with the results. In Lisp jargon, map 'eval' to the specified list.
+ *
+ * TODO: We could rename this function to something like 'map_eval'.
  */
 static Expr* eval_list(Env* env, Expr* list) {
     /* The first item will be stored in 'dummy_copy.next' */
