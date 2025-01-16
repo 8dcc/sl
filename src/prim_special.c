@@ -84,17 +84,15 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
              * Therefore, 'expr' must evaluate to a list.
              */
             Expr* splice_arg = cur->val.children->next;
-            if (splice_arg == NULL || splice_arg->next != NULL)
-                return err("Call to splice (,@) expected exactly one"
-                           "argument.");
+            SL_EXPECT(splice_arg != NULL && splice_arg->next == NULL,
+                      "Call to splice (,@) expected exactly one argument.");
 
             Expr* evaluated = eval(env, splice_arg);
             if (EXPRP_ERR(evaluated))
                 return evaluated;
-
-            if (evaluated->type != EXPR_PARENT)
-                return err("Can't splice (,@) a non-list expression. Use "
-                           "unquote (,) instead.");
+            SL_EXPECT(evaluated->type == EXPR_PARENT,
+                      "Can't splice (,@) a non-list expression. Use unquote "
+                      "(,) instead.");
 
             if (evaluated->val.children != NULL) {
                 /* Append contents, not the list itself */
