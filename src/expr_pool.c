@@ -23,7 +23,7 @@
  * <https://github.com/8dcc/libpool>, along with my blog article
  * <https://8dcc.github.io/programming/pool-allocator.html>.
  *
- * The pool is simply an array of 'PoolNode' structures. This 'PoolNode'
+ * The pool is simply an array of 'PoolItem' structures. This 'PoolItem'
  * structure is a bit different from the one used in the blog article, since it
  * contains the union (with the "next free" pointer and the expression itself),
  * but also a 'flags' member, used for garbage collection. See the enum and
@@ -60,10 +60,10 @@ ExprPool* g_expr_pool = NULL;
 /* Static functions */
 
 /*
- * Is the specified node flagged as free?
+ * Is the specified item flagged as free?
  */
-static inline bool pool_node_is_free(PoolNode* node) {
-    return (pool_node_flags(node) & NODE_FLAG_FREE) != 0;
+static inline bool pool_item_is_free(PoolItem* pool_item) {
+    return (pool_item_flags(pool_item) & POOL_FLAG_FREE) != 0;
 }
 
 /*
@@ -98,23 +98,23 @@ static void free_heap_expr_members(Expr* e) {
 /*----------------------------------------------------------------------------*/
 /* Public wrappers */
 
-enum EPoolNodeFlags pool_node_flags(PoolNode* node) {
-    VALGRIND_MAKE_MEM_DEFINED(&node->flags, sizeof(enum EPoolNodeFlags));
-    const enum EPoolNodeFlags result = node->flags;
-    VALGRIND_MAKE_MEM_NOACCESS(&node->flags, sizeof(enum EPoolNodeFlags));
+enum EPoolItemFlags pool_item_flags(PoolItem* pool_item) {
+    VALGRIND_MAKE_MEM_DEFINED(&pool_item->flags, sizeof(enum EPoolItemFlags));
+    const enum EPoolItemFlags result = pool_item->flags;
+    VALGRIND_MAKE_MEM_NOACCESS(&pool_item->flags, sizeof(enum EPoolItemFlags));
     return result;
 }
 
-void pool_node_flag_set(PoolNode* node, enum EPoolNodeFlags flag) {
-    VALGRIND_MAKE_MEM_DEFINED(&node->flags, sizeof(enum EPoolNodeFlags));
-    node->flags |= flag;
-    VALGRIND_MAKE_MEM_NOACCESS(&node->flags, sizeof(enum EPoolNodeFlags));
+void pool_item_flag_set(PoolItem* pool_item, enum EPoolItemFlags flag) {
+    VALGRIND_MAKE_MEM_DEFINED(&pool_item->flags, sizeof(enum EPoolItemFlags));
+    pool_item->flags |= flag;
+    VALGRIND_MAKE_MEM_NOACCESS(&pool_item->flags, sizeof(enum EPoolItemFlags));
 }
 
-void pool_node_flag_unset(PoolNode* node, enum EPoolNodeFlags flag) {
-    VALGRIND_MAKE_MEM_DEFINED(&node->flags, sizeof(enum EPoolNodeFlags));
-    node->flags &= ~flag;
-    VALGRIND_MAKE_MEM_NOACCESS(&node->flags, sizeof(enum EPoolNodeFlags));
+void pool_item_flag_unset(PoolItem* pool_item, enum EPoolItemFlags flag) {
+    VALGRIND_MAKE_MEM_DEFINED(&pool_item->flags, sizeof(enum EPoolItemFlags));
+    pool_item->flags &= ~flag;
+    VALGRIND_MAKE_MEM_NOACCESS(&pool_item->flags, sizeof(enum EPoolItemFlags));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -124,23 +124,23 @@ bool pool_init(size_t pool_sz) {
     SL_ASSERT(g_expr_pool == NULL);
 
     g_expr_pool   = mem_alloc(sizeof(ExprPool));
-    PoolNode* arr = g_expr_pool->free_node =
-      mem_alloc(pool_sz * sizeof(PoolNode));
+    PoolItem* arr = g_expr_pool->free_items =
+      mem_alloc(pool_sz * sizeof(PoolItem));
 
     for (size_t i = 0; i < pool_sz - 1; i++) {
         arr[i].val.next = &arr[i + 1];
-        arr[i].flags    = NODE_FLAG_FREE;
+        arr[i].flags    = POOL_FLAG_FREE;
     }
     arr[pool_sz - 1].val.next = NULL;
-    arr[pool_sz - 1].flags    = NODE_FLAG_FREE;
+    arr[pool_sz - 1].flags    = POOL_FLAG_FREE;
 
     g_expr_pool->array_starts         = mem_alloc(sizeof(ArrayStart));
     g_expr_pool->array_starts->next   = NULL;
     g_expr_pool->array_starts->arr    = arr;
     g_expr_pool->array_starts->arr_sz = pool_sz;
 
-    VALGRIND_MAKE_MEM_NOACCESS(arr, pool_sz * sizeof(PoolNode));
-    VALGRIND_CREATE_MEMPOOL(g_expr_pool, sizeof(enum EPoolNodeFlags), 0);
+    VALGRIND_MAKE_MEM_NOACCESS(arr, pool_sz * sizeof(PoolItem));
+    VALGRIND_CREATE_MEMPOOL(g_expr_pool, sizeof(enum EPoolItemFlags), 0);
 
     return true;
 }
@@ -149,18 +149,18 @@ bool pool_expand(size_t extra_sz) {
     SL_ASSERT(g_expr_pool != NULL && extra_sz > 0);
 
     ArrayStart* array_start = mem_alloc(sizeof(ArrayStart));
-    PoolNode* extra_arr     = mem_alloc(extra_sz * sizeof(PoolNode));
+    PoolItem* extra_arr     = mem_alloc(extra_sz * sizeof(PoolItem));
 
-    /* Link the new free nodes together */
+    /* Link the new free items together */
     for (size_t i = 0; i < extra_sz - 1; i++) {
         extra_arr[i].val.next = &extra_arr[i + 1];
-        extra_arr[i].flags    = NODE_FLAG_FREE;
+        extra_arr[i].flags    = POOL_FLAG_FREE;
     }
 
-    /* Prepend the new node array to the linked list of free nodes */
-    extra_arr[extra_sz - 1].val.next = g_expr_pool->free_node;
-    extra_arr[extra_sz - 1].flags    = NODE_FLAG_FREE;
-    g_expr_pool->free_node           = extra_arr;
+    /* Prepend the new item array to the linked list of free items */
+    extra_arr[extra_sz - 1].val.next = g_expr_pool->free_items;
+    extra_arr[extra_sz - 1].flags    = POOL_FLAG_FREE;
+    g_expr_pool->free_items          = extra_arr;
 
     /* Prepend to the linked list of array starts */
     array_start->arr          = extra_arr;
@@ -168,7 +168,7 @@ bool pool_expand(size_t extra_sz) {
     array_start->next         = g_expr_pool->array_starts;
     g_expr_pool->array_starts = array_start;
 
-    VALGRIND_MAKE_MEM_NOACCESS(extra_arr, extra_sz * sizeof(PoolNode));
+    VALGRIND_MAKE_MEM_NOACCESS(extra_arr, extra_sz * sizeof(PoolItem));
 
     return true;
 }
@@ -185,10 +185,10 @@ void pool_close(void) {
     for (array_start = g_expr_pool->array_starts; array_start != NULL;
          array_start = array_start->next) {
         VALGRIND_MAKE_MEM_DEFINED(array_start->arr,
-                                  array_start->arr_sz * sizeof(PoolNode));
+                                  array_start->arr_sz * sizeof(PoolItem));
 
         for (size_t i = 0; i < array_start->arr_sz; i++)
-            if (!pool_node_is_free(&array_start->arr[i]))
+            if (!pool_item_is_free(&array_start->arr[i]))
                 pool_free(&array_start->arr[i].val.expr);
     }
 
@@ -212,30 +212,30 @@ void pool_close(void) {
 }
 
 /*----------------------------------------------------------------------------*/
-/* Public node-related functions */
+/* Public functions for pool items */
 
 Expr* pool_alloc(void) {
     SL_ASSERT(g_expr_pool != NULL);
 
-    if (g_expr_pool->free_node == NULL)
+    if (g_expr_pool->free_items == NULL)
         return NULL;
-    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool->free_node, sizeof(PoolNode*));
+    VALGRIND_MAKE_MEM_DEFINED(g_expr_pool->free_items, sizeof(PoolItem*));
 
-    PoolNode* result       = g_expr_pool->free_node;
-    g_expr_pool->free_node = g_expr_pool->free_node->val.next;
+    PoolItem* result        = g_expr_pool->free_items;
+    g_expr_pool->free_items = g_expr_pool->free_items->val.next;
 
-    SL_ASSERT(pool_node_is_free(result));
-    pool_node_flag_unset(result, NODE_FLAG_FREE);
+    SL_ASSERT(pool_item_is_free(result));
+    pool_item_flag_unset(result, POOL_FLAG_FREE);
 
     VALGRIND_MEMPOOL_ALLOC(g_expr_pool, &result->val.expr, sizeof(Expr));
-    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool->free_node, sizeof(PoolNode*));
+    VALGRIND_MAKE_MEM_NOACCESS(g_expr_pool->free_items, sizeof(PoolItem*));
 
     return &result->val.expr;
 }
 
 Expr* pool_alloc_or_expand(size_t extra_sz) {
     SL_ASSERT(g_expr_pool != NULL);
-    if (g_expr_pool->free_node == NULL && !pool_expand(extra_sz))
+    if (g_expr_pool->free_items == NULL && !pool_expand(extra_sz))
         return NULL;
 
     return pool_alloc();
@@ -246,13 +246,13 @@ void pool_free(Expr* e) {
     if (e == NULL)
         return;
 
-    PoolNode* node = expr2node(e);
+    PoolItem* pool_item = pool_item_from_expr(e);
 
     /*
      * Avoid double-frees.
      */
-    SL_ASSERT(!pool_node_is_free(node));
-    pool_node_flag_set(node, NODE_FLAG_FREE);
+    SL_ASSERT(!pool_item_is_free(pool_item));
+    pool_item_flag_set(pool_item, POOL_FLAG_FREE);
 
     /*
      * Before freeing the expression we have to free its heap members. They are
@@ -261,8 +261,8 @@ void pool_free(Expr* e) {
      */
     free_heap_expr_members(e);
 
-    node->val.next         = g_expr_pool->free_node;
-    g_expr_pool->free_node = node;
+    pool_item->val.next     = g_expr_pool->free_items;
+    g_expr_pool->free_items = pool_item;
 
     VALGRIND_MEMPOOL_FREE(g_expr_pool, e);
 }
@@ -270,12 +270,12 @@ void pool_free(Expr* e) {
 /*----------------------------------------------------------------------------*/
 
 void pool_print_stats(FILE* fp) {
-    size_t total_free = 0, total_nodes = 0, total_arrays = 0;
+    size_t total_free = 0, total_items = 0, total_arrays = 0;
 
     for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
         size_t num_free = 0;
         for (size_t i = 0; i < a->arr_sz; i++)
-            if (pool_node_is_free(&a->arr[i]))
+            if (pool_item_is_free(&a->arr[i]))
                 num_free++;
 
         fprintf(fp,
@@ -284,7 +284,7 @@ void pool_print_stats(FILE* fp) {
                 num_free,
                 a->arr_sz);
 
-        total_nodes += a->arr_sz;
+        total_items += a->arr_sz;
         total_free += num_free;
         total_arrays++;
     }
@@ -292,7 +292,7 @@ void pool_print_stats(FILE* fp) {
     fprintf(fp,
             "Total: %zu/%zu free in %zu arrays.\n",
             total_free,
-            total_nodes,
+            total_items,
             total_arrays);
 }
 
@@ -301,7 +301,7 @@ void pool_dump(FILE* fp) {
 
     for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
         for (size_t i = 0; i < a->arr_sz; i++) {
-            const enum EPoolNodeFlags flags = pool_node_flags(&a->arr[i]);
+            const enum EPoolItemFlags flags = pool_item_flags(&a->arr[i]);
             fprintf(fp,
                     "[%p] [%zu,%3zu] [F: %X] ",
                     &a->arr[i],
@@ -309,7 +309,7 @@ void pool_dump(FILE* fp) {
                     i,
                     flags);
 
-            if ((flags & NODE_FLAG_FREE) == 0) {
+            if ((flags & POOL_FLAG_FREE) == 0) {
                 expr_print(fp, &a->arr[i].val.expr);
 
                 const enum EExprType type = a->arr[i].val.expr.type;
