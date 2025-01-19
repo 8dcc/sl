@@ -31,7 +31,7 @@ Expr* prim_eval(Env* env, Expr* e) {
 
 Expr* prim_apply(Env* env, Expr* e) {
     SL_EXPECT_ARG_NUM(e, 2);
-    SL_EXPECT(EXPRP_APPLICABLE(e),
+    SL_EXPECT(EXPR_APPLICABLE_P(e),
               "Expected a function or macro as the first argument, got '%s'.",
               exprtype2str(e->type));
     SL_EXPECT_TYPE(e->next, EXPR_PARENT);
@@ -55,7 +55,7 @@ Expr* prim_macroexpand(Env* env, Expr* e) {
               "The supplied list must have at least one element: The macro.");
 
     Expr* func = eval(env, car);
-    if (EXPRP_ERR(func))
+    if (EXPR_ERR_P(func))
         return func;
     SL_EXPECT_TYPE(func, EXPR_MACRO);
 
@@ -66,7 +66,7 @@ Expr* prim_macroexpand(Env* env, Expr* e) {
 Expr* prim_random(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
+    SL_EXPECT(EXPR_NUMBER_P(e), "Expected numeric argument.");
 
     /*
      * We return the same numeric type we received.

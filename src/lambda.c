@@ -269,7 +269,7 @@ static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
     Expr* last_evaluated = NULL;
     for (Expr* cur = ctx->body; cur != NULL; cur = cur->next) {
         last_evaluated = eval(ctx->env, cur);
-        if (EXPRP_ERR(last_evaluated))
+        if (EXPR_ERR_P(last_evaluated))
             break;
     }
 
@@ -288,7 +288,7 @@ Expr* macro_expand(Env* env, Expr* func, Expr* args) {
 
 Expr* macro_call(Env* env, Expr* func, Expr* args) {
     Expr* expansion = macro_expand(env, func, args);
-    if (EXPRP_ERR(expansion))
+    if (EXPR_ERR_P(expansion))
         return expansion;
 
     /* Calling a macro is just evaluation its macro exansion */

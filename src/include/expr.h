@@ -106,19 +106,19 @@ struct Expr {
 /* Macro predicates */
 
 /* Expression predicates */
-/* TODO: Rename to ERR_P, etc. */
-#define EXPRP_ERR(E)    ((E)->type == EXPR_ERR)
-#define EXPRP_INT(E)    ((E)->type == EXPR_NUM_INT)
-#define EXPRP_FLT(E)    ((E)->type == EXPR_NUM_FLT)
-#define EXPRP_SYM(E)    ((E)->type == EXPR_SYMBOL)
-#define EXPRP_STR(E)    ((E)->type == EXPR_STRING)
-#define EXPRP_LST(E)    ((E)->type == EXPR_PARENT)
-#define EXPRP_PRIM(E)   ((E)->type == EXPR_PRIM)
-#define EXPRP_LAMBDA(E) ((E)->type == EXPR_LAMBDA)
-#define EXPRP_MACRO(E)  ((E)->type == EXPR_MACRO)
+#define EXPR_ERR_P(E)    ((E)->type == EXPR_ERR)
+#define EXPR_INT_P(E)    ((E)->type == EXPR_NUM_INT)
+#define EXPR_FLT_P(E)    ((E)->type == EXPR_NUM_FLT)
+#define EXPR_SYM_P(E)    ((E)->type == EXPR_SYMBOL)
+#define EXPR_STR_P(E)    ((E)->type == EXPR_STRING)
+#define EXPR_LST_P(E)    ((E)->type == EXPR_PARENT)
+#define EXPR_PRIM_P(E)   ((E)->type == EXPR_PRIM)
+#define EXPR_LAMBDA_P(E) ((E)->type == EXPR_LAMBDA)
+#define EXPR_MACRO_P(E)  ((E)->type == EXPR_MACRO)
 
-#define EXPRP_NUMBER(E)     (EXPRP_INT(E) || EXPRP_FLT(E))
-#define EXPRP_APPLICABLE(E) (EXPRP_PRIM(E) || EXPRP_LAMBDA(E) || EXPRP_MACRO(E))
+#define EXPR_NUMBER_P(E) (EXPR_INT_P(E) || EXPR_FLT_P(E))
+#define EXPR_APPLICABLE_P(E)                                                   \
+    (EXPR_PRIM_P(E) || EXPR_LAMBDA_P(E) || EXPR_MACRO_P(E))
 
 /*----------------------------------------------------------------------------*/
 /* Functions for creating expressions */
@@ -158,6 +158,8 @@ Expr* expr_list_clone(const Expr* e);
 /*
  * Is the specified expression an empty list? Note that the empty list is also
  * used to represent false in functions that return predicates.
+ *
+ * TODO: Move to 'EXPR_NIL_P' macro.
  */
 bool expr_is_nil(const Expr* e);
 

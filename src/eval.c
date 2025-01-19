@@ -64,7 +64,7 @@ static Expr* eval_list(Env* env, Expr* list) {
          * argument in our linked list.
          */
         Expr* evaluated = eval(env, cur);
-        if (EXPRP_ERR(evaluated))
+        if (EXPR_ERR_P(evaluated))
             return evaluated;
 
         cur_copy->next = evaluated;
@@ -97,9 +97,9 @@ static Expr* eval_function_call(Env* env, Expr* e) {
      * we are done.
      */
     Expr* func = eval(env, car);
-    if (EXPRP_ERR(func))
+    if (EXPR_ERR_P(func))
         return func;
-    SL_EXPECT(EXPRP_APPLICABLE(func),
+    SL_EXPECT(EXPR_APPLICABLE_P(func),
               "Expected function or macro, got '%s'.",
               exprtype2str(func->type));
 
@@ -127,7 +127,7 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* args;
     if (should_eval_args) {
         args = eval_list(env, cdr);
-        if (EXPRP_ERR(args))
+        if (EXPR_ERR_P(args))
             return args;
     } else {
         args = cdr;
@@ -205,7 +205,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
      */
     SL_ASSERT(env != NULL);
     SL_ASSERT(func != NULL);
-    SL_ASSERT(EXPRP_APPLICABLE(func));
+    SL_ASSERT(EXPR_APPLICABLE_P(func));
 
     Expr* result;
     switch (func->type) {

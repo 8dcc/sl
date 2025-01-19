@@ -88,7 +88,7 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
                       "Call to splice (,@) expected exactly one argument.");
 
             Expr* evaluated = eval(env, splice_arg);
-            if (EXPRP_ERR(evaluated))
+            if (EXPR_ERR_P(evaluated))
                 return evaluated;
             SL_EXPECT(evaluated->type == EXPR_PARENT,
                       "Can't splice (,@) a non-list expression. Use unquote "
@@ -108,7 +108,7 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
         } else {
             /* Not splicing, handle the children and append to final list */
             Expr* handled = handle_backquote_arg(env, cur);
-            if (EXPRP_ERR(handled))
+            if (EXPR_ERR_P(handled))
                 return handled;
 
             cur_copy->next = handled;
@@ -184,7 +184,7 @@ Expr* prim_define(Env* env, Expr* e) {
     SL_EXPECT_TYPE(e, EXPR_SYMBOL);
 
     Expr* evaluated = eval(env, e->next);
-    if (EXPRP_ERR(evaluated))
+    if (EXPR_ERR_P(evaluated))
         return evaluated;
 
     const enum EEnvErr code = env_bind(env, e->val.s, evaluated, ENV_FLAG_NONE);
@@ -205,7 +205,7 @@ Expr* prim_define_global(Env* env, Expr* e) {
     SL_EXPECT_TYPE(e, EXPR_SYMBOL);
 
     Expr* evaluated = eval(env, e->next);
-    if (EXPRP_ERR(evaluated))
+    if (EXPR_ERR_P(evaluated))
         return evaluated;
 
     const bool bound = env_bind_global(env, e->val.s, evaluated, ENV_FLAG_NONE);
@@ -293,7 +293,7 @@ Expr* prim_begin(Env* env, Expr* e) {
     Expr* last_evaluated = NULL;
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
         last_evaluated = eval(env, cur);
-        if (EXPRP_ERR(last_evaluated))
+        if (EXPR_ERR_P(last_evaluated))
             break;
     }
 
@@ -313,7 +313,7 @@ Expr* prim_if(Env* env, Expr* e) {
      * argument); otherwise, evaluate the "consequent" (second argument).
      */
     Expr* evaluated_predicate = eval(env, e);
-    if (EXPRP_ERR(evaluated_predicate))
+    if (EXPR_ERR_P(evaluated_predicate))
         return evaluated_predicate;
 
     Expr* result = expr_is_nil(evaluated_predicate) ? e->next->next : e->next;
@@ -335,7 +335,7 @@ Expr* prim_or(Env* env, Expr* e) {
     Expr* result = NULL;
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
         result = eval(env, cur);
-        if (EXPRP_ERR(result) || !expr_is_nil(result))
+        if (EXPR_ERR_P(result) || !expr_is_nil(result))
             break;
     }
 
@@ -355,7 +355,7 @@ Expr* prim_and(Env* env, Expr* e) {
     Expr* result = NULL;
     for (Expr* cur = e; cur != NULL; cur = cur->next) {
         result = eval(env, cur);
-        if (EXPRP_ERR(result) || expr_is_nil(result))
+        if (EXPR_ERR_P(result) || expr_is_nil(result))
             break;
     }
 

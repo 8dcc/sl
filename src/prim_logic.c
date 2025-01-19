@@ -48,7 +48,7 @@ Expr* prim_equal_num(Env* env, Expr* e) {
 
     /* (N1 == N2 == ...) */
     for (Expr* arg = e; arg->next != NULL; arg = arg->next) {
-        SL_EXPECT(EXPRP_NUMBER(arg), "Unexpected non-numeric argument.");
+        SL_EXPECT(EXPR_NUMBER_P(arg), "Unexpected non-numeric argument.");
         if (expr_get_generic_num(arg) != expr_get_generic_num(arg->next)) {
             result = false;
             break;

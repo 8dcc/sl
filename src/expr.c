@@ -217,7 +217,7 @@ bool expr_lt(const Expr* a, const Expr* b) {
 
     /* See 'prim_equal_num' */
     if (a->type != b->type)
-        return (EXPRP_NUMBER(a) && EXPRP_NUMBER(b))
+        return (EXPR_NUMBER_P(a) && EXPR_NUMBER_P(b))
                  ? (expr_get_generic_num(a) < expr_get_generic_num(b))
                  : false;
 
@@ -252,7 +252,7 @@ bool expr_gt(const Expr* a, const Expr* b) {
         return false;
 
     if (a->type != b->type)
-        return (EXPRP_NUMBER(a) && EXPRP_NUMBER(b))
+        return (EXPR_NUMBER_P(a) && EXPR_NUMBER_P(b))
                  ? (expr_get_generic_num(a) > expr_get_generic_num(b))
                  : false;
 
@@ -326,7 +326,7 @@ bool expr_list_has_only_numbers(const Expr* e) {
         return false;
 
     for (; e != NULL; e = e->next)
-        if (!EXPRP_NUMBER(e))
+        if (!EXPR_NUMBER_P(e))
             return false;
 
     return true;

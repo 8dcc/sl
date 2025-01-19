@@ -275,7 +275,7 @@ Expr* prim_remainder(Env* env, Expr* e) {
 Expr* prim_round(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
+    SL_EXPECT(EXPR_NUMBER_P(e), "Expected numeric argument.");
 
     Expr* ret = expr_new(e->type);
     switch (e->type) {
@@ -294,7 +294,7 @@ Expr* prim_round(Env* env, Expr* e) {
 Expr* prim_floor(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
+    SL_EXPECT(EXPR_NUMBER_P(e), "Expected numeric argument.");
 
     Expr* ret = expr_new(e->type);
     switch (e->type) {
@@ -313,7 +313,7 @@ Expr* prim_floor(Env* env, Expr* e) {
 Expr* prim_ceiling(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
+    SL_EXPECT(EXPR_NUMBER_P(e), "Expected numeric argument.");
 
     Expr* ret = expr_new(e->type);
     switch (e->type) {
@@ -332,7 +332,7 @@ Expr* prim_ceiling(Env* env, Expr* e) {
 Expr* prim_truncate(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
+    SL_EXPECT(EXPR_NUMBER_P(e), "Expected numeric argument.");
 
     Expr* ret = expr_new(e->type);
     switch (e->type) {
