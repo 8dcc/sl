@@ -29,10 +29,10 @@
 #include "include/memory.h"
 
 Expr* expr_new(enum EExprType type) {
-    Expr* ret         = pool_alloc_or_expand(BASE_POOL_SZ);
-    ret->type         = type;
-    ret->val.children = NULL;
-    ret->next         = NULL;
+    Expr* ret = pool_alloc_or_expand(BASE_POOL_SZ);
+    ret->type = type;
+    ret->next = NULL;
+    memset(&ret->val, 0, sizeof(ret->val));
     return ret;
 }
 
