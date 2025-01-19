@@ -131,7 +131,6 @@ Expr* expr_new(enum EExprType type);
 
 /*
  * Clone the specified 'Expr' structure into an allocated copy, and return it.
- * The returned pointer must be freed by the caller using 'expr_free'.
  *
  * In the case of lists, it doesn't clone children. To clone recursively, use
  * 'expr_clone_recur'.
