@@ -31,7 +31,8 @@
 ;;       - `mapc'
 ;;       - `mapcdr'
 ;;   - `thread-last' (perhaps rename, check other lisps)
-;;   - `member' (return arg0 when car is arg1)
+;;   - `memq' (return arg0 when car is `eq?' to arg1)
+;;   - `member' (return arg0 when car is `equal?' to arg1)
 ;;   - `member?' (is arg1 in arg0?)
 ;;   - `string-split' using regex
 ;;   - See Emacs' "M-x shortdoc" categories.
