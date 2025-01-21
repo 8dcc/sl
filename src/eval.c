@@ -57,8 +57,8 @@ static Expr* eval_list(Env* env, Expr* list) {
 
     for (Expr* cur = list; cur != NULL; cur = cur->next) {
         /*
-         * Evaluate each argument. If one of them returns an error, free what we
-         * had evaluated and propagate it upwards.
+         * Evaluate each argument. If one of them returns an error, propagate it
+         * upwards.
          *
          * Otherwise, save the evaluation in our copy, and move to the next
          * argument in our linked list.
