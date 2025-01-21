@@ -180,7 +180,7 @@ Expr* parse(const Token* tokens) {
      *
      * When encountering QUOTE, we want to parse the next expression, but it
      * takes more than one token (the whole list, 5 tokens). In this case, the
-     * expression next to the quote ends on the last LIST_CLOSE token. The
+     * expression next to the quote ends on the first LIST_CLOSE token. The
      * recursive call to 'parse_recur' will use its return value to let the
      * caller know how many elements of the 'Token' array were parsed, so it can
      * continue where it needs (in this case, at the number 123).
