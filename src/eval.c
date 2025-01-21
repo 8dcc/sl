@@ -242,7 +242,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
         } break;
 
         default: {
-            result = err("Expected 'Primitive' or 'Lambda', got '%s'.",
+            result = err("Expected 'Primitive', 'Lambda' or 'Macro'; got '%s'.",
                          exprtype2str(func->type));
         } break;
     }
