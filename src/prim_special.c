@@ -203,8 +203,12 @@ Expr* prim_define_global(Env* env, Expr* e) {
     if (EXPR_ERR_P(evaluated))
         return evaluated;
 
-    const bool bound = env_bind_global(env, e->val.s, evaluated, ENV_FLAG_NONE);
-    SL_EXPECT(bound, "Could not bind global symbol `%s'.", e->val.s);
+    const enum EEnvErr code =
+      env_bind_global(env, e->val.s, evaluated, ENV_FLAG_NONE);
+    SL_EXPECT(code == ENV_ERR_NONE,
+              "Could not bind global symbol `%s': %s",
+              e->val.s,
+              env_strerror(code));
 
     return evaluated;
 }
