@@ -40,7 +40,7 @@
 /*
  * Avoid -Wunused-parameter
  */
-#define SL_UNUSED(VAR) (void)VAR
+#define SL_UNUSED(VAR) ((void)VAR)
 
 /*----------------------------------------------------------------------------*/
 
