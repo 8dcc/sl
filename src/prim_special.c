@@ -94,16 +94,11 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
                       "Can't splice (,@) a non-list expression. Use unquote "
                       "(,) instead.");
 
-            if (evaluated->val.children != NULL) {
-                /* Append contents, not the list itself */
-                for (Expr* child = evaluated->val.children; child != NULL;
-                     child       = child->next) {
-                    cur_copy->next = child;
-                    cur_copy       = cur_copy->next;
-                }
-
-                /* Overwrite the children pointer so only the parent is freed */
-                evaluated->val.children = NULL;
+            /* Append contents, not the list itself */
+            for (Expr* child = evaluated->val.children; child != NULL;
+                 child       = child->next) {
+                cur_copy->next = child;
+                cur_copy       = cur_copy->next;
             }
         } else {
             /* Not splicing, handle the children and append to final list */
