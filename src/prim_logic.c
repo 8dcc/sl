@@ -43,12 +43,13 @@ Expr* prim_equal(Env* env, Expr* e) {
 Expr* prim_equal_num(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT(expr_list_len(e) >= 2, "Expected at least 2 arguments.");
+    SL_EXPECT(expr_list_has_only_numbers(e),
+              "Expected only numeric arguments.");
 
     bool result = true;
 
     /* (N1 == N2 == ...) */
     for (Expr* arg = e; arg->next != NULL; arg = arg->next) {
-        SL_EXPECT(EXPR_NUMBER_P(arg), "Unexpected non-numeric argument.");
         if (expr_get_generic_num(arg) != expr_get_generic_num(arg->next)) {
             result = false;
             break;
