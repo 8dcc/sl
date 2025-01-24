@@ -31,7 +31,6 @@
 Expr* expr_new(enum EExprType type) {
     Expr* ret = pool_alloc_or_expand(BASE_POOL_SZ);
     ret->type = type;
-    ret->next = NULL;
     memset(&ret->val, 0, sizeof(ret->val));
     return ret;
 }
@@ -46,8 +45,9 @@ Expr* expr_clone(const Expr* e) {
      * Nothing allocated (e.g. symbol strings) is re-used from the old
      * expression, everything is allocated and copied again.
      *
-     * Note that this function does NOT clone inferior or adjacent nodes. See
-     * 'expr_clone_recur' and 'expr_clone_list' respectively.
+     * Note that, in the case of pairs, this function doesn't clone the tree
+     * recursively, it just copies the old references; see also
+     * 'expr_clone_recur'.
      */
     Expr* ret = expr_new(e->type);
 
@@ -66,8 +66,9 @@ Expr* expr_clone(const Expr* e) {
             ret->val.s = mem_strdup(e->val.s);
             break;
 
-        case EXPR_PARENT:
-            ret->val.children = NULL;
+        case EXPR_PAIR:
+            CAR(ret) = CAR(e);
+            CDR(ret) = CDR(e);
             break;
 
         case EXPR_PRIM:
@@ -84,7 +85,6 @@ Expr* expr_clone(const Expr* e) {
             break;
     }
 
-    ret->next = NULL;
     return ret;
 }
 
@@ -93,69 +93,19 @@ Expr* expr_clone_recur(const Expr* e) {
         return NULL;
 
     Expr* cloned = expr_clone(e);
-
-    if (e->type == EXPR_PARENT) {
-        /*
-         * The copy of the first child will be stored in 'dummy_copy.next'. This
-         * will be stored in 'val.children' below.
-         */
-        Expr dummy_copy;
-        dummy_copy.next = NULL;
-        Expr* cur_copy  = &dummy_copy;
-
-        for (Expr* cur = e->val.children; cur != NULL; cur = cur->next) {
-            cur_copy->next = expr_clone_recur(cur);
-            cur_copy       = cur_copy->next;
-        }
-
-        cloned->val.children = dummy_copy.next;
+    if (cloned->type == EXPR_PAIR) {
+        CAR(cloned) = expr_clone_recur(CAR(cloned));
+        CDR(cloned) = expr_clone_recur(CDR(cloned));
     }
 
     return cloned;
 }
 
-Expr* expr_list_clone(const Expr* e) {
-    Expr dummy_copy;
-    dummy_copy.next = NULL;
-    Expr* cur_copy  = &dummy_copy;
-
-    for (; e != NULL; e = e->next) {
-        cur_copy->next = expr_clone_recur(e);
-        cur_copy       = cur_copy->next;
-    }
-
-    return dummy_copy.next;
-}
-
 /*----------------------------------------------------------------------------*/
 
 bool expr_is_nil(const Expr* e) {
-    return e != NULL && ((e->type == EXPR_PARENT && e->val.children == NULL) ||
-                         (e->type == EXPR_SYMBOL && e->val.s != NULL &&
-                          strcmp(e->val.s, "nil") == 0));
-}
-
-bool expr_list_equal(const Expr* a, const Expr* b) {
-    /*
-     * Keep iterating while both nodes are equal. We check this by
-     * calling 'expr_equal', which allows NULL arguments.
-     *
-     * Since inside the loop both items are equal, if one of them is
-     * NULL, it means we reached the end of both lists and they are
-     * equal.
-     *
-     * This whole loop is similar to an implementation of strcmp().
-     */
-    while (expr_equal(a, b)) {
-        if (a == NULL)
-            return true;
-
-        a = a->next;
-        b = b->next;
-    }
-
-    /* If we broke out of the loop, an expression didn't match */
-    return false;
+    return e != NULL && e->type == EXPR_SYMBOL && e->val.s != NULL &&
+           strcmp(e->val.s, "nil") == 0;
 }
 
 bool expr_equal(const Expr* a, const Expr* b) {
@@ -165,14 +115,6 @@ bool expr_equal(const Expr* a, const Expr* b) {
      */
     if (a == NULL || b == NULL)
         return a == b;
-
-    /*
-     * If both of them are `nil', they are equal. This check is important
-     * because the symbol "nil" and the empty list have different types but are
-     * equal.
-     */
-    if (expr_is_nil(a) && expr_is_nil(b))
-        return true;
 
     /*
      * This function checks for isomorphism, so if they don't share the same
@@ -194,8 +136,8 @@ bool expr_equal(const Expr* a, const Expr* b) {
         case EXPR_STRING:
             return strcmp(a->val.s, b->val.s) == 0;
 
-        case EXPR_PARENT:
-            return expr_list_equal(a->val.children, b->val.children);
+        case EXPR_PAIR:
+            return expr_equal(CAR(a), CAR(b)) && expr_equal(CDR(a), CDR(b));
 
         case EXPR_PRIM:
             return a->val.prim == b->val.prim;
@@ -236,7 +178,7 @@ bool expr_lt(const Expr* a, const Expr* b) {
         case EXPR_STRING:
             return strcmp(a->val.s, b->val.s) < 0;
 
-        case EXPR_PARENT:
+        case EXPR_PAIR:
         case EXPR_PRIM:
         case EXPR_LAMBDA:
         case EXPR_MACRO:
@@ -268,7 +210,7 @@ bool expr_gt(const Expr* a, const Expr* b) {
         case EXPR_STRING:
             return strcmp(a->val.s, b->val.s) > 0;
 
-        case EXPR_PARENT:
+        case EXPR_PAIR:
         case EXPR_PRIM:
         case EXPR_LAMBDA:
         case EXPR_MACRO:
@@ -281,52 +223,99 @@ bool expr_gt(const Expr* a, const Expr* b) {
 
 /*----------------------------------------------------------------------------*/
 
+bool expr_is_proper_list(const Expr* e) {
+    SL_ASSERT(e != NULL);
+
+    /*
+     * (defun expr-is-proper-list (e)
+     *   (cond ((null? e) tru)
+     *         ((pair? e) (expr-is-proper-list (cdr e)))
+     *         (tru nil)))
+     */
+    while (!expr_is_nil(e)) {
+        if (e->type != EXPR_PAIR)
+            return false;
+        e = CDR(e);
+    }
+
+    return true;
+}
+
 size_t expr_list_len(const Expr* e) {
+    SL_ASSERT(e != NULL);
+    SL_ASSERT(expr_is_proper_list(e));
+
     size_t result = 0;
-
-    for (; e != NULL; e = e->next)
+    for (; !expr_is_nil(e); e = CDR(e))
         result++;
-
     return result;
 }
 
-bool expr_list_is_member(const Expr* lst, const Expr* e) {
-    if (e == NULL)
-        return false;
+Expr* expr_list_nth(const Expr* e, size_t n) {
+    SL_ASSERT(e != NULL);
+    SL_ASSERT(n > 0 && n <= expr_list_len(e));
 
-    for (; lst != NULL; lst = lst->next)
-        if (expr_equal(lst, e))
+    while (--n > 0)
+        e = CDR(e);
+
+    return CAR(e);
+}
+
+bool expr_is_member(const Expr* lst, const Expr* e) {
+    SL_ASSERT(lst != NULL && e != NULL);
+    SL_ASSERT(expr_is_proper_list(lst));
+
+    for (; !expr_is_nil(lst); lst = CDR(lst))
+        if (expr_equal(CAR(lst), e))
             return true;
 
     return false;
 }
 
 bool expr_list_is_homogeneous(const Expr* e) {
-    if (e == NULL)
-        return false;
+    SL_ASSERT(e != NULL);
+    SL_ASSERT(expr_is_proper_list(e));
 
-    const enum EExprType first_type = e->type;
-    for (e = e->next; e != NULL; e = e->next)
-        if (e->type != first_type)
+    /*
+     * Store the type of the first element, and start checking from the second
+     * one.
+     */
+    const enum EExprType first_type = CAR(e)->type;
+    for (e = CDR(e); !expr_is_nil(e); e = CDR(e))
+        if (CAR(e)->type != first_type)
             return false;
 
     return true;
 }
 
 bool expr_list_has_type(const Expr* e, enum EExprType type) {
-    for (; e != NULL; e = e->next)
-        if (e->type == type)
+    SL_ASSERT(e != NULL);
+    SL_ASSERT(expr_is_proper_list(e));
+
+    for (; !expr_is_nil(e); e = CDR(e))
+        if (CAR(e)->type == type)
             return true;
 
     return false;
 }
 
 bool expr_list_has_only_numbers(const Expr* e) {
-    if (e == NULL)
-        return false;
+    SL_ASSERT(e != NULL);
+    SL_ASSERT(expr_is_proper_list(e));
 
-    for (; e != NULL; e = e->next)
-        if (!EXPR_NUMBER_P(e))
+    for (; !expr_is_nil(e); e = CDR(e))
+        if (!EXPR_NUMBER_P(CAR(e)))
+            return false;
+
+    return true;
+}
+
+bool expr_list_has_only_lists(const Expr* e) {
+    SL_ASSERT(e != NULL);
+    SL_ASSERT(expr_is_proper_list(e));
+
+    for (; !expr_is_nil(e); e = CDR(e))
+        if (!expr_is_proper_list(CAR(e)))
             return false;
 
     return true;
@@ -334,15 +323,29 @@ bool expr_list_has_only_numbers(const Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
-void expr_list_print(FILE* fp, const Expr* e) {
-    fputc('(', fp);
-    for (; e != NULL; e = e->next) {
-        expr_print(fp, e);
+/*
+ * Print each element of a list to the specified file using the specified
+ * 'print_func'. The argument doesn't have to be a proper list.
+ */
+static void expr_list_print(FILE* fp, const Expr* list,
+                            void (*print_func)(FILE* fp, const Expr* e)) {
+    SL_ASSERT(EXPR_PAIR_P(list));
 
-        if (e->next != NULL)
-            fputc(' ', fp);
+    for (;;) {
+        print_func(fp, CAR(list));
+
+        list = CDR(list);
+        if (expr_is_nil(list))
+            break;
+
+        fputc(' ', fp);
+
+        if (!EXPR_PAIR_P(list)) {
+            fprintf(fp, ". ");
+            print_func(fp, list);
+            break;
+        }
     }
-    fputc(')', fp);
 }
 
 void expr_print(FILE* fp, const Expr* e) {
@@ -372,11 +375,10 @@ void expr_print(FILE* fp, const Expr* e) {
             err_print(stderr, e);
             break;
 
-        case EXPR_PARENT:
-            if (expr_is_nil(e))
-                fprintf(fp, "nil");
-            else
-                expr_list_print(fp, e->val.children);
+        case EXPR_PAIR:
+            fputc('(', fp);
+            expr_list_print(fp, e, expr_print);
+            fputc(')', fp);
             break;
 
         case EXPR_PRIM:
@@ -395,17 +397,6 @@ void expr_print(FILE* fp, const Expr* e) {
             fprintf(fp, "<unknown>");
             break;
     }
-}
-
-static bool expr_list_write(FILE* fp, const Expr* e) {
-    for (; e != NULL; e = e->next) {
-        if (!expr_write(fp, e))
-            return false;
-
-        if (e->next != NULL)
-            fputc(' ', fp);
-    }
-    return true;
 }
 
 bool expr_write(FILE* fp, const Expr* e) {
@@ -428,14 +419,10 @@ bool expr_write(FILE* fp, const Expr* e) {
             print_escaped_str(fp, e->val.s);
             break;
 
-        case EXPR_PARENT:
-            if (expr_is_nil(e)) {
-                fprintf(fp, "nil");
-            } else {
-                fputc('(', fp);
-                expr_list_write(fp, e->val.children);
-                fputc(')', fp);
-            }
+        case EXPR_PAIR:
+            fputc('(', fp);
+            expr_list_print(fp, e, expr_print);
+            fputc(')', fp);
             break;
 
         case EXPR_LAMBDA:
@@ -447,7 +434,7 @@ bool expr_write(FILE* fp, const Expr* e) {
                                               : "ERROR");
             lambdactx_print_args(fp, e->val.lambda);
             fputc(' ', fp);
-            expr_list_write(fp, e->val.lambda->body);
+            expr_list_print(fp, e->val.lambda->body, expr_print);
             fputc(')', fp);
             break;
 
@@ -495,19 +482,13 @@ void expr_print_debug(FILE* fp, const Expr* e) {
             fputc('\n', fp);
         } break;
 
-        case EXPR_PARENT: {
-            fprintf(fp, "[LST]");
+        case EXPR_PAIR: {
+            fprintf(fp, "[PAI]\n");
 
-            if (expr_is_nil(e)) {
-                fprintf(fp, " (NIL)\n");
-                break;
-            }
-
-            fputc('\n', fp);
-
-            /* If the token is a parent, indent and print all children */
+            /* If the token is a pair, print CAR and CDR */
             indent += INDENT_STEP;
-            expr_print_debug(fp, e->val.children);
+            expr_print_debug(fp, CAR(e));
+            expr_print_debug(fp, CDR(e));
             indent -= INDENT_STEP;
         } break;
 
@@ -543,7 +524,4 @@ void expr_print_debug(FILE* fp, const Expr* e) {
             return;
         }
     }
-
-    if (e->next != NULL)
-        expr_print_debug(fp, e->next);
 }

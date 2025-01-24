@@ -55,7 +55,7 @@ enum EExprType {
     EXPR_ERR     = (1 << 2),
     EXPR_SYMBOL  = (1 << 3),
     EXPR_STRING  = (1 << 4),
-    EXPR_PARENT  = (1 << 5),
+    EXPR_PAIR    = (1 << 5),
     EXPR_PRIM    = (1 << 6),
     EXPR_LAMBDA  = (1 << 7),
     EXPR_MACRO   = (1 << 8),
@@ -72,6 +72,18 @@ SL_ASSERT_TYPES(GenericNum, LispFlt);
 #define EXPR_NUM_GENERIC EXPR_NUM_FLT
 
 /*
+ * Structure used to represent a pair of expressions.
+ *
+ * TODO: Link article about cons pairs.
+ * TODO: We could store indexes in the pool instead of pointers to save memory.
+ */
+typedef struct ExprPair ExprPair;
+struct ExprPair {
+    struct Expr* car;
+    struct Expr* cdr;
+};
+
+/*
  * The main expression type. This will be used to hold basically all data in our
  * Lisp.
  *
@@ -83,9 +95,6 @@ SL_ASSERT_TYPES(GenericNum, LispFlt);
  * EXPR_LAMBDA, etc.) should own a unique pointer that is not being used by any
  * other expression. Therefore, we should be able to modify or free these
  * pointers without affecting other expressions.
- *
- * TODO: Use traditional cons-pair approach (used by most Lisps), rather than a
- * linked list (which is what clojure uses, basically).
  */
 typedef struct Expr Expr;
 struct Expr {
@@ -94,24 +103,23 @@ struct Expr {
         LispInt n;
         LispFlt f;
         char* s;
-        Expr* children;
+        ExprPair pair;
         PrimitiveFuncPtr prim;
         struct LambdaCtx* lambda;
     } val;
-
-    Expr* next;
 };
 
 /*----------------------------------------------------------------------------*/
-/* Macro predicates */
+/* Callable macros */
 
 /* Expression predicates */
+/* TODO: Grep for "->type", replace with these macros */
 #define EXPR_ERR_P(E)    ((E)->type == EXPR_ERR)
 #define EXPR_INT_P(E)    ((E)->type == EXPR_NUM_INT)
 #define EXPR_FLT_P(E)    ((E)->type == EXPR_NUM_FLT)
 #define EXPR_SYM_P(E)    ((E)->type == EXPR_SYMBOL)
 #define EXPR_STR_P(E)    ((E)->type == EXPR_STRING)
-#define EXPR_LST_P(E)    ((E)->type == EXPR_PARENT)
+#define EXPR_PAIR_P(E)   ((E)->type == EXPR_PAIR)
 #define EXPR_PRIM_P(E)   ((E)->type == EXPR_PRIM)
 #define EXPR_LAMBDA_P(E) ((E)->type == EXPR_LAMBDA)
 #define EXPR_MACRO_P(E)  ((E)->type == EXPR_MACRO)
@@ -119,6 +127,15 @@ struct Expr {
 #define EXPR_NUMBER_P(E) (EXPR_INT_P(E) || EXPR_FLT_P(E))
 #define EXPR_APPLICABLE_P(E)                                                   \
     (EXPR_PRIM_P(E) || EXPR_LAMBDA_P(E) || EXPR_MACRO_P(E))
+
+/*
+ * List-related macros. Make sure you check the expression type before calling
+ * them.
+ */
+#define CAR(E)  ((E)->val.pair.car)
+#define CDR(E)  ((E)->val.pair.cdr)
+#define CADR(E) (CAR(CDR(E)))
+#define CDDR(E) (CDR(CDR(E)))
 
 /*----------------------------------------------------------------------------*/
 /* Functions for creating expressions */
@@ -132,24 +149,18 @@ Expr* expr_new(enum EExprType type);
 /*
  * Clone the specified 'Expr' structure into an allocated copy, and return it.
  *
- * In the case of lists, it doesn't clone children. To clone recursively, use
- * 'expr_clone_recur'.
- *
- * It also doesn't clone adjacent expressions (i.e. 'e->next' is ignored and
- * 'returned->next' is NULL). To clone a list of 'Expr' structures, use
- * 'expr_list_clone'.
+ * In the case of pairs, it copies the references, doesn't clone recursively. To
+ * clone recursively, use 'expr_clone_recur'.
  */
 Expr* expr_clone(const Expr* e);
 
 /*
- * Same as 'expr_clone', but also clones children recursivelly.
+ * Same as 'expr_clone', but also clones pairs recursivelly.
+ *
+ * TODO: Rename to 'expr_tree_clone', update comments where this function is
+ * mentioned.
  */
 Expr* expr_clone_recur(const Expr* e);
-
-/*
- * Clones a linked list of 'Expr' structures by calling 'expr_clone_recur'.
- */
-Expr* expr_list_clone(const Expr* e);
 
 /*----------------------------------------------------------------------------*/
 /* Predicates for expressions */
@@ -157,16 +168,8 @@ Expr* expr_list_clone(const Expr* e);
 /*
  * Is the specified expression an empty list? Note that the empty list is also
  * used to represent false in functions that return predicates.
- *
- * TODO: Move to 'EXPR_NIL_P' macro.
  */
 bool expr_is_nil(const Expr* e);
-
-/*
- * Check if two linked lists of 'Expr' structures are identical in length and
- * content using 'expr_equal'.
- */
-bool expr_list_equal(const Expr* a, const Expr* b);
 
 /*
  * Return true if 'a' and 'b' have the same effective value.
@@ -180,55 +183,73 @@ bool expr_lt(const Expr* a, const Expr* b);
 bool expr_gt(const Expr* a, const Expr* b);
 
 /*----------------------------------------------------------------------------*/
-/* Predicates for expression lists */
+/* Functions for Lisp lists */
 
 /*
- * Count the number of elements in a linked list of 'Expr' structures.
+ * Is the specified expression a proper Lisp list? A proper list can be either
+ * `nil', or one or more chained cons pairs whose last CDR is 'nil'.
+ */
+bool expr_is_proper_list(const Expr* e);
+
+/*
+ * Count the number of elements the specified list.
  */
 size_t expr_list_len(const Expr* e);
 
 /*
- * Is the expression 'e' inside the linked list 'lst'? Checks using
- * 'expr_equal'.
+ * Return a pointer to the N-th element of the specified list. The returned
+ * expression is the N-th "car", not the N-th "pair".
+ *
+ * The 'n' argument is supposed to be one-indexed and smaller than the size of
+ * the list (according to 'expr_list_len'), or an assertion will fail.
  */
-bool expr_list_is_member(const Expr* lst, const Expr* e);
+Expr* expr_list_nth(const Expr* e, size_t n);
 
 /*
- * Is the specified linked list homogeneous? In other words, do all elements
- * share the same type?
+ * Does the specified list contain the specified expression? The check is
+ * performed using 'expr_equal'.
+ *
+ * TODO: Swap argument order, just like Scheme's `member' functions.
+ * TODO: Add 'expr_member' function that returns the reference, like Scheme's
+ * `member'. Make 'expr_is_member' inline for checking if it returned NULL or
+ * not.
+ */
+bool expr_is_member(const Expr* lst, const Expr* e);
+
+/*
+ * Is the specified list homogeneous? In other words, do all elements share the
+ * same type?
  */
 bool expr_list_is_homogeneous(const Expr* e);
 
 /*
- * Does the specified linked list contain at least one expression with the
- * specified type?
+ * Does the specified list contain at least one expression with the specified
+ * type?
  */
 bool expr_list_has_type(const Expr* e, enum EExprType type);
 
 /*
- * Does the specified linked list contain ONLY expressions with numeric types?
- *
- * Uses the 'EXPR_NUMBER_P' macro, defined above.
- * See also the 'expr_list_has_only_type' inline function below.
+ * Does the specified list contain ONLY expressions with numeric types? Uses the
+ * 'EXPR_NUMBER_P' macro, defined above.
  */
 bool expr_list_has_only_numbers(const Expr* e);
+
+/*
+ * Does the specified list contain ONLY proper lists? Uses the
+ * 'expr_is_proper_list' function.
+ */
+bool expr_list_has_only_lists(const Expr* e);
 
 /*
  * Does the specified linked list contain ONLY expressions with the specified
  * type?
  */
 static inline bool expr_list_has_only_type(const Expr* e, enum EExprType type) {
-    return expr_list_is_homogeneous(e) && e->type == type;
+    return expr_list_is_homogeneous(e) && CAR(e)->type == type;
 }
 
 /*----------------------------------------------------------------------------*/
 /* Expression functions for I/O */
-
-/*
- * Print a linked list of expressions using 'expr_print', wrapped in
- * parentheses.
- */
-void expr_list_print(FILE* fp, const Expr* e);
 
 /*
  * Print an expression in a human-friendly form.
@@ -265,7 +286,7 @@ static inline const char* exprtype2str(enum EExprType type) {
         case EXPR_ERR:     return "Error";
         case EXPR_SYMBOL:  return "Symbol";
         case EXPR_STRING:  return "String";
-        case EXPR_PARENT:  return "List";
+        case EXPR_PAIR:    return "Pair";
         case EXPR_PRIM:    return "Primitive";
         case EXPR_LAMBDA:  return "Lambda";
         case EXPR_MACRO:   return "Macro";

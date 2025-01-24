@@ -28,23 +28,6 @@
 #include "include/garbage_collector.h"
 #include "include/error.h"
 
-/*----------------------------------------------------------------------------*/
-
-/*
- * Mark for garbage collection the expressions in the body of the specified
- * lambda context.
- *
- * NOTE: We don't currently mark expressions in the lambda environment.
- */
-static void mark_lambdactx(LambdaCtx* ctx) {
-    SL_ASSERT(ctx != NULL);
-
-    for (Expr* cur = ctx->body; cur != NULL; cur = cur->next)
-        gc_mark_expr(cur);
-}
-
-/*----------------------------------------------------------------------------*/
-
 void gc_unmark_all(void) {
     for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next)
         for (size_t i = 0; i < a->arr_sz; i++)
@@ -62,14 +45,15 @@ void gc_mark_expr(Expr* e) {
     SL_ASSERT(e != NULL);
 
     switch (e->type) {
-        case EXPR_PARENT:
-            for (Expr* cur = e->val.children; cur != NULL; cur = cur->next)
-                gc_mark_expr(cur);
+        case EXPR_PAIR:
+            gc_mark_expr(CAR(e));
+            gc_mark_expr(CDR(e));
             break;
 
         case EXPR_LAMBDA:
         case EXPR_MACRO:
-            mark_lambdactx(e->val.lambda);
+            /* We don't currently mark expressions in the lambda environment */
+            gc_mark_expr(e->val.lambda->body);
             break;
 
         case EXPR_UNKNOWN:

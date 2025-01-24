@@ -57,7 +57,7 @@ DECLARE_PRIM(is_int);
 DECLARE_PRIM(is_flt);
 DECLARE_PRIM(is_symbol);
 DECLARE_PRIM(is_string);
-DECLARE_PRIM(is_list);
+DECLARE_PRIM(is_pair);
 DECLARE_PRIM(is_primitive);
 DECLARE_PRIM(is_lambda);
 DECLARE_PRIM(is_macro);

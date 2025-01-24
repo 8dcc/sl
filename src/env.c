@@ -65,16 +65,15 @@ void env_init_defaults(Env* env) {
      * to the environment.
      */
     if (g_nil == NULL) {
-        g_nil               = expr_new(EXPR_PARENT);
-        g_nil->val.children = NULL;
+        g_nil        = expr_new(EXPR_SYMBOL);
+        g_nil->val.s = mem_strdup("nil");
     }
     if (g_tru == NULL) {
         g_tru        = expr_new(EXPR_SYMBOL);
         g_tru->val.s = mem_strdup("tru");
     }
     if (g_debug_trace_list == NULL) {
-        g_debug_trace_list               = expr_new(EXPR_PARENT);
-        g_debug_trace_list->val.children = NULL;
+        g_debug_trace_list = expr_clone(g_nil);
     }
     SL_ASSERT(env_bind(env, "nil", g_nil, ENV_FLAG_CONST) == ENV_ERR_NONE);
     SL_ASSERT(env_bind(env, "tru", g_tru, ENV_FLAG_CONST) == ENV_ERR_NONE);
@@ -114,7 +113,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "flt?", is_flt);
     BIND_PRIM(env, "symbol?", is_symbol);
     BIND_PRIM(env, "string?", is_string);
-    BIND_PRIM(env, "list?", is_list);
+    BIND_PRIM(env, "pair?", is_pair);
     BIND_PRIM(env, "primitive?", is_primitive);
     BIND_PRIM(env, "lambda?", is_lambda);
     BIND_PRIM(env, "macro?", is_macro);

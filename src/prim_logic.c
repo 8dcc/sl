@@ -30,8 +30,8 @@ Expr* prim_equal(Env* env, Expr* e) {
     bool result = true;
 
     /* (A == B == ...) */
-    for (Expr* arg = e; arg->next != NULL; arg = arg->next) {
-        if (!expr_equal(arg, arg->next)) {
+    for (; !expr_is_nil(CDR(e)); e = CDR(e)) {
+        if (!expr_equal(CAR(e), CADR(e))) {
             result = false;
             break;
         }
@@ -49,8 +49,8 @@ Expr* prim_equal_num(Env* env, Expr* e) {
     bool result = true;
 
     /* (N1 == N2 == ...) */
-    for (Expr* arg = e; arg->next != NULL; arg = arg->next) {
-        if (expr_get_generic_num(arg) != expr_get_generic_num(arg->next)) {
+    for (; !expr_is_nil(CDR(e)); e = CDR(e)) {
+        if (expr_get_generic_num(CAR(e)) != expr_get_generic_num(CADR(e))) {
             result = false;
             break;
         }
@@ -66,8 +66,8 @@ Expr* prim_lt(Env* env, Expr* e) {
     bool result = true;
 
     /* (A < B < ...) */
-    for (Expr* arg = e; arg->next != NULL; arg = arg->next) {
-        if (!expr_lt(arg, arg->next)) {
+    for (; !expr_is_nil(CDR(e)); e = CDR(e)) {
+        if (!expr_lt(CAR(e), CADR(e))) {
             result = false;
             break;
         }
@@ -83,8 +83,8 @@ Expr* prim_gt(Env* env, Expr* e) {
     bool result = true;
 
     /* (A > B > ...) */
-    for (Expr* arg = e; arg->next != NULL; arg = arg->next) {
-        if (!expr_gt(arg, arg->next)) {
+    for (; !expr_is_nil(CDR(e)); e = CDR(e)) {
+        if (!expr_gt(CAR(e), CADR(e))) {
             result = false;
             break;
         }

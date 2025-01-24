@@ -26,22 +26,36 @@
 #include "include/primitives.h"
 
 Expr* prim_eval(Env* env, Expr* e) {
-    return eval(env, e);
+    SL_EXPECT_ARG_NUM(e, 1);
+    return eval(env, CAR(e));
 }
 
 Expr* prim_apply(Env* env, Expr* e) {
     SL_EXPECT_ARG_NUM(e, 2);
-    SL_EXPECT(EXPR_APPLICABLE_P(e),
-              "Expected a function or macro as the first argument, got '%s'.",
-              exprtype2str(e->type));
-    SL_EXPECT_TYPE(e->next, EXPR_PARENT);
 
-    return apply(env, e, e->next->val.children);
+    Expr* func = expr_list_nth(e, 1);
+    Expr* args = expr_list_nth(e, 2);
+    SL_EXPECT(EXPR_APPLICABLE_P(func),
+              "Expected a function or macro as the first argument, got '%s'.",
+              exprtype2str(func->type));
+    SL_EXPECT(expr_is_proper_list(args),
+              "Expected a list of arguments, got '%s'.",
+              exprtype2str(args->type));
+
+    return apply(env, func, args);
 }
 
 Expr* prim_macroexpand(Env* env, Expr* e) {
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_PARENT);
+
+    Expr* call_expr = CAR(e);
+    SL_EXPECT_PROPER_LIST(call_expr);
+    SL_EXPECT(expr_list_len(call_expr) >= 1,
+              "The supplied list must have at least one element: The macro "
+              "representation.");
+
+    Expr* macro_representation = CAR(call_expr);
+    Expr* args                 = CDR(call_expr);
 
     /*
      * Similar to how function calls are evaluated in the 'eval_function_call'
@@ -50,23 +64,20 @@ Expr* prim_macroexpand(Env* env, Expr* e) {
      * Note that we expect a quoted expression, so neither the arguments nor the
      * macro should have been evaluated.
      */
-    Expr* car = e->val.children;
-    SL_EXPECT(car != NULL,
-              "The supplied list must have at least one element: The macro.");
+    Expr* macro = eval(env, macro_representation);
+    if (EXPR_ERR_P(macro))
+        return macro;
+    SL_EXPECT_TYPE(macro, EXPR_MACRO);
 
-    Expr* func = eval(env, car);
-    if (EXPR_ERR_P(func))
-        return func;
-    SL_EXPECT_TYPE(func, EXPR_MACRO);
-
-    Expr* args     = e->val.children->next;
-    return macro_expand(env, func, args);
+    return macro_expand(env, macro, args);
 }
 
 Expr* prim_random(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT(EXPR_NUMBER_P(e), "Expected numeric argument.");
+
+    const Expr* limit = CAR(e);
+    SL_EXPECT(EXPR_NUMBER_P(limit), "Expected numeric argument.");
 
     /*
      * We return the same numeric type we received.
@@ -74,14 +85,14 @@ Expr* prim_random(Env* env, Expr* e) {
      * For more information on the value ranges, see:
      * https://c-faq.com/lib/randrange.html
      */
-    Expr* ret = expr_new(e->type);
-    switch (e->type) {
+    Expr* ret = expr_new(limit->type);
+    switch (limit->type) {
         case EXPR_NUM_INT:
-            ret->val.n = rand() / (RAND_MAX / e->val.n + 1);
+            ret->val.n = rand() / (RAND_MAX / limit->val.n + 1);
             break;
 
         case EXPR_NUM_FLT:
-            ret->val.f = (double)rand() / ((double)RAND_MAX + 1) * e->val.f;
+            ret->val.f = (double)rand() / ((double)RAND_MAX + 1) * limit->val.f;
             break;
 
         default:
@@ -94,8 +105,10 @@ Expr* prim_random(Env* env, Expr* e) {
 Expr* prim_set_random_seed(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_NUM_INT);
 
-    srand(e->val.n);
+    const Expr* seed = CAR(e);
+    SL_EXPECT_TYPE(seed, EXPR_NUM_INT);
+
+    srand(seed->val.n);
     return expr_clone(g_tru);
 }

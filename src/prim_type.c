@@ -61,9 +61,13 @@ Expr* prim_is_string(Env* env, Expr* e) {
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
-Expr* prim_is_list(Env* env, Expr* e) {
+/*
+ * TODO: `list?' function. Probably better to make it a primitive, although it's
+ * not necessary.
+ */
+Expr* prim_is_pair(Env* env, Expr* e) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_PARENT);
+    const bool result = expr_list_has_only_type(e, EXPR_PAIR);
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
@@ -91,20 +95,24 @@ Expr* prim_is_macro(Env* env, Expr* e) {
 Expr* prim_int2flt(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_NUM_INT);
+
+    const Expr* arg = CAR(e);
+    SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
 
     Expr* ret  = expr_new(EXPR_NUM_FLT);
-    ret->val.f = (LispFlt)e->val.n;
+    ret->val.f = (LispFlt)arg->val.n;
     return ret;
 }
 
 Expr* prim_flt2int(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_NUM_FLT);
+
+    const Expr* arg = CAR(e);
+    SL_EXPECT_TYPE(arg, EXPR_NUM_FLT);
 
     Expr* ret  = expr_new(EXPR_NUM_INT);
-    ret->val.n = (LispInt)e->val.f;
+    ret->val.n = (LispInt)arg->val.f;
     return ret;
 }
 
@@ -115,10 +123,12 @@ Expr* prim_flt2int(Env* env, Expr* e) {
 Expr* prim_int2str(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_NUM_INT);
+
+    const Expr* arg = CAR(e);
+    SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
 
     char* s;
-    const size_t written = int2str(e->val.n, &s);
+    const size_t written = int2str(arg->val.n, &s);
     SL_EXPECT(written > 0, "Failed to convert Integer to String.");
 
     Expr* ret  = expr_new(EXPR_STRING);
@@ -129,10 +139,12 @@ Expr* prim_int2str(Env* env, Expr* e) {
 Expr* prim_flt2str(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_NUM_FLT);
+
+    const Expr* arg = CAR(e);
+    SL_EXPECT_TYPE(arg, EXPR_NUM_FLT);
 
     char* s;
-    const size_t written = flt2str(e->val.f, &s);
+    const size_t written = flt2str(arg->val.f, &s);
     SL_EXPECT(written > 0, "Failed to convert Float to String.");
 
     Expr* ret  = expr_new(EXPR_STRING);
@@ -143,19 +155,23 @@ Expr* prim_flt2str(Env* env, Expr* e) {
 Expr* prim_str2int(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_STRING);
+
+    const Expr* arg = CAR(e);
+    SL_EXPECT_TYPE(arg, EXPR_STRING);
 
     Expr* ret  = expr_new(EXPR_NUM_INT);
-    ret->val.n = strtoll(e->val.s, NULL, STRTOLL_ANY_BASE);
+    ret->val.n = strtoll(arg->val.s, NULL, STRTOLL_ANY_BASE);
     return ret;
 }
 
 Expr* prim_str2flt(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_STRING);
+
+    const Expr* arg = CAR(e);
+    SL_EXPECT_TYPE(arg, EXPR_STRING);
 
     Expr* ret  = expr_new(EXPR_NUM_FLT);
-    ret->val.f = strtod(e->val.s, NULL);
+    ret->val.f = strtod(arg->val.s, NULL);
     return ret;
 }

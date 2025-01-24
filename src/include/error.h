@@ -77,8 +77,11 @@ struct Expr; /* expr.h */
     } while (0)
 
 /*
- * Check if the specified linked list of 'Expr' structures has a specific
+ * Check if the specified list of 'Expr' structures has a specific
  * length using 'SL_EXPECT'.
+ *
+ * TODO: Add 'SL_EXPECT_LEN' macro, use when the list is not an argument list.
+ * TODO: Rename arguments of primitives to 'args', rather than 'e'.
  */
 #define SL_EXPECT_ARG_NUM(EXPR_LIST, NUM)                                      \
     SL_EXPECT(expr_list_len(EXPR_LIST) == (NUM),                               \
@@ -94,6 +97,11 @@ struct Expr; /* expr.h */
     SL_EXPECT((EXPR)->type == (TYPE),                                          \
               "Expected expression of type '%s', got '%s'.",                   \
               exprtype2str(TYPE),                                              \
+              exprtype2str((EXPR)->type))
+
+#define SL_EXPECT_PROPER_LIST(EXPR)                                            \
+    SL_EXPECT(expr_is_proper_list(EXPR),                                       \
+              "Expected a proper list, got '%s'.",                             \
               exprtype2str((EXPR)->type))
 
 /*----------------------------------------------------------------------------*/
