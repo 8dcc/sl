@@ -194,7 +194,7 @@ bool expr_is_proper_list(const Expr* e);
 /*
  * Count the number of elements the specified list.
  */
-size_t expr_list_len(const Expr* e);
+size_t expr_list_len(const Expr* list);
 
 /*
  * Return a pointer to the N-th element of the specified list. The returned
@@ -203,7 +203,7 @@ size_t expr_list_len(const Expr* e);
  * The 'n' argument is supposed to be one-indexed and smaller than the size of
  * the list (according to 'expr_list_len'), or an assertion will fail.
  */
-Expr* expr_list_nth(const Expr* e, size_t n);
+Expr* expr_list_nth(const Expr* list, size_t n);
 
 /*
  * Does the specified list contain the specified expression? The check is
@@ -214,38 +214,39 @@ Expr* expr_list_nth(const Expr* e, size_t n);
  * `member'. Make 'expr_is_member' inline for checking if it returned NULL or
  * not.
  */
-bool expr_is_member(const Expr* lst, const Expr* e);
+bool expr_is_member(const Expr* list, const Expr* e);
 
 /*
  * Is the specified list homogeneous? In other words, do all elements share the
  * same type?
  */
-bool expr_list_is_homogeneous(const Expr* e);
+bool expr_list_is_homogeneous(const Expr* list);
 
 /*
  * Does the specified list contain at least one expression with the specified
  * type?
  */
-bool expr_list_has_type(const Expr* e, enum EExprType type);
+bool expr_list_has_type(const Expr* list, enum EExprType type);
 
 /*
  * Does the specified list contain ONLY expressions with numeric types? Uses the
  * 'EXPR_NUMBER_P' macro, defined above.
  */
-bool expr_list_has_only_numbers(const Expr* e);
+bool expr_list_has_only_numbers(const Expr* list);
 
 /*
  * Does the specified list contain ONLY proper lists? Uses the
  * 'expr_is_proper_list' function.
  */
-bool expr_list_has_only_lists(const Expr* e);
+bool expr_list_has_only_lists(const Expr* list);
 
 /*
  * Does the specified linked list contain ONLY expressions with the specified
  * type?
  */
-static inline bool expr_list_has_only_type(const Expr* e, enum EExprType type) {
-    return expr_list_is_homogeneous(e) && CAR(e)->type == type;
+static inline bool expr_list_has_only_type(const Expr* list,
+                                           enum EExprType type) {
+    return expr_list_is_homogeneous(list) && CAR(list)->type == type;
 }
 
 /*----------------------------------------------------------------------------*/

@@ -241,81 +241,81 @@ bool expr_is_proper_list(const Expr* e) {
     return true;
 }
 
-size_t expr_list_len(const Expr* e) {
-    SL_ASSERT(e != NULL);
-    SL_ASSERT(expr_is_proper_list(e));
+size_t expr_list_len(const Expr* list) {
+    SL_ASSERT(list != NULL);
+    SL_ASSERT(expr_is_proper_list(list));
 
     size_t result = 0;
-    for (; !expr_is_nil(e); e = CDR(e))
+    for (; !expr_is_nil(list); list = CDR(list))
         result++;
     return result;
 }
 
-Expr* expr_list_nth(const Expr* e, size_t n) {
-    SL_ASSERT(e != NULL);
-    SL_ASSERT(n > 0 && n <= expr_list_len(e));
+Expr* expr_list_nth(const Expr* list, size_t n) {
+    SL_ASSERT(list != NULL);
+    SL_ASSERT(n > 0 && n <= expr_list_len(list));
 
     while (--n > 0)
-        e = CDR(e);
+        list = CDR(list);
 
-    return CAR(e);
+    return CAR(list);
 }
 
-bool expr_is_member(const Expr* lst, const Expr* e) {
-    SL_ASSERT(lst != NULL && e != NULL);
-    SL_ASSERT(expr_is_proper_list(lst));
+bool expr_is_member(const Expr* list, const Expr* e) {
+    SL_ASSERT(list != NULL && e != NULL);
+    SL_ASSERT(expr_is_proper_list(list));
 
-    for (; !expr_is_nil(lst); lst = CDR(lst))
-        if (expr_equal(CAR(lst), e))
+    for (; !expr_is_nil(list); list = CDR(list))
+        if (expr_equal(CAR(list), e))
             return true;
 
     return false;
 }
 
-bool expr_list_is_homogeneous(const Expr* e) {
-    SL_ASSERT(e != NULL);
-    SL_ASSERT(expr_is_proper_list(e));
+bool expr_list_is_homogeneous(const Expr* list) {
+    SL_ASSERT(list != NULL);
+    SL_ASSERT(expr_is_proper_list(list));
 
     /*
      * Store the type of the first element, and start checking from the second
      * one.
      */
-    const enum EExprType first_type = CAR(e)->type;
-    for (e = CDR(e); !expr_is_nil(e); e = CDR(e))
-        if (CAR(e)->type != first_type)
+    const enum EExprType first_type = CAR(list)->type;
+    for (list = CDR(list); !expr_is_nil(list); list = CDR(list))
+        if (CAR(list)->type != first_type)
             return false;
 
     return true;
 }
 
-bool expr_list_has_type(const Expr* e, enum EExprType type) {
-    SL_ASSERT(e != NULL);
-    SL_ASSERT(expr_is_proper_list(e));
+bool expr_list_has_type(const Expr* list, enum EExprType type) {
+    SL_ASSERT(list != NULL);
+    SL_ASSERT(expr_is_proper_list(list));
 
-    for (; !expr_is_nil(e); e = CDR(e))
-        if (CAR(e)->type == type)
+    for (; !expr_is_nil(list); list = CDR(list))
+        if (CAR(list)->type == type)
             return true;
 
     return false;
 }
 
-bool expr_list_has_only_numbers(const Expr* e) {
-    SL_ASSERT(e != NULL);
-    SL_ASSERT(expr_is_proper_list(e));
+bool expr_list_has_only_numbers(const Expr* list) {
+    SL_ASSERT(list != NULL);
+    SL_ASSERT(expr_is_proper_list(list));
 
-    for (; !expr_is_nil(e); e = CDR(e))
-        if (!EXPR_NUMBER_P(CAR(e)))
+    for (; !expr_is_nil(list); list = CDR(list))
+        if (!EXPR_NUMBER_P(CAR(list)))
             return false;
 
     return true;
 }
 
-bool expr_list_has_only_lists(const Expr* e) {
-    SL_ASSERT(e != NULL);
-    SL_ASSERT(expr_is_proper_list(e));
+bool expr_list_has_only_lists(const Expr* list) {
+    SL_ASSERT(list != NULL);
+    SL_ASSERT(expr_is_proper_list(list));
 
-    for (; !expr_is_nil(e); e = CDR(e))
-        if (!expr_is_proper_list(CAR(e)))
+    for (; !expr_is_nil(list); list = CDR(list))
+        if (!expr_is_proper_list(CAR(list)))
             return false;
 
     return true;
