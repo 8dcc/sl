@@ -92,7 +92,7 @@ static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
             continue;
 
         if (print_evaluated)
-            expr_println(stdout, evaluated);
+            expr_println(EXPR_ERR_P(evaluated) ? stderr : stdout, evaluated);
 
         /*
          * Collect all garbage that is not in the current environment.

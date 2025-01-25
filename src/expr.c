@@ -372,7 +372,7 @@ void expr_print(FILE* fp, const Expr* e) {
             break;
 
         case EXPR_ERR:
-            err_print(stderr, e);
+            err_print(fp, e);
             break;
 
         case EXPR_PAIR:
