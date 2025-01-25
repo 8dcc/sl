@@ -5,7 +5,7 @@ msg() {
 }
 
 err() {
-    echo -e "\033[31;1m$1\033[0m"
+    echo -e "\033[31;1m$1\033[0m" 1>&2
 }
 
 file_msg() {
@@ -13,7 +13,7 @@ file_msg() {
 }
 
 file_err() {
-    echo -e "\033[31;1m$1:\033[37;1m $2\033[0m"
+    echo -e "\033[31;1m$1:\033[37;1m $2\033[0m" 1>&2
 }
 
 if [ ! $(command -v dirname) ] ||
@@ -24,7 +24,7 @@ if [ ! $(command -v dirname) ] ||
 fi
 
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
-SL_BIN="$SCRIPT_DIR/../sl"
+SL_BIN="${SCRIPT_DIR}/../sl"
 
 for file in $(ls "$SCRIPT_DIR"/*.lisp); do
     file_msg "Testing" "$file"
