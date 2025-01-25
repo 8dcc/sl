@@ -31,6 +31,10 @@
 
 static size_t parse_recur(Expr* dst, const Token* tokens);
 
+static inline bool is_list_closer(enum ETokenType token_type) {
+    return token_type == TOKEN_LIST_CLOSE || token_type == TOKEN_EOF;
+}
+
 /*
  * Parse the next expression in 'tokens', and wrap it in a list whose first
  * element is the symbol 'func_name'. Return the number of parsed tokens.
@@ -106,8 +110,7 @@ static size_t parse_recur(Expr* dst, const Token* tokens) {
             /*
              * Empty lists get replaced by the symbol "nil" in the parser.
              */
-            if (tokens[parsed].type == TOKEN_LIST_CLOSE ||
-                tokens[parsed].type == TOKEN_EOF) {
+            if (is_list_closer(tokens[parsed].type)) {
                 dst->type  = EXPR_SYMBOL;
                 dst->val.s = mem_strdup("nil");
                 parsed++;
@@ -126,8 +129,7 @@ static size_t parse_recur(Expr* dst, const Token* tokens) {
             parsed += parsed_in_call;
 
             Expr* cur = dst;
-            while (tokens[parsed].type != TOKEN_LIST_CLOSE &&
-                   tokens[parsed].type != TOKEN_EOF) {
+            while (!is_list_closer(tokens[parsed].type)) {
                 /*
                  * TODO: Add TOKEN_DOT to lexer.
                  * TODO: Allow dot inside lists to indicate that the following
