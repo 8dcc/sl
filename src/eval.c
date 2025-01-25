@@ -47,15 +47,17 @@ static inline bool is_special_form(const Env* env, const Expr* e) {
  * Evaluate each expression in a list by calling 'eval', and return another list
  * with the results. In Lisp jargon, map 'eval' to the specified list.
  *
- * TODO: We could rename this function to something like 'map_eval'.
+ * TODO: We could rename this function to something like 'map_eval', or even add
+ * a 'mapcar' C function that receives a 'PrimitiveFuncPtr'.
  */
 static Expr* eval_list(Env* env, Expr* list) {
-    /* The first item will be stored in 'dummy_copy.next' */
-    Expr dummy_copy;
-    dummy_copy.next = NULL;
-    Expr* cur_copy  = &dummy_copy;
+    SL_ASSERT(expr_is_proper_list(list));
 
-    for (Expr* cur = list; cur != NULL; cur = cur->next) {
+    Expr dummy_copy;
+    dummy_copy.val.pair.cdr = g_nil;
+    Expr* cur_copy          = &dummy_copy;
+
+    for (; !expr_is_nil(list); list = CDR(list)) {
         /*
          * Evaluate each argument. If one of them returns an error, propagate it
          * upwards.
@@ -63,15 +65,17 @@ static Expr* eval_list(Env* env, Expr* list) {
          * Otherwise, save the evaluation in our copy, and move to the next
          * argument in our linked list.
          */
-        Expr* evaluated = eval(env, cur);
+        Expr* evaluated = eval(env, CAR(list));
         if (EXPR_ERR_P(evaluated))
             return evaluated;
 
-        cur_copy->next = evaluated;
-        cur_copy       = cur_copy->next;
+        CDR(cur_copy) = expr_new(EXPR_PAIR);
+        cur_copy      = CDR(cur_copy);
+        CAR(cur_copy) = evaluated;
+        CDR(cur_copy) = g_nil;
     }
 
-    return dummy_copy.next;
+    return dummy_copy.val.pair.cdr;
 }
 
 /*
@@ -80,12 +84,8 @@ static Expr* eval_list(Env* env, Expr* list) {
  * (using 'eval_list') before applying the function, if necessary.
  */
 static Expr* eval_function_call(Env* env, Expr* e) {
-    /* Caller should have checked if 'e' is `nil' */
-    SL_ASSERT(e->val.children != NULL);
-
-    /* The `car' represents the function, and `cdr' represents the arguments */
-    Expr* car = e->val.children;
-    Expr* cdr = e->val.children->next;
+    Expr* car = CAR(e);
+    Expr* cdr = CDR(e);
 
     /* Check if the function is a special form symbol, before evaluating it */
     const bool got_special_form = is_special_form(env, car);
@@ -115,7 +115,7 @@ static Expr* eval_function_call(Env* env, Expr* e) {
      * This boolean will be used when evaluating and freeing.
      */
     const bool should_eval_args =
-      (cdr != NULL && !got_special_form && func->type != EXPR_MACRO);
+      (!expr_is_nil(cdr) && !got_special_form && func->type != EXPR_MACRO);
 
     /*
      * If the arguments should be evaluated, evaluate them. If one of them
@@ -151,19 +151,15 @@ Expr* eval(Env* env, Expr* e) {
     if (e == NULL)
         return NULL;
 
-    /*
-     * TODO: Move `nil' outside of EXPR_PARENT case so the symbol is not
-     * converted to List. We should probably do this after adding cons pairs,
-     * and using a constant address as `nil'. Lists won't be a thing, so this
-     * will be a different problem.
-     */
-    switch (e->type) {
-        case EXPR_PARENT: {
-            /* `nil' evaluates to itself */
-            if (expr_is_nil(e))
-                return expr_clone(e);
+    /* `nil' evaluates to itself */
+    if (expr_is_nil(e))
+        return expr_clone(e);
 
+    switch (e->type) {
+        case EXPR_PAIR: {
             /* Evaluate the list as a procedure/macro call */
+            SL_EXPECT(expr_is_proper_list(e),
+                      "Expected a proper list for the procedure/macro call.");
             return eval_function_call(env, e);
         }
 
@@ -206,6 +202,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
     SL_ASSERT(env != NULL);
     SL_ASSERT(func != NULL);
     SL_ASSERT(EXPR_APPLICABLE_P(func));
+    SL_ASSERT(expr_is_proper_list(args));
 
     Expr* result;
     switch (func->type) {

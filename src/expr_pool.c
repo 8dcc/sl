@@ -90,7 +90,7 @@ static void free_heap_expr_members(Expr* e) {
         case EXPR_NUM_INT:
         case EXPR_NUM_FLT:
         case EXPR_PRIM:
-        case EXPR_PARENT:
+        case EXPR_PAIR:
             break;
     }
 }

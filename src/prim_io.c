@@ -60,10 +60,11 @@ Expr* prim_write(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
 
-    const bool success = expr_write(stdout, e);
+    const Expr* arg    = CAR(e);
+    const bool success = expr_write(stdout, arg);
     SL_EXPECT(success,
               "Couldn't write expression of type '%s'.",
-              exprtype2str(e->type));
+              exprtype2str(arg->type));
 
     return expr_clone(g_tru);
 }
@@ -86,8 +87,9 @@ Expr* prim_scan_str(Env* env, Expr* e) {
 
     const char* delimiters = "\n";
     if (arg_num == 1) {
-        SL_EXPECT_TYPE(e, EXPR_STRING);
-        delimiters = e->val.s;
+        const Expr* arg = CAR(e);
+        SL_EXPECT_TYPE(arg, EXPR_STRING);
+        delimiters = arg->val.s;
     }
 
     size_t str_pos = 0;
@@ -117,19 +119,23 @@ Expr* prim_scan_str(Env* env, Expr* e) {
 Expr* prim_print_str(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_STRING);
 
-    printf("%s", e->val.s);
-    return expr_clone(e);
+    const Expr* arg = CAR(e);
+    SL_EXPECT_TYPE(arg, EXPR_STRING);
+
+    printf("%s", arg->val.s);
+    return expr_clone(arg);
 }
 
 Expr* prim_error(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_STRING);
+
+    const Expr* arg = CAR(e);
+    SL_EXPECT_TYPE(arg, EXPR_STRING);
 
     /*
      * TODO: Use 'prim_format' and '&rest'. Move outside of 'prim_io.c'.
      */
-    return err("%s", e->val.s);
+    return err("%s", arg->val.s);
 }

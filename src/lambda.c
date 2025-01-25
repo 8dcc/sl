@@ -33,18 +33,29 @@
  */
 static enum ELambdaCtxErr count_formals(const Expr* list, size_t* mandatory,
                                         bool* has_rest) {
+    SL_ASSERT(expr_is_proper_list(list));
+
     /* Initialize output variables */
     *mandatory = 0;
     *has_rest  = false;
 
-    for (const Expr* cur = list; cur != NULL; cur = cur->next) {
+    for (; !expr_is_nil(list); list = CDR(list)) {
+        const Expr* cur = CAR(list);
         if (cur->type != EXPR_SYMBOL)
             return LAMBDACTX_ERR_FORMALTYPE;
 
-        /* Only a single formal can appear after "&rest" */
+        /*
+         * Only a single formal can appear after "&rest", so we expect:
+         *
+         *   ("&rest" . ("SYMBOL" . nil))
+         *    ^(list.car)           ^(list.cdr.cdr)
+         *   ^(list)     ^(list.cdr.car)
+         *              ^(list.cdr)
+         */
         if (strcmp(cur->val.s, "&rest") == 0) {
-            if (cur->next == NULL || cur->next->next != NULL)
+            if (expr_is_nil(CDR(list)) || !expr_is_nil(CDDR(list)))
                 return LAMBDACTX_ERR_NOREST;
+
             *has_rest = true;
             break;
         }
@@ -69,13 +80,14 @@ LambdaCtx* lambdactx_new(void) {
 
 enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const Expr* formals,
                                   const Expr* body) {
-    SL_ASSERT(formals->type == EXPR_PARENT);
+    SL_ASSERT(expr_is_proper_list(formals));
+    SL_ASSERT(expr_is_proper_list(body));
 
     /* Count and validate the formal arguments */
     size_t mandatory;
     bool has_rest;
     const enum ELambdaCtxErr formal_err =
-      count_formals(formals->val.children, &mandatory, &has_rest);
+      count_formals(formals, &mandatory, &has_rest);
     if (formal_err != LAMBDACTX_ERR_NONE)
         return formal_err;
 
@@ -98,24 +110,25 @@ enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const Expr* formals,
     /*
      * TODO: Should we clone the expressions, or store the original references?
      */
-    ctx->body = expr_list_clone(body);
+    ctx->body = expr_clone_recur(body);
 
     /*
      * For each formal argument we counted above, store the symbol as a C string
      * in the array we just allocated. Note that we already verified that all of
      * the formals are symbols when counting them in 'count_formals'.
      */
-    const Expr* cur_formal = formals->val.children;
+    const Expr* cur_formal = formals;
     for (size_t i = 0; i < mandatory; i++) {
-        ctx->formals[i] = strdup(cur_formal->val.s);
-        cur_formal      = cur_formal->next;
+        ctx->formals[i] = strdup(CAR(cur_formal)->val.s);
+        cur_formal      = CDR(cur_formal);
     }
 
-    if (has_rest) {
-        /* Skip "&rest" and save the symbol after it on the context */
-        cur_formal       = cur_formal->next;
-        ctx->formal_rest = strdup(cur_formal->val.s);
-    }
+    /*
+     * Save the symbol after the "&rest" keyword (i.e. the current `cadr') in
+     * the context.
+     */
+    if (has_rest)
+        ctx->formal_rest = strdup(CADR(cur_formal)->val.s);
 
     return LAMBDACTX_ERR_NONE;
 }
@@ -129,7 +142,7 @@ LambdaCtx* lambdactx_clone(const LambdaCtx* ctx) {
     /*
      * TODO: Should we clone the expressions, or store the original references?
      */
-    ret->body = expr_list_clone(ctx->body);
+    ret->body = expr_clone_recur(ctx->body);
 
     /* Allocate a new string array for the mandatory formals, and copy them */
     ret->formals_num = ctx->formals_num;
@@ -182,7 +195,7 @@ bool lambdactx_equal(const LambdaCtx* a, const LambdaCtx* b) {
          strcmp(a->formal_rest, b->formal_rest) != 0))
         return false;
 
-    if (!expr_list_equal(a->body, b->body))
+    if (!expr_equal(a->body, b->body))
         return false;
 
     return true;
@@ -216,6 +229,8 @@ void lambdactx_print_args(FILE* fp, const LambdaCtx* ctx) {
 /*----------------------------------------------------------------------------*/
 
 static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
+    SL_ASSERT(expr_is_proper_list(args));
+
     /* Count the number of arguments that we received */
     const size_t arg_num = expr_list_len(args);
 
@@ -229,23 +244,21 @@ static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
      * In the lambda's environment, bind each mandatory formal argument to its
      * corresponding argument value.
      */
-    Expr* cur_arg = args;
-    for (size_t i = 0; i < ctx->formals_num && cur_arg != NULL; i++) {
+    const Expr* rem_args = args;
+    for (size_t i = 0; i < ctx->formals_num && !expr_is_nil(rem_args); i++) {
         const enum EEnvErr code =
-          env_bind(ctx->env, ctx->formals[i], cur_arg, ENV_FLAG_NONE);
+          env_bind(ctx->env, ctx->formals[i], CAR(rem_args), ENV_FLAG_NONE);
         SL_EXPECT(code == ENV_ERR_NONE,
                   "Could not bind symbol `%s': %s",
                   ctx->formals[i],
                   env_strerror(code));
 
-        cur_arg = cur_arg->next;
+        rem_args = CDR(rem_args);
     }
 
     /* If the lambda has a "&rest" formal, bind it */
     if (ctx->formal_rest != NULL) {
-        Expr* rest_list         = expr_new(EXPR_PARENT);
-        rest_list->val.children = cur_arg;
-
+        Expr* rest_list = expr_clone_recur(rem_args);
         const enum EEnvErr code =
           env_bind(ctx->env, ctx->formal_rest, rest_list, ENV_FLAG_NONE);
         SL_EXPECT(code == ENV_ERR_NONE,
@@ -267,8 +280,8 @@ static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
      * expression.
      */
     Expr* last_evaluated = NULL;
-    for (Expr* cur = ctx->body; cur != NULL; cur = cur->next) {
-        last_evaluated = eval(ctx->env, cur);
+    for (Expr* exprs = ctx->body; !expr_is_nil(exprs); exprs = CDR(exprs)) {
+        last_evaluated = eval(ctx->env, CAR(exprs));
         if (EXPR_ERR_P(last_evaluated))
             break;
     }
