@@ -81,7 +81,6 @@ struct Expr; /* expr.h */
  * length using 'SL_EXPECT'.
  *
  * TODO: Add 'SL_EXPECT_LEN' macro, use when the list is not an argument list.
- * TODO: Rename arguments of primitives to 'args', rather than 'e'.
  */
 #define SL_EXPECT_ARG_NUM(EXPR_LIST, NUM)                                      \
     SL_EXPECT(expr_list_len(EXPR_LIST) == (NUM),                               \
