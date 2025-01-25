@@ -30,18 +30,19 @@
 Expr* prim_write_to_str(Env* env, Expr* e) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(e, 1);
+    const Expr* arg = CAR(e);
 
     char* str;
     size_t sz;
     FILE* fp = open_memstream(&str, &sz);
 
-    const bool success = expr_write(fp, e);
+    const bool success = expr_write(fp, arg);
     fclose(fp);
 
     if (!success) {
         free(str);
         return err("Couldn't write expression of type '%s'.",
-                   exprtype2str(e->type));
+                   exprtype2str(arg->type));
     }
 
     Expr* ret  = expr_new(EXPR_STRING);
