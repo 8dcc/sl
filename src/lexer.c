@@ -113,6 +113,11 @@ static Token get_token(char** input_ptr) {
             input++;
             goto done;
 
+        case '.':
+            result.type = TOKEN_DOT;
+            input++;
+            goto done;
+
         case '\'':
             result.type = TOKEN_QUOTE;
             input++;
@@ -234,6 +239,10 @@ void tokens_print(FILE* fp, Token* arr) {
 
             case TOKEN_LIST_CLOSE:
                 fprintf(fp, "LIST_CLOSE, ");
+                break;
+
+            case TOKEN_DOT:
+                fprintf(fp, "DOT, ");
                 break;
 
             case TOKEN_QUOTE:

@@ -41,6 +41,7 @@ enum ETokenType {
      */
     TOKEN_LIST_OPEN,
     TOKEN_LIST_CLOSE,
+    TOKEN_DOT,
 
     /*
      * Indicates that the next expression should be wrapped in (quote ...),

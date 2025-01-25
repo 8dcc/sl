@@ -131,10 +131,23 @@ static size_t parse_recur(Expr* dst, const Token* tokens) {
             Expr* cur = dst;
             while (!is_list_closer(tokens[parsed].type)) {
                 /*
-                 * TODO: Add TOKEN_DOT to lexer.
-                 * TODO: Allow dot inside lists to indicate that the following
-                 * element is the CDR, instead of another PAIR.
+                 * If there is a dot inside the list, it indicates that the next
+                 * element is the CDR, not the CAR of a new pair.
                  */
+                if (tokens[parsed].type == TOKEN_DOT) {
+                    parsed++;
+
+                    /* TODO: Dot without a CDR value, propagate error upwards */
+                    if (is_list_closer(tokens[parsed].type))
+                        break;
+
+                    CDR(cur)       = expr_new(EXPR_UNKNOWN);
+                    parsed_in_call = parse_recur(CDR(cur), &tokens[parsed]);
+                    SL_ASSERT(parsed_in_call > 0);
+                    parsed += parsed_in_call;
+                    break;
+                }
+
                 CDR(cur) = expr_new(EXPR_PAIR);
                 cur      = CDR(cur);
 
@@ -156,6 +169,10 @@ static size_t parse_recur(Expr* dst, const Token* tokens) {
 
             /* Store that we also parsed the LIST_CLOSE or EOF Token */
             parsed++;
+        } break;
+
+        case TOKEN_DOT: {
+            /* TODO: Dot outside of a list, propagate error upwards */
         } break;
 
         case TOKEN_QUOTE: {
