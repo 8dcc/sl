@@ -25,6 +25,7 @@ fi
 
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
 SL_BIN="${SCRIPT_DIR}/../sl"
+DIFFFLAGS="--unified=0 --color"
 
 for file in $(ls "$SCRIPT_DIR"/*.lisp); do
     file_msg "Testing" "$file"
@@ -41,13 +42,28 @@ for file in $(ls "$SCRIPT_DIR"/*.lisp); do
         valgrind --leak-check=full   \
                  --track-origins=yes \
                  --error-exitcode=1  \
-                 $SL_BIN $file
+                 $SL_BIN $file > /dev/null
     valgrind_code=$?
 
     echo "-------------------------------------------------------------------"
 
     if [ $valgrind_code -ne 0 ]; then
         file_err "Detected valgrind error when parsing" "$file"
+        exit 1
+    fi
+
+    normal_output="$(echo -e "$input_str" | $SL_BIN $file 2> /dev/null | sed "s/<primitive 0x[[:xdigit:]]\+>/<primitive 0xDEADBEEF>/g")"
+    desired_output_file="${file}.expected"
+
+    # FIXME: Don't call 'diff' twice, but still show colors when printing.
+    diff <(echo "$normal_output") $desired_output_file &>/dev/null
+    diff_code=$?
+    if [ $diff_code -eq 1 ]; then
+        err "Output mismatch. Showing differences and stopping..."
+        diff $DIFFFLAGS <(echo "$normal_output") $desired_output_file
+        exit 1
+    elif [ $diff_code -ge 2 ]; then
+        err "Error when running 'diff', aborting..."
         exit 1
     fi
 done

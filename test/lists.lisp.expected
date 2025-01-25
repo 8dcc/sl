@@ -1,0 +1,21 @@
+nil
+(a b c)
+nil
+nil
+(a b c d)
+(a b c d)
+(a)
+(a . b)
+(a b c)
+(a b c)
+((a b) y z)
+nil
+a
+a
+a
+nil
+nil
+b
+(b c)
+0
+3

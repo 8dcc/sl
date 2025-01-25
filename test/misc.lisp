@@ -25,7 +25,7 @@ unbound-error-var  ; Expected: Unbound symbol: unbound-error-var
 (= 1 1.000001) ; Expected: nil
 
 ;; Symbol `nil' evaluates to itself, see manual.
-(type-of nil)     ; Expected: List
+(type-of nil)     ; Expected: Symbol
 (type-of 'nil)    ; Expected: Symbol
 (equal? nil 'nil) ; Expected: tru
 

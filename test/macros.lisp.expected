@@ -1,0 +1,9 @@
+<macro>
+<macro>
+10
+(define my-variable (+ my-variable 1))
+11
+12
+<macro>
+<lambda>
+13
