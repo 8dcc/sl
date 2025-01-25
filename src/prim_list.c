@@ -176,7 +176,7 @@ Expr* prim_length(Env* env, Expr* args) {
     } else if (EXPR_PAIR_P(arg)) {
         SL_EXPECT_PROPER_LIST(arg);
         result = expr_list_len(arg);
-    } else if (EXPR_STR_P(arg)) {
+    } else if (EXPR_STRING_P(arg)) {
         result = strlen(arg->val.s);
     } else {
         return err("Invalid argument of type '%s'.", exprtype2str(arg->type));
@@ -211,7 +211,7 @@ Expr* prim_append(Env* env, Expr* args) {
      * (append "")              ===> ""
      * (append "abc" ... "xyz") ===> "abc...xyz"
      */
-    if (EXPR_STR_P(first_element))
+    if (EXPR_STRING_P(first_element))
         return string_append(args);
 
     return err("Invalid argument of type '%s'.",
