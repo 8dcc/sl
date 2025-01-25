@@ -196,7 +196,7 @@ Expr* prim_append(Env* env, Expr* e) {
 
     if (!expr_list_has_only_lists(e) &&
         !expr_list_has_only_type(e, EXPR_STRING))
-        return err("Expected arguments of the same type.");
+        return err("All arguments must be proper lists or strings.");
 
     const Expr* first_element = CAR(e);
 
