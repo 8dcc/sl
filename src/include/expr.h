@@ -255,7 +255,7 @@ static inline bool expr_list_has_only_type(const Expr* list,
 /*
  * Print an expression in a human-friendly form.
  */
-void expr_print(FILE* fp, const Expr* e);
+bool expr_print(FILE* fp, const Expr* e);
 
 /*
  * Print an expression in a way suitable for `read'.

@@ -327,12 +327,13 @@ bool expr_list_has_only_lists(const Expr* list) {
  * Print each element of a list to the specified file using the specified
  * 'print_func'. The argument doesn't have to be a proper list.
  */
-static void expr_list_print(FILE* fp, const Expr* list,
-                            void (*print_func)(FILE* fp, const Expr* e)) {
+static bool expr_list_print(FILE* fp, const Expr* list,
+                            bool (*print_func)(FILE* fp, const Expr* e)) {
     SL_ASSERT(EXPR_PAIR_P(list));
 
     for (;;) {
-        print_func(fp, CAR(list));
+        if (!print_func(fp, CAR(list)))
+            return false;
 
         list = CDR(list);
         if (expr_is_nil(list))
@@ -342,16 +343,19 @@ static void expr_list_print(FILE* fp, const Expr* list,
 
         if (!EXPR_PAIR_P(list)) {
             fprintf(fp, ". ");
-            print_func(fp, list);
+            if (!print_func(fp, list))
+                return false;
             break;
         }
     }
+
+    return true;
 }
 
-void expr_print(FILE* fp, const Expr* e) {
+bool expr_print(FILE* fp, const Expr* e) {
     if (e == NULL) {
         SL_ERR("Unexpected NULL expression. Returning...");
-        return;
+        return false;
     }
 
     switch (e->type) {
@@ -397,6 +401,8 @@ void expr_print(FILE* fp, const Expr* e) {
             fprintf(fp, "<unknown>");
             break;
     }
+
+    return true;
 }
 
 bool expr_write(FILE* fp, const Expr* e) {
@@ -421,7 +427,7 @@ bool expr_write(FILE* fp, const Expr* e) {
 
         case EXPR_PAIR:
             fputc('(', fp);
-            expr_list_print(fp, e, expr_print);
+            expr_list_print(fp, e, expr_write);
             fputc(')', fp);
             break;
 
@@ -434,7 +440,7 @@ bool expr_write(FILE* fp, const Expr* e) {
                                               : "ERROR");
             lambdactx_print_args(fp, e->val.lambda);
             fputc(' ', fp);
-            expr_list_print(fp, e->val.lambda->body, expr_print);
+            expr_list_print(fp, e->val.lambda->body, expr_write);
             fputc(')', fp);
             break;
 
