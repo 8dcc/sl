@@ -23,13 +23,13 @@
 #include "include/util.h"
 #include "include/primitives.h"
 
-Expr* prim_bit_and(Env* env, Expr* e) {
+Expr* prim_bit_and(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(!expr_is_nil(e), "Expected at least one argument.");
+    SL_EXPECT(!expr_is_nil(args), "Expected at least one argument.");
 
-    LispInt total = CAR(e)->val.n;
-    for (e = CDR(e); !expr_is_nil(e); e = CDR(e)) {
-        const Expr* arg = CAR(e);
+    LispInt total = CAR(args)->val.n;
+    for (args = CDR(args); !expr_is_nil(args); args = CDR(args)) {
+        const Expr* arg = CAR(args);
         SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
         total &= arg->val.n;
     }
@@ -39,13 +39,13 @@ Expr* prim_bit_and(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_bit_or(Env* env, Expr* e) {
+Expr* prim_bit_or(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(!expr_is_nil(e), "Expected at least one argument.");
+    SL_EXPECT(!expr_is_nil(args), "Expected at least one argument.");
 
-    LispInt total = CAR(e)->val.n;
-    for (e = CDR(e); !expr_is_nil(e); e = CDR(e)) {
-        const Expr* arg = CAR(e);
+    LispInt total = CAR(args)->val.n;
+    for (args = CDR(args); !expr_is_nil(args); args = CDR(args)) {
+        const Expr* arg = CAR(args);
         SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
         total |= arg->val.n;
     }
@@ -55,13 +55,13 @@ Expr* prim_bit_or(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_bit_xor(Env* env, Expr* e) {
+Expr* prim_bit_xor(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(!expr_is_nil(e), "Expected at least one argument.");
+    SL_EXPECT(!expr_is_nil(args), "Expected at least one argument.");
 
-    LispInt total = CAR(e)->val.n;
-    for (e = CDR(e); !expr_is_nil(e); e = CDR(e)) {
-        const Expr* arg = CAR(e);
+    LispInt total = CAR(args)->val.n;
+    for (args = CDR(args); !expr_is_nil(args); args = CDR(args)) {
+        const Expr* arg = CAR(args);
         SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
         total ^= arg->val.n;
     }
@@ -71,11 +71,11 @@ Expr* prim_bit_xor(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_bit_not(Env* env, Expr* e) {
+Expr* prim_bit_not(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(e);
+    const Expr* arg = CAR(args);
     SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
 
     Expr* ret  = expr_new(EXPR_NUM_INT);
@@ -83,13 +83,13 @@ Expr* prim_bit_not(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_shr(Env* env, Expr* e) {
+Expr* prim_shr(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 2);
+    SL_EXPECT_ARG_NUM(args, 2);
 
-    const Expr* num = CAR(e);
+    const Expr* num = CAR(args);
     SL_EXPECT_TYPE(num, EXPR_NUM_INT);
-    const Expr* count = CADR(e);
+    const Expr* count = CADR(args);
     SL_EXPECT_TYPE(count, EXPR_NUM_INT);
 
     Expr* ret  = expr_new(EXPR_NUM_INT);
@@ -97,13 +97,13 @@ Expr* prim_shr(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_shl(Env* env, Expr* e) {
+Expr* prim_shl(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 2);
+    SL_EXPECT_ARG_NUM(args, 2);
 
-    const Expr* num = CAR(e);
+    const Expr* num = CAR(args);
     SL_EXPECT_TYPE(num, EXPR_NUM_INT);
-    const Expr* count = CADR(e);
+    const Expr* count = CADR(args);
     SL_EXPECT_TYPE(count, EXPR_NUM_INT);
 
     Expr* ret  = expr_new(EXPR_NUM_INT);

@@ -23,15 +23,15 @@
 #include "include/util.h"
 #include "include/primitives.h"
 
-Expr* prim_equal(Env* env, Expr* e) {
+Expr* prim_equal(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(expr_list_len(e) >= 2, "Expected at least 2 arguments.");
+    SL_EXPECT(expr_list_len(args) >= 2, "Expected at least 2 arguments.");
 
     bool result = true;
 
     /* (A == B == ...) */
-    for (; !expr_is_nil(CDR(e)); e = CDR(e)) {
-        if (!expr_equal(CAR(e), CADR(e))) {
+    for (; !expr_is_nil(CDR(args)); args = CDR(args)) {
+        if (!expr_equal(CAR(args), CADR(args))) {
             result = false;
             break;
         }
@@ -40,17 +40,18 @@ Expr* prim_equal(Env* env, Expr* e) {
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
-Expr* prim_equal_num(Env* env, Expr* e) {
+Expr* prim_equal_num(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(expr_list_len(e) >= 2, "Expected at least 2 arguments.");
-    SL_EXPECT(expr_list_has_only_numbers(e),
+    SL_EXPECT(expr_list_len(args) >= 2, "Expected at least 2 arguments.");
+    SL_EXPECT(expr_list_has_only_numbers(args),
               "Expected only numeric arguments.");
 
     bool result = true;
 
     /* (N1 == N2 == ...) */
-    for (; !expr_is_nil(CDR(e)); e = CDR(e)) {
-        if (expr_get_generic_num(CAR(e)) != expr_get_generic_num(CADR(e))) {
+    for (; !expr_is_nil(CDR(args)); args = CDR(args)) {
+        if (expr_get_generic_num(CAR(args)) !=
+            expr_get_generic_num(CADR(args))) {
             result = false;
             break;
         }
@@ -59,15 +60,15 @@ Expr* prim_equal_num(Env* env, Expr* e) {
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
-Expr* prim_lt(Env* env, Expr* e) {
+Expr* prim_lt(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(expr_list_len(e) >= 2, "Expected at least 2 arguments.");
+    SL_EXPECT(expr_list_len(args) >= 2, "Expected at least 2 arguments.");
 
     bool result = true;
 
     /* (A < B < ...) */
-    for (; !expr_is_nil(CDR(e)); e = CDR(e)) {
-        if (!expr_lt(CAR(e), CADR(e))) {
+    for (; !expr_is_nil(CDR(args)); args = CDR(args)) {
+        if (!expr_lt(CAR(args), CADR(args))) {
             result = false;
             break;
         }
@@ -76,15 +77,15 @@ Expr* prim_lt(Env* env, Expr* e) {
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
-Expr* prim_gt(Env* env, Expr* e) {
+Expr* prim_gt(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(expr_list_len(e) >= 2, "Expected at least 2 arguments.");
+    SL_EXPECT(expr_list_len(args) >= 2, "Expected at least 2 arguments.");
 
     bool result = true;
 
     /* (A > B > ...) */
-    for (; !expr_is_nil(CDR(e)); e = CDR(e)) {
-        if (!expr_gt(CAR(e), CADR(e))) {
+    for (; !expr_is_nil(CDR(args)); args = CDR(args)) {
+        if (!expr_gt(CAR(args), CADR(args))) {
             result = false;
             break;
         }

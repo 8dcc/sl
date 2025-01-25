@@ -28,36 +28,36 @@
 /*----------------------------------------------------------------------------*/
 /* Type-checking primitives */
 
-Expr* prim_type_of(Env* env, Expr* e) {
+Expr* prim_type_of(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
     Expr* ret  = expr_new(EXPR_SYMBOL);
-    ret->val.s = mem_strdup(exprtype2str(CAR(e)->type));
+    ret->val.s = mem_strdup(exprtype2str(CAR(args)->type));
     return ret;
 }
 
-Expr* prim_is_int(Env* env, Expr* e) {
+Expr* prim_is_int(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_NUM_INT);
+    const bool result = expr_list_has_only_type(args, EXPR_NUM_INT);
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
-Expr* prim_is_flt(Env* env, Expr* e) {
+Expr* prim_is_flt(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_NUM_FLT);
+    const bool result = expr_list_has_only_type(args, EXPR_NUM_FLT);
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
-Expr* prim_is_symbol(Env* env, Expr* e) {
+Expr* prim_is_symbol(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_SYMBOL);
+    const bool result = expr_list_has_only_type(args, EXPR_SYMBOL);
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
-Expr* prim_is_string(Env* env, Expr* e) {
+Expr* prim_is_string(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_STRING);
+    const bool result = expr_list_has_only_type(args, EXPR_STRING);
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
@@ -65,38 +65,38 @@ Expr* prim_is_string(Env* env, Expr* e) {
  * TODO: `list?' function. Probably better to make it a primitive, although it's
  * not necessary.
  */
-Expr* prim_is_pair(Env* env, Expr* e) {
+Expr* prim_is_pair(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_PAIR);
+    const bool result = expr_list_has_only_type(args, EXPR_PAIR);
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
-Expr* prim_is_primitive(Env* env, Expr* e) {
+Expr* prim_is_primitive(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_PRIM);
+    const bool result = expr_list_has_only_type(args, EXPR_PRIM);
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
-Expr* prim_is_lambda(Env* env, Expr* e) {
+Expr* prim_is_lambda(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_LAMBDA);
+    const bool result = expr_list_has_only_type(args, EXPR_LAMBDA);
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
-Expr* prim_is_macro(Env* env, Expr* e) {
+Expr* prim_is_macro(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_MACRO);
+    const bool result = expr_list_has_only_type(args, EXPR_MACRO);
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
 /*----------------------------------------------------------------------------*/
 /* Type conversion primitives */
 
-Expr* prim_int2flt(Env* env, Expr* e) {
+Expr* prim_int2flt(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(e);
+    const Expr* arg = CAR(args);
     SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
 
     Expr* ret  = expr_new(EXPR_NUM_FLT);
@@ -104,11 +104,11 @@ Expr* prim_int2flt(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_flt2int(Env* env, Expr* e) {
+Expr* prim_flt2int(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(e);
+    const Expr* arg = CAR(args);
     SL_EXPECT_TYPE(arg, EXPR_NUM_FLT);
 
     Expr* ret  = expr_new(EXPR_NUM_INT);
@@ -120,11 +120,11 @@ Expr* prim_flt2int(Env* env, Expr* e) {
  * TODO: Are these `x2str' primitives necessary? Why not simply use
  * `write-to-str'?
  */
-Expr* prim_int2str(Env* env, Expr* e) {
+Expr* prim_int2str(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(e);
+    const Expr* arg = CAR(args);
     SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
 
     char* s;
@@ -136,11 +136,11 @@ Expr* prim_int2str(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_flt2str(Env* env, Expr* e) {
+Expr* prim_flt2str(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(e);
+    const Expr* arg = CAR(args);
     SL_EXPECT_TYPE(arg, EXPR_NUM_FLT);
 
     char* s;
@@ -152,11 +152,11 @@ Expr* prim_flt2str(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_str2int(Env* env, Expr* e) {
+Expr* prim_str2int(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(e);
+    const Expr* arg = CAR(args);
     SL_EXPECT_TYPE(arg, EXPR_STRING);
 
     Expr* ret  = expr_new(EXPR_NUM_INT);
@@ -164,11 +164,11 @@ Expr* prim_str2int(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_str2flt(Env* env, Expr* e) {
+Expr* prim_str2flt(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(e);
+    const Expr* arg = CAR(args);
     SL_EXPECT_TYPE(arg, EXPR_STRING);
 
     Expr* ret  = expr_new(EXPR_NUM_FLT);

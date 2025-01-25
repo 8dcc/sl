@@ -32,13 +32,13 @@
  * overwrites the last CDR of the first list with a pointer to the second
  * list. This could be used in 'handle_backquote_arg', inside 'prim_special.c'.
  */
-static Expr* list_append(Expr* e) {
+static Expr* list_append(Expr* args) {
     Expr dummy_copy;
     dummy_copy.val.pair.cdr = g_nil;
     Expr* cur_copy          = &dummy_copy;
 
-    for (; !expr_is_nil(e); e = CDR(e)) {
-        const Expr* arg = CAR(e);
+    for (; !expr_is_nil(args); args = CDR(args)) {
+        const Expr* arg = CAR(args);
         SL_ASSERT(expr_is_proper_list(arg));
         if (expr_is_nil(arg))
             continue;
@@ -52,7 +52,7 @@ static Expr* list_append(Expr* e) {
 }
 
 /* Used by 'prim_append' when receiving string arguments */
-static Expr* string_append(Expr* e) {
+static Expr* string_append(Expr* args) {
     /*
      * Calculate the sum of the string lengths, allocate the destination buffer
      * and  concatenate each string using 'stpcpy'.
@@ -63,7 +63,7 @@ static Expr* string_append(Expr* e) {
      * internally.
      */
     size_t total_len = 0;
-    for (const Expr* rem = e; !expr_is_nil(rem); rem = CDR(rem)) {
+    for (const Expr* rem = args; !expr_is_nil(rem); rem = CDR(rem)) {
         const Expr* arg = CAR(rem);
         SL_ASSERT(arg->type == EXPR_STRING);
         SL_ASSERT(arg->val.s != NULL);
@@ -75,7 +75,7 @@ static Expr* string_append(Expr* e) {
     ret->val.s = mem_alloc(total_len + 1);
 
     char* last_copied = ret->val.s;
-    for (const Expr* rem = e; !expr_is_nil(rem); rem = CDR(rem))
+    for (const Expr* rem = args; !expr_is_nil(rem); rem = CDR(rem))
         last_copied = stpcpy(last_copied, CAR(rem)->val.s);
 
     return ret;
@@ -87,22 +87,22 @@ static Expr* string_append(Expr* e) {
  * TODO: This doesn't need to be a primitive, we can just `cons' the arguments
  * with 'nil'. We should note all unnecessary primitives in 'primitives.h'.
  */
-Expr* prim_list(Env* env, Expr* e) {
+Expr* prim_list(Env* env, Expr* args) {
     SL_UNUSED(env);
 
     /*
      * (list)          ===> nil
      * (list 'a 'b 'c) ===> (a b c)
      */
-    return expr_clone_recur(e);
+    return expr_clone_recur(args);
 }
 
 /*
  * TODO: Don't create copies, store the reference directly.
  */
-Expr* prim_cons(Env* env, Expr* e) {
+Expr* prim_cons(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 2);
+    SL_EXPECT_ARG_NUM(args, 2);
 
     /*
      * (cons 'a 'b)     ===> (a . b)
@@ -110,8 +110,8 @@ Expr* prim_cons(Env* env, Expr* e) {
      * (cons 'a nil)    ===> (a)
      */
     Expr* ret = expr_new(EXPR_PAIR);
-    CAR(ret)  = expr_clone_recur(expr_list_nth(e, 1));
-    CDR(ret)  = expr_clone_recur(expr_list_nth(e, 2));
+    CAR(ret)  = expr_clone_recur(expr_list_nth(args, 1));
+    CDR(ret)  = expr_clone_recur(expr_list_nth(args, 2));
 
     return ret;
 }
@@ -119,11 +119,11 @@ Expr* prim_cons(Env* env, Expr* e) {
 /*
  * TODO: Don't create a copy, return the reference directly.
  */
-Expr* prim_car(Env* env, Expr* e) {
+Expr* prim_car(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(e);
+    const Expr* arg = CAR(args);
     SL_EXPECT(arg->type == EXPR_PAIR || expr_is_nil(arg),
               "Expected an expression of type '%s' or `nil', got '%s'.",
               exprtype2str(EXPR_PAIR),
@@ -143,11 +143,11 @@ Expr* prim_car(Env* env, Expr* e) {
 /*
  * TODO: Don't create a copy, return the reference directly.
  */
-Expr* prim_cdr(Env* env, Expr* e) {
+Expr* prim_cdr(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(e);
+    const Expr* arg = CAR(args);
     SL_EXPECT(arg->type == EXPR_PAIR || expr_is_nil(arg),
               "Expected an expression of type '%s' or `nil', got '%s'.",
               exprtype2str(EXPR_PAIR),
@@ -165,10 +165,10 @@ Expr* prim_cdr(Env* env, Expr* e) {
     return expr_clone_recur(CDR(arg));
 }
 
-Expr* prim_length(Env* env, Expr* e) {
+Expr* prim_length(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    const Expr* arg = CAR(e);
+    SL_EXPECT_ARG_NUM(args, 1);
+    const Expr* arg = CAR(args);
 
     LispInt result;
     if (expr_is_nil(arg)) {
@@ -187,32 +187,32 @@ Expr* prim_length(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_append(Env* env, Expr* e) {
+Expr* prim_append(Env* env, Expr* args) {
     SL_UNUSED(env);
 
     /* (append) ===> nil */
-    if (expr_is_nil(e))
+    if (expr_is_nil(args))
         return expr_clone(g_nil);
 
-    if (!expr_list_has_only_lists(e) &&
-        !expr_list_has_only_type(e, EXPR_STRING))
+    if (!expr_list_has_only_lists(args) &&
+        !expr_list_has_only_type(args, EXPR_STRING))
         return err("All arguments must be proper lists or strings.");
 
-    const Expr* first_element = CAR(e);
+    const Expr* first_element = CAR(args);
 
     /*
      * (append nil)               ===> nil
      * (append '(a b) ... '(y z)) ===> (a b ... y z)
      */
     if (expr_is_proper_list(first_element))
-        return list_append(e);
+        return list_append(args);
 
     /*
      * (append "")              ===> ""
      * (append "abc" ... "xyz") ===> "abc...xyz"
      */
     if (EXPR_STR_P(first_element))
-        return string_append(e);
+        return string_append(args);
 
     return err("Invalid argument of type '%s'.",
                exprtype2str(first_element->type));

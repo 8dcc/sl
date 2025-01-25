@@ -27,10 +27,10 @@
 #include "include/memory.h"
 #include "include/primitives.h"
 
-Expr* prim_write_to_str(Env* env, Expr* e) {
+Expr* prim_write_to_str(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    const Expr* arg = CAR(e);
+    SL_EXPECT_ARG_NUM(args, 1);
+    const Expr* arg = CAR(args);
 
     char* str;
     size_t sz;
@@ -58,13 +58,13 @@ Expr* prim_write_to_str(Env* env, Expr* e) {
 
 #define FORMAT_BUFSZ 100
 
-Expr* prim_format(Env* env, Expr* e) {
+Expr* prim_format(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(!expr_is_nil(e), "Expected at least a format argument.");
+    SL_EXPECT(!expr_is_nil(args), "Expected at least a format argument.");
 
-    SL_EXPECT_TYPE(CAR(e), EXPR_STRING);
-    const char* fmt = CAR(e)->val.s;
-    e               = CDR(e);
+    SL_EXPECT_TYPE(CAR(args), EXPR_STRING);
+    const char* fmt = CAR(args)->val.s;
+    args            = CDR(args);
 
     size_t dst_pos = 0;
     size_t dst_sz  = FORMAT_BUFSZ;
@@ -88,7 +88,7 @@ Expr* prim_format(Env* env, Expr* e) {
         fmt++;
 
         /* Make sure the user supplied enough arguments. */
-        if (expr_is_nil(e)) {
+        if (expr_is_nil(args)) {
             free(dst);
             return err("Not enough arguments for the specified format.");
         }
@@ -144,7 +144,7 @@ Expr* prim_format(Env* env, Expr* e) {
          * Make sure the current format specifier is valid for the current
          * argument.
          */
-        const Expr* arg = CAR(e);
+        const Expr* arg = CAR(args);
         if (expr_type != arg->type) {
             free(dst);
             return err("Format specifier expected argument of type '%s', got "
@@ -176,14 +176,14 @@ Expr* prim_format(Env* env, Expr* e) {
         }
 
         /* Move to the next argument, for the next format specifier. */
-        e = CDR(e);
+        args = CDR(args);
     }
 
 done:
     dst[dst_pos] = '\0';
 
     /*
-     * NOTE: We could warn the user if 'e != NULL', since that means he
+     * NOTE: We could warn the user if 'args != NULL', since that means he
      * specified to many arguments for this format.
      */
 
@@ -194,22 +194,22 @@ done:
 
 /*----------------------------------------------------------------------------*/
 
-Expr* prim_substring(Env* env, Expr* e) {
+Expr* prim_substring(Env* env, Expr* args) {
     SL_UNUSED(env);
 
-    const size_t arg_num = expr_list_len(e);
+    const size_t arg_num = expr_list_len(args);
     SL_EXPECT(arg_num >= 1 || arg_num <= 3,
               "Expected between 1 and 3 arguments.");
 
     /* First argument, string */
-    const Expr* str_expr = expr_list_nth(e, 1);
+    const Expr* str_expr = expr_list_nth(args, 1);
     SL_EXPECT_TYPE(str_expr, EXPR_STRING);
     const size_t str_len = strlen(str_expr->val.s);
 
     /* Second argument, start index */
     LispInt start_idx = 0;
     if (arg_num >= 2) {
-        const Expr* start_idx_expr = expr_list_nth(e, 2);
+        const Expr* start_idx_expr = expr_list_nth(args, 2);
         if (!expr_is_nil(start_idx_expr)) {
             SL_EXPECT_TYPE(start_idx_expr, EXPR_NUM_INT);
             start_idx = start_idx_expr->val.n;
@@ -221,7 +221,7 @@ Expr* prim_substring(Env* env, Expr* e) {
     /* Third argument, end index */
     LispInt end_idx = str_len;
     if (arg_num >= 3) {
-        const Expr* end_idx_expr = expr_list_nth(e, 3);
+        const Expr* end_idx_expr = expr_list_nth(args, 3);
         if (!expr_is_nil(end_idx_expr)) {
             SL_EXPECT_TYPE(end_idx_expr, EXPR_NUM_INT);
             end_idx = end_idx_expr->val.n;
@@ -254,10 +254,10 @@ Expr* prim_substring(Env* env, Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
-Expr* prim_re_match_groups(Env* env, Expr* e) {
+Expr* prim_re_match_groups(Env* env, Expr* args) {
     SL_UNUSED(env);
 
-    const size_t arg_num = expr_list_len(e);
+    const size_t arg_num = expr_list_len(args);
     SL_EXPECT(arg_num == 2 || arg_num == 3, "Expected 2 or 3 arguments.");
 
     /*
@@ -283,14 +283,14 @@ Expr* prim_re_match_groups(Env* env, Expr* e) {
      *   https://www.gnu.org/software/sed/manual/html_node/BRE-vs-ERE.html
      *   https://www.gnu.org/software/sed/manual/html_node/Character-Classes-and-Bracket-Expressions.html
      */
-    SL_EXPECT_TYPE(CAR(e), EXPR_STRING);
-    const char* pattern = CAR(e)->val.s;
+    SL_EXPECT_TYPE(CAR(args), EXPR_STRING);
+    const char* pattern = CAR(args)->val.s;
 
-    SL_EXPECT_TYPE(CADR(e), EXPR_STRING);
-    const char* string = CADR(e)->val.s;
+    SL_EXPECT_TYPE(CADR(args), EXPR_STRING);
+    const char* string = CADR(args)->val.s;
 
     const bool ignore_case =
-      (arg_num >= 3 && !expr_is_nil(expr_list_nth(e, 3)));
+      (arg_num >= 3 && !expr_is_nil(expr_list_nth(args, 3)));
 
     size_t nmatch;
     regmatch_t* pmatch;

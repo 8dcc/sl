@@ -25,37 +25,37 @@
 #include "include/eval.h"
 #include "include/primitives.h"
 
-Expr* prim_eval(Env* env, Expr* e) {
-    SL_EXPECT_ARG_NUM(e, 1);
-    return eval(env, CAR(e));
+Expr* prim_eval(Env* env, Expr* args) {
+    SL_EXPECT_ARG_NUM(args, 1);
+    return eval(env, CAR(args));
 }
 
-Expr* prim_apply(Env* env, Expr* e) {
-    SL_EXPECT_ARG_NUM(e, 2);
+Expr* prim_apply(Env* env, Expr* args) {
+    SL_EXPECT_ARG_NUM(args, 2);
 
-    Expr* func = expr_list_nth(e, 1);
-    Expr* args = expr_list_nth(e, 2);
+    Expr* func      = expr_list_nth(args, 1);
+    Expr* func_args = expr_list_nth(args, 2);
     SL_EXPECT(EXPR_APPLICABLE_P(func),
               "Expected a function or macro as the first argument, got '%s'.",
               exprtype2str(func->type));
-    SL_EXPECT(expr_is_proper_list(args),
+    SL_EXPECT(expr_is_proper_list(func_args),
               "Expected a list of arguments, got '%s'.",
-              exprtype2str(args->type));
+              exprtype2str(func_args->type));
 
-    return apply(env, func, args);
+    return apply(env, func, func_args);
 }
 
-Expr* prim_macroexpand(Env* env, Expr* e) {
-    SL_EXPECT_ARG_NUM(e, 1);
+Expr* prim_macroexpand(Env* env, Expr* args) {
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    Expr* call_expr = CAR(e);
+    Expr* call_expr = CAR(args);
     SL_EXPECT_PROPER_LIST(call_expr);
     SL_EXPECT(expr_list_len(call_expr) >= 1,
               "The supplied list must have at least one element: The macro "
               "representation.");
 
     Expr* macro_representation = CAR(call_expr);
-    Expr* args                 = CDR(call_expr);
+    Expr* macro_args           = CDR(call_expr);
 
     /*
      * Similar to how function calls are evaluated in the 'eval_function_call'
@@ -69,14 +69,14 @@ Expr* prim_macroexpand(Env* env, Expr* e) {
         return macro;
     SL_EXPECT_TYPE(macro, EXPR_MACRO);
 
-    return macro_expand(env, macro, args);
+    return macro_expand(env, macro, macro_args);
 }
 
-Expr* prim_random(Env* env, Expr* e) {
+Expr* prim_random(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* limit = CAR(e);
+    const Expr* limit = CAR(args);
     SL_EXPECT(EXPR_NUMBER_P(limit), "Expected numeric argument.");
 
     /*
@@ -102,11 +102,11 @@ Expr* prim_random(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_set_random_seed(Env* env, Expr* e) {
+Expr* prim_set_random_seed(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* seed = CAR(e);
+    const Expr* seed = CAR(args);
     SL_EXPECT_TYPE(seed, EXPR_NUM_INT);
 
     srand(seed->val.n);

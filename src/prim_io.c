@@ -40,9 +40,9 @@ static bool is_char_in_str(char c, const char* str) {
 
 /*----------------------------------------------------------------------------*/
 
-Expr* prim_read(Env* env, Expr* e) {
+Expr* prim_read(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_UNUSED(e);
+    SL_UNUSED(args);
 
     char* str = read_expr(stdin);
     SL_EXPECT(str != NULL, "Error reading expression.");
@@ -56,11 +56,11 @@ Expr* prim_read(Env* env, Expr* e) {
     return expr;
 }
 
-Expr* prim_write(Env* env, Expr* e) {
+Expr* prim_write(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg    = CAR(e);
+    const Expr* arg    = CAR(args);
     const bool success = expr_write(stdout, arg);
     SL_EXPECT(success,
               "Couldn't write expression of type '%s'.",
@@ -69,7 +69,7 @@ Expr* prim_write(Env* env, Expr* e) {
     return expr_clone(g_tru);
 }
 
-Expr* prim_scan_str(Env* env, Expr* e) {
+Expr* prim_scan_str(Env* env, Expr* args) {
     SL_UNUSED(env);
 
     /*
@@ -82,12 +82,12 @@ Expr* prim_scan_str(Env* env, Expr* e) {
      *   - A character in the string DELIMITERS.
      * The DELIMITERS string defaults to "\n" (a single newline).
      */
-    const size_t arg_num = expr_list_len(e);
+    const size_t arg_num = expr_list_len(args);
     SL_EXPECT(arg_num <= 1, "Too many arguments");
 
     const char* delimiters = "\n";
     if (arg_num == 1) {
-        const Expr* arg = CAR(e);
+        const Expr* arg = CAR(args);
         SL_EXPECT_TYPE(arg, EXPR_STRING);
         delimiters = arg->val.s;
     }
@@ -116,22 +116,22 @@ Expr* prim_scan_str(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_print_str(Env* env, Expr* e) {
+Expr* prim_print_str(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(e);
+    const Expr* arg = CAR(args);
     SL_EXPECT_TYPE(arg, EXPR_STRING);
 
     printf("%s", arg->val.s);
     return expr_clone(arg);
 }
 
-Expr* prim_error(Env* env, Expr* e) {
+Expr* prim_error(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(e);
+    const Expr* arg = CAR(args);
     SL_EXPECT_TYPE(arg, EXPR_STRING);
 
     /*

@@ -47,14 +47,14 @@ static inline bool is_call_to(const Expr* list, const char* func) {
  * If the argument is a list, this function is a "selective" version of the
  * 'eval_list' function from 'eval.c'.
  */
-static Expr* handle_backquote_arg(Env* env, const Expr* e) {
+static Expr* handle_backquote_arg(Env* env, const Expr* args) {
     /* Not a proper list, return unevaluated, just like `quote' */
-    if (!expr_is_proper_list(e))
+    if (!expr_is_proper_list(args))
         /*
          * TODO: Don't create a copy, return the reference directly (after
          * adding cons).
          */
-        return expr_clone(e);
+        return expr_clone(args);
 
     /*
      * If we reached this point, the expression is a proper list. Check if
@@ -67,11 +67,11 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
      * 'handle_backquote_arg' function calls itself recursively below.
      *   `,expr  =>  (` (, expr))  =>  (eval expr)
      */
-    SL_EXPECT(!is_call_to(e, ",@"), "Can't splice (,@) outside of a list.");
-    if (is_call_to(e, ",")) {
-        SL_EXPECT(!expr_is_nil(CDR(e)) && expr_is_nil(CDDR(e)),
+    SL_EXPECT(!is_call_to(args, ",@"), "Can't splice (,@) outside of a list.");
+    if (is_call_to(args, ",")) {
+        SL_EXPECT(!expr_is_nil(CDR(args)) && expr_is_nil(CDDR(args)),
                   "Call to unquote (,) expected exactly one argument.");
-        return eval(env, CADR(e));
+        return eval(env, CADR(args));
     }
 
     /*
@@ -83,8 +83,8 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
     dummy_copy.val.pair.cdr = g_nil;
     Expr* cur_copy          = &dummy_copy;
 
-    for (; !expr_is_nil(e); e = CDR(e)) {
-        const Expr* cur = CAR(e);
+    for (; !expr_is_nil(args); args = CDR(args)) {
+        const Expr* cur = CAR(args);
         if (expr_is_proper_list(cur) && is_call_to(cur, ",@")) {
             /*
              * Calls to splice are handled when parsing a list:
@@ -140,54 +140,54 @@ static Expr* handle_backquote_arg(Env* env, const Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
-Expr* prim_quote(Env* env, Expr* e) {
+Expr* prim_quote(Env* env, Expr* args) {
     /*
      * The special form `quote' simply returns the expression it receives,
      * effectively delaying its evaluation.
      */
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
     /*
      * TODO: Don't create a copy, return the reference directly (after
      * adding cons).
      */
-    return expr_clone_recur(CAR(e));
+    return expr_clone_recur(CAR(args));
 }
 
-Expr* prim_backquote(Env* env, Expr* e) {
+Expr* prim_backquote(Env* env, Expr* args) {
     /*
      * The special form `backquote' is similar to `quote', but allows selective
      * evaluation by wrapping an expression in (, ...). Note that `expr is
      * converted to (` expr) by the parser.
      */
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    return handle_backquote_arg(env, CAR(e));
+    SL_EXPECT_ARG_NUM(args, 1);
+    return handle_backquote_arg(env, CAR(args));
 }
 
-Expr* prim_unquote(Env* env, Expr* e) {
+Expr* prim_unquote(Env* env, Expr* args) {
     /*
      * The `unquote' function is only used inside 'handle_backquote_arg'. Note
      * that ,expr is converted to (, expr) by the parser.
      */
     SL_UNUSED(env);
-    SL_UNUSED(e);
+    SL_UNUSED(args);
     return err("Invalid use of unquote (,) outside of backquote.");
 }
 
-Expr* prim_splice(Env* env, Expr* e) {
+Expr* prim_splice(Env* env, Expr* args) {
     /*
      * The `splice' function is only used inside 'handle_backquote_arg'. Note
      * that ,@expr is converted to (,@ expr) by the parser.
      */
     SL_UNUSED(env);
-    SL_UNUSED(e);
+    SL_UNUSED(args);
     return err("Invalid use of splice (,@) outside of backquote.");
 }
 
 /*----------------------------------------------------------------------------*/
 
-Expr* prim_define(Env* env, Expr* e) {
+Expr* prim_define(Env* env, Expr* args) {
     /*
      * The `define' function binds a symbol (first argument) to a value (second
      * argument) in the current environment.
@@ -197,10 +197,10 @@ Expr* prim_define(Env* env, Expr* e) {
      *
      * Returns the evaluated expression.
      */
-    SL_EXPECT_ARG_NUM(e, 2);
+    SL_EXPECT_ARG_NUM(args, 2);
 
-    Expr* sym = expr_list_nth(e, 1);
-    Expr* val = expr_list_nth(e, 2);
+    Expr* sym = expr_list_nth(args, 1);
+    Expr* val = expr_list_nth(args, 2);
     SL_EXPECT_TYPE(sym, EXPR_SYMBOL);
 
     Expr* evaluated = eval(env, val);
@@ -217,15 +217,15 @@ Expr* prim_define(Env* env, Expr* e) {
     return evaluated;
 }
 
-Expr* prim_define_global(Env* env, Expr* e) {
+Expr* prim_define_global(Env* env, Expr* args) {
     /*
      * The `define-global' function is just like `define', but it binds the
      * symbol to the value in the top-most environment.
      */
-    SL_EXPECT_ARG_NUM(e, 2);
+    SL_EXPECT_ARG_NUM(args, 2);
 
-    Expr* sym = expr_list_nth(e, 1);
-    Expr* val = expr_list_nth(e, 2);
+    Expr* sym = expr_list_nth(args, 1);
+    Expr* val = expr_list_nth(args, 2);
     SL_EXPECT_TYPE(sym, EXPR_SYMBOL);
 
     Expr* evaluated = eval(env, val);
@@ -244,15 +244,15 @@ Expr* prim_define_global(Env* env, Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
-Expr* prim_lambda(Env* env, Expr* e) {
+Expr* prim_lambda(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(expr_list_len(e) >= 2,
+    SL_EXPECT(expr_list_len(args) >= 2,
               "The special form `lambda' expects at least 2 arguments: Formals "
               "and body.");
 
-    const Expr* formals = CAR(e);
+    const Expr* formals = CAR(args);
     SL_EXPECT_PROPER_LIST(formals);
-    const Expr* body = CDR(e);
+    const Expr* body = CDR(args);
     SL_EXPECT_PROPER_LIST(body);
 
     /*
@@ -273,15 +273,15 @@ Expr* prim_lambda(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_macro(Env* env, Expr* e) {
+Expr* prim_macro(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(expr_list_len(e) >= 2,
+    SL_EXPECT(expr_list_len(args) >= 2,
               "The special form `macro' expects at least 2 arguments: Formals "
               "and body.");
 
-    const Expr* formals = CAR(e);
+    const Expr* formals = CAR(args);
     SL_EXPECT_PROPER_LIST(formals);
-    const Expr* body = CDR(e);
+    const Expr* body = CDR(args);
     SL_EXPECT_PROPER_LIST(body);
 
     LambdaCtx* ctx                      = lambdactx_new();
@@ -302,7 +302,7 @@ Expr* prim_macro(Env* env, Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
-Expr* prim_begin(Env* env, Expr* e) {
+Expr* prim_begin(Env* env, Expr* args) {
     /*
      * In Scheme, `begin' is a special form for various reasons. When making a
      * call, the arguments are not required to be evaluated in order, when using
@@ -322,8 +322,8 @@ Expr* prim_begin(Env* env, Expr* e) {
      */
     Expr* last_evaluated = g_nil;
 
-    for (; !expr_is_nil(e); e = CDR(e)) {
-        last_evaluated = eval(env, CAR(e));
+    for (; !expr_is_nil(args); args = CDR(args)) {
+        last_evaluated = eval(env, CAR(args));
         if (EXPR_ERR_P(last_evaluated))
             break;
     }
@@ -333,14 +333,14 @@ Expr* prim_begin(Env* env, Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
-Expr* prim_if(Env* env, Expr* e) {
-    SL_EXPECT(expr_list_len(e) == 3,
+Expr* prim_if(Env* env, Expr* args) {
+    SL_EXPECT(expr_list_len(args) == 3,
               "The special form `if' expects exactly 3 arguments: Predicate, "
               "consequent and alternative.");
 
-    Expr* predicate   = expr_list_nth(e, 1);
-    Expr* consequent  = expr_list_nth(e, 2);
-    Expr* alternative = expr_list_nth(e, 3);
+    Expr* predicate   = expr_list_nth(args, 1);
+    Expr* consequent  = expr_list_nth(args, 2);
+    Expr* alternative = expr_list_nth(args, 3);
 
     /*
      * First, evaluate the predicate (first argument). If the predicate is false
@@ -355,7 +355,7 @@ Expr* prim_if(Env* env, Expr* e) {
     return eval(env, result);
 }
 
-Expr* prim_or(Env* env, Expr* e) {
+Expr* prim_or(Env* env, Expr* args) {
     /*
      * The `or' function does not have to be a primitive, it can be built with
      * `if' and macros. In any case, we can't use normal evaluation rules
@@ -366,8 +366,8 @@ Expr* prim_or(Env* env, Expr* e) {
      */
     Expr* result = g_nil;
 
-    for (; !expr_is_nil(e); e = CDR(e)) {
-        result = eval(env, CAR(e));
+    for (; !expr_is_nil(args); args = CDR(args)) {
+        result = eval(env, CAR(args));
         if (EXPR_ERR_P(result) || !expr_is_nil(result))
             break;
     }
@@ -375,7 +375,7 @@ Expr* prim_or(Env* env, Expr* e) {
     return result;
 }
 
-Expr* prim_and(Env* env, Expr* e) {
+Expr* prim_and(Env* env, Expr* args) {
     /*
      * For more information, see comment in 'prim_or'.
      *
@@ -384,8 +384,8 @@ Expr* prim_and(Env* env, Expr* e) {
      */
     Expr* result = g_tru;
 
-    for (; !expr_is_nil(e); e = CDR(e)) {
-        result = eval(env, CAR(e));
+    for (; !expr_is_nil(args); args = CDR(args)) {
+        result = eval(env, CAR(args));
         if (EXPR_ERR_P(result) || expr_is_nil(result))
             break;
     }
