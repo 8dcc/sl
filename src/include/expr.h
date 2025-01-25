@@ -113,7 +113,6 @@ struct Expr {
 /* Callable macros */
 
 /* Expression predicates */
-/* TODO: Grep for "->type", replace with these macros */
 #define EXPR_ERR_P(E)    ((E)->type == EXPR_ERR)
 #define EXPR_INT_P(E)    ((E)->type == EXPR_NUM_INT)
 #define EXPR_FLT_P(E)    ((E)->type == EXPR_NUM_FLT)

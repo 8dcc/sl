@@ -36,7 +36,7 @@
  */
 static inline bool is_call_to(const Expr* list, const char* func) {
     SL_ASSERT(expr_is_proper_list(list));
-    return CAR(list)->type == EXPR_SYMBOL && CAR(list)->val.s != NULL &&
+    return EXPR_SYMBOL_P(CAR(list)) && CAR(list)->val.s != NULL &&
            strcmp(CAR(list)->val.s, func) == 0;
 }
 

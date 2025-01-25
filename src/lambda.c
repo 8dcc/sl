@@ -41,7 +41,7 @@ static enum ELambdaCtxErr count_formals(const Expr* list, size_t* mandatory,
 
     for (; !expr_is_nil(list); list = CDR(list)) {
         const Expr* cur = CAR(list);
-        if (cur->type != EXPR_SYMBOL)
+        if (!EXPR_SYMBOL_P(cur))
             return LAMBDACTX_ERR_FORMALTYPE;
 
         /*
@@ -290,12 +290,12 @@ static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
 }
 
 Expr* lambda_call(Env* env, Expr* func, Expr* args) {
-    SL_ASSERT(func->type == EXPR_LAMBDA);
+    SL_ASSERT(EXPR_LAMBDA_P(func));
     return lambdactx_eval_body(env, func->val.lambda, args);
 }
 
 Expr* macro_expand(Env* env, Expr* func, Expr* args) {
-    SL_ASSERT(func->type == EXPR_MACRO);
+    SL_ASSERT(EXPR_MACRO_P(func));
     return lambdactx_eval_body(env, func->val.lambda, args);
 }
 

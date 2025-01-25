@@ -55,7 +55,7 @@ Expr* err(const char* fmt, ...) {
 
 void err_print(FILE* fp, const Expr* e) {
     SL_ASSERT(e != NULL);
-    SL_ASSERT(e->type == EXPR_ERR);
+    SL_ASSERT(EXPR_ERR_P(e));
     SL_ASSERT(e->val.s != NULL);
 
 #ifdef SL_NO_COLOR

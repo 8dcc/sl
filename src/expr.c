@@ -93,7 +93,7 @@ Expr* expr_clone_recur(const Expr* e) {
         return NULL;
 
     Expr* cloned = expr_clone(e);
-    if (cloned->type == EXPR_PAIR) {
+    if (EXPR_PAIR_P(cloned)) {
         CAR(cloned) = expr_clone_recur(CAR(cloned));
         CDR(cloned) = expr_clone_recur(CDR(cloned));
     }
@@ -104,7 +104,7 @@ Expr* expr_clone_recur(const Expr* e) {
 /*----------------------------------------------------------------------------*/
 
 bool expr_is_nil(const Expr* e) {
-    return e != NULL && e->type == EXPR_SYMBOL && e->val.s != NULL &&
+    return e != NULL && EXPR_SYMBOL_P(e) && e->val.s != NULL &&
            strcmp(e->val.s, "nil") == 0;
 }
 
@@ -233,7 +233,7 @@ bool expr_is_proper_list(const Expr* e) {
      *         (tru nil)))
      */
     while (!expr_is_nil(e)) {
-        if (e->type != EXPR_PAIR)
+        if (!EXPR_PAIR_P(e))
             return false;
         e = CDR(e);
     }
@@ -435,9 +435,9 @@ bool expr_write(FILE* fp, const Expr* e) {
         case EXPR_MACRO:
             fprintf(fp,
                     "(%s ",
-                    (e->type == EXPR_LAMBDA)  ? "lambda"
-                    : (e->type == EXPR_MACRO) ? "macro"
-                                              : "ERROR");
+                    (EXPR_LAMBDA_P(e))  ? "lambda"
+                    : (EXPR_MACRO_P(e)) ? "macro"
+                                        : "ERROR");
             lambdactx_print_args(fp, e->val.lambda);
             fputc(' ', fp);
             expr_list_print(fp, e->val.lambda->body, expr_write);
@@ -506,7 +506,7 @@ void expr_print_debug(FILE* fp, const Expr* e) {
         case EXPR_LAMBDA: {
             fprintf(fp,
                     "[FUN] <%s>\n",
-                    (e->type == EXPR_LAMBDA) ? "lambda" : "macro");
+                    (EXPR_LAMBDA_P(e)) ? "lambda" : "macro");
 
             /* Print list of formal arguments */
             indent += INDENT_STEP;

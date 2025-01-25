@@ -65,7 +65,7 @@ static Expr* string_append(Expr* args) {
     size_t total_len = 0;
     for (const Expr* rem = args; !expr_is_nil(rem); rem = CDR(rem)) {
         const Expr* arg = CAR(rem);
-        SL_ASSERT(arg->type == EXPR_STRING);
+        SL_ASSERT(EXPR_STRING_P(arg));
         SL_ASSERT(arg->val.s != NULL);
 
         total_len += strlen(arg->val.s);
@@ -124,7 +124,7 @@ Expr* prim_car(Env* env, Expr* args) {
     SL_EXPECT_ARG_NUM(args, 1);
 
     const Expr* arg = CAR(args);
-    SL_EXPECT(arg->type == EXPR_PAIR || expr_is_nil(arg),
+    SL_EXPECT(EXPR_PAIR_P(arg) || expr_is_nil(arg),
               "Expected an expression of type '%s' or `nil', got '%s'.",
               exprtype2str(EXPR_PAIR),
               exprtype2str(arg->type));
@@ -148,7 +148,7 @@ Expr* prim_cdr(Env* env, Expr* args) {
     SL_EXPECT_ARG_NUM(args, 1);
 
     const Expr* arg = CAR(args);
-    SL_EXPECT(arg->type == EXPR_PAIR || expr_is_nil(arg),
+    SL_EXPECT(EXPR_PAIR_P(arg) || expr_is_nil(arg),
               "Expected an expression of type '%s' or `nil', got '%s'.",
               exprtype2str(EXPR_PAIR),
               exprtype2str(arg->type));

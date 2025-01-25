@@ -54,14 +54,14 @@ Expr* prim_add(Env* env, Expr* args) {
 
         ret = expr_new(EXPR_NUM_GENERIC);
         expr_set_generic_num(ret, total);
-    } else if (first_arg->type == EXPR_NUM_INT) {
+    } else if (EXPR_INT_P(first_arg)) {
         LispInt total = 0;
         for (; !expr_is_nil(args); args = CDR(args))
             total += CAR(args)->val.n;
 
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = total;
-    } else if (first_arg->type == EXPR_NUM_FLT) {
+    } else if (EXPR_FLT_P(first_arg)) {
         LispFlt total = 0.0;
         for (; !expr_is_nil(args); args = CDR(args))
             total += CAR(args)->val.f;
@@ -110,14 +110,14 @@ Expr* prim_sub(Env* env, Expr* args) {
 
         ret = expr_new(EXPR_NUM_GENERIC);
         expr_set_generic_num(ret, total);
-    } else if (first_arg->type == EXPR_NUM_INT) {
+    } else if (EXPR_INT_P(first_arg)) {
         LispInt total = first_arg->val.n;
         for (args = CDR(args); !expr_is_nil(args); args = CDR(args))
             total -= CAR(args)->val.n;
 
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = total;
-    } else if (first_arg->type == EXPR_NUM_FLT) {
+    } else if (EXPR_FLT_P(first_arg)) {
         LispFlt total = first_arg->val.f;
         for (args = CDR(args); !expr_is_nil(args); args = CDR(args))
             total -= CAR(args)->val.f;
@@ -163,14 +163,14 @@ Expr* prim_mul(Env* env, Expr* args) {
 
         ret = expr_new(EXPR_NUM_GENERIC);
         expr_set_generic_num(ret, total);
-    } else if (first_arg->type == EXPR_NUM_INT) {
+    } else if (EXPR_INT_P(first_arg)) {
         LispInt total = first_arg->val.n;
         for (args = CDR(args); !expr_is_nil(args); args = CDR(args))
             total *= CAR(args)->val.n;
 
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = total;
-    } else if (first_arg->type == EXPR_NUM_FLT) {
+    } else if (EXPR_FLT_P(first_arg)) {
         LispFlt total = first_arg->val.f;
         for (args = CDR(args); !expr_is_nil(args); args = CDR(args))
             total *= CAR(args)->val.f;

@@ -39,8 +39,8 @@
  * Is this expression a special form symbol?
  */
 static inline bool is_special_form(const Env* env, const Expr* e) {
-    return (e->type == EXPR_SYMBOL && e->val.s != NULL &&
-            (env_get_flags(env, e->val.s) & ENV_FLAG_SPECIAL) != 0);
+    return EXPR_SYMBOL_P(e) && e->val.s != NULL &&
+           (env_get_flags(env, e->val.s) & ENV_FLAG_SPECIAL) != 0;
 }
 
 /*
@@ -115,7 +115,7 @@ static Expr* eval_function_call(Env* env, Expr* e) {
      * This boolean will be used when evaluating and freeing.
      */
     const bool should_eval_args =
-      (!expr_is_nil(cdr) && !got_special_form && func->type != EXPR_MACRO);
+      (!expr_is_nil(cdr) && !got_special_form && !EXPR_MACRO_P(func));
 
     /*
      * If the arguments should be evaluated, evaluate them. If one of them
