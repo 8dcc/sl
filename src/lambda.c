@@ -236,7 +236,7 @@ static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
 
     /* Make sure the number of arguments that we got is what we expected */
     SL_EXPECT(ctx->formal_rest != NULL || arg_num == ctx->formals_num,
-              "Invalid number of arguments. Expected %d, got %d.",
+              "Invalid number of arguments. Expected %zu, got %zu.",
               ctx->formals_num,
               arg_num);
 

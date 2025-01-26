@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
 
     /* Allocate the expression pool. It will be expanded when needed. */
     if (!pool_init(BASE_POOL_SZ))
-        SL_FATAL("Failed to initialize pool of %zu expressions.\n",
+        SL_FATAL("Failed to initialize pool of %d expressions.\n",
                  BASE_POOL_SZ);
 
     /* Initialize global environment with symbols like "nil" */

@@ -84,7 +84,7 @@ struct Expr; /* expr.h */
  */
 #define SL_EXPECT_LEN(EXPR_LIST, NUM)                                          \
     SL_EXPECT(expr_list_len(EXPR_LIST) == (NUM),                               \
-              "Expected a list of length %d, got %d.",                         \
+              "Expected a list of length %d, got %zu.",                        \
               NUM,                                                             \
               expr_list_len(EXPR_LIST))
 
@@ -95,7 +95,7 @@ struct Expr; /* expr.h */
  */
 #define SL_EXPECT_ARG_NUM(EXPR_LIST, NUM)                                      \
     SL_EXPECT(expr_list_len(EXPR_LIST) == (NUM),                               \
-              "Expected exactly %d arguments, got %d.",                        \
+              "Expected exactly %d arguments, got %zu.",                       \
               NUM,                                                             \
               expr_list_len(EXPR_LIST))
 
@@ -105,7 +105,7 @@ struct Expr; /* expr.h */
  */
 #define SL_EXPECT_MIN_ARG_NUM(EXPR_LIST, NUM)                                  \
     SL_EXPECT(expr_list_len(EXPR_LIST) >= (NUM),                               \
-              "Expected at least %d arguments, got %d.",                       \
+              "Expected at least %d arguments, got %zu.",                      \
               NUM,                                                             \
               expr_list_len(EXPR_LIST))
 
@@ -134,7 +134,7 @@ struct Expr; /* expr.h */
  * doesn't directly print anything; the error is supposed to get propagated
  * upwards.
  */
-struct Expr* err(const char* fmt, ...);
+struct Expr* err(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 
 /*
  * Print an expression of type 'EXPR_ERR' into the specified file. Doesn't print
@@ -150,8 +150,9 @@ void err_print(FILE* fp, const struct Expr* e);
  *
  * Will use colors unless 'SL_NO_COLOR' is defined.
  */
-void sl_print_err(const char* func, const char* fmt, ...);
+void sl_print_err(const char* func, const char* fmt, ...)
+  __attribute__((format(printf, 2, 3)));
 void sl_print_ftl(const char* file, int line, const char* func, const char* fmt,
-                  ...);
+                  ...) __attribute__((format(printf, 4, 5)));
 
 #endif /* ERROR_H_ */

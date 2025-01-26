@@ -100,7 +100,8 @@ bool sl_regex_match_groups(const char* pat, const char* str, bool ignore_case,
  * The function returns 'true' on success, or 'false' if an error was printed.
  */
 bool sl_concat_format(char** dst, size_t* dst_sz, size_t* dst_offet,
-                      const char* fmt, ...);
+                      const char* fmt, ...)
+  __attribute__((format(printf, 4, 5)));
 
 /*----------------------------------------------------------------------------*/
 
