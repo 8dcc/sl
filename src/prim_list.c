@@ -43,7 +43,7 @@ static Expr* list_append(Expr* args) {
         if (expr_is_nil(arg))
             continue;
 
-        CDR(cur_copy) = expr_clone_recur(arg);
+        CDR(cur_copy) = expr_clone_tree(arg);
         while (!expr_is_nil(CDR(cur_copy)))
             cur_copy = CDR(cur_copy);
     }
@@ -94,7 +94,7 @@ Expr* prim_list(Env* env, Expr* args) {
      * (list)          ===> nil
      * (list 'a 'b 'c) ===> (a b c)
      */
-    return expr_clone_recur(args);
+    return expr_clone_tree(args);
 }
 
 /*
@@ -110,8 +110,8 @@ Expr* prim_cons(Env* env, Expr* args) {
      * (cons 'a nil)    ===> (a)
      */
     Expr* ret = expr_new(EXPR_PAIR);
-    CAR(ret)  = expr_clone_recur(expr_list_nth(args, 1));
-    CDR(ret)  = expr_clone_recur(expr_list_nth(args, 2));
+    CAR(ret)  = expr_clone_tree(expr_list_nth(args, 1));
+    CDR(ret)  = expr_clone_tree(expr_list_nth(args, 2));
 
     return ret;
 }
@@ -137,7 +137,7 @@ Expr* prim_car(Env* env, Expr* args) {
     if (expr_is_nil(arg))
         return expr_clone(arg);
 
-    return expr_clone_recur(CAR(arg));
+    return expr_clone_tree(CAR(arg));
 }
 
 /*
@@ -162,7 +162,7 @@ Expr* prim_cdr(Env* env, Expr* args) {
     if (expr_is_nil(arg))
         return expr_clone(arg);
 
-    return expr_clone_recur(CDR(arg));
+    return expr_clone_tree(CDR(arg));
 }
 
 Expr* prim_length(Env* env, Expr* args) {

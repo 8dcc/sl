@@ -110,7 +110,7 @@ enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const Expr* formals,
     /*
      * TODO: Should we clone the expressions, or store the original references?
      */
-    ctx->body = expr_clone_recur(body);
+    ctx->body = expr_clone_tree(body);
 
     /*
      * For each formal argument we counted above, store the symbol as a C string
@@ -142,7 +142,7 @@ LambdaCtx* lambdactx_clone(const LambdaCtx* ctx) {
     /*
      * TODO: Should we clone the expressions, or store the original references?
      */
-    ret->body = expr_clone_recur(ctx->body);
+    ret->body = expr_clone_tree(ctx->body);
 
     /* Allocate a new string array for the mandatory formals, and copy them */
     ret->formals_num = ctx->formals_num;
@@ -258,7 +258,7 @@ static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
 
     /* If the lambda has a "&rest" formal, bind it */
     if (ctx->formal_rest != NULL) {
-        Expr* rest_list = expr_clone_recur(rem_args);
+        Expr* rest_list = expr_clone_tree(rem_args);
         const enum EEnvErr code =
           env_bind(ctx->env, ctx->formal_rest, rest_list, ENV_FLAG_NONE);
         SL_EXPECT(code == ENV_ERR_NONE,

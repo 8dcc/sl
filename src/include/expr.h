@@ -149,17 +149,14 @@ Expr* expr_new(enum EExprType type);
  * Clone the specified 'Expr' structure into an allocated copy, and return it.
  *
  * In the case of pairs, it copies the references, doesn't clone recursively. To
- * clone recursively, use 'expr_clone_recur'.
+ * clone recursively, use 'expr_clone_tree'.
  */
 Expr* expr_clone(const Expr* e);
 
 /*
  * Same as 'expr_clone', but also clones pairs recursivelly.
- *
- * TODO: Rename to 'expr_tree_clone', update comments where this function is
- * mentioned.
  */
-Expr* expr_clone_recur(const Expr* e);
+Expr* expr_clone_tree(const Expr* e);
 
 /*----------------------------------------------------------------------------*/
 /* Predicates for expressions */

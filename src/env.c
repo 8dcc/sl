@@ -180,7 +180,7 @@ Env* env_clone(Env* env) {
      */
     for (size_t i = 0; i < cloned->size; i++) {
         cloned->bindings[i].sym   = mem_strdup(env->bindings[i].sym);
-        cloned->bindings[i].val   = expr_clone_recur(env->bindings[i].val);
+        cloned->bindings[i].val   = expr_clone_tree(env->bindings[i].val);
         cloned->bindings[i].flags = env->bindings[i].flags;
     }
 
@@ -227,7 +227,7 @@ enum EEnvErr env_bind(Env* env, const char* sym, const Expr* val,
             if ((env->bindings[i].flags & ENV_FLAG_CONST) != 0)
                 return ENV_ERR_CONST;
 
-            env->bindings[i].val   = expr_clone_recur(val);
+            env->bindings[i].val   = expr_clone_tree(val);
             env->bindings[i].flags = flags;
             return ENV_ERR_NONE;
         }
@@ -237,7 +237,7 @@ enum EEnvErr env_bind(Env* env, const char* sym, const Expr* val,
     mem_realloc(env->bindings, env->size * sizeof(EnvBinding));
 
     env->bindings[env->size - 1].sym   = mem_strdup(sym);
-    env->bindings[env->size - 1].val   = expr_clone_recur(val);
+    env->bindings[env->size - 1].val   = expr_clone_tree(val);
     env->bindings[env->size - 1].flags = flags;
 
     return ENV_ERR_NONE;
@@ -280,7 +280,7 @@ Expr* env_get(const Env* env, const char* sym) {
     if (binding == NULL)
         return NULL;
 
-    return expr_clone_recur(binding->val);
+    return expr_clone_tree(binding->val);
 }
 
 enum EEnvBindingFlags env_get_flags(const Env* env, const char* sym) {

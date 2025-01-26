@@ -47,7 +47,7 @@ Expr* expr_clone(const Expr* e) {
      *
      * Note that, in the case of pairs, this function doesn't clone the tree
      * recursively, it just copies the old references; see also
-     * 'expr_clone_recur'.
+     * 'expr_clone_tree'.
      */
     Expr* ret = expr_new(e->type);
 
@@ -88,14 +88,14 @@ Expr* expr_clone(const Expr* e) {
     return ret;
 }
 
-Expr* expr_clone_recur(const Expr* e) {
+Expr* expr_clone_tree(const Expr* e) {
     if (e == NULL)
         return NULL;
 
     Expr* cloned = expr_clone(e);
     if (EXPR_PAIR_P(cloned)) {
-        CAR(cloned) = expr_clone_recur(CAR(cloned));
-        CDR(cloned) = expr_clone_recur(CDR(cloned));
+        CAR(cloned) = expr_clone_tree(CAR(cloned));
+        CDR(cloned) = expr_clone_tree(CDR(cloned));
     }
 
     return cloned;

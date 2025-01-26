@@ -151,7 +151,7 @@ Expr* prim_quote(Env* env, Expr* args) {
      * TODO: Don't create a copy, return the reference directly (after
      * adding cons).
      */
-    return expr_clone_recur(CAR(args));
+    return expr_clone_tree(CAR(args));
 }
 
 Expr* prim_backquote(Env* env, Expr* args) {
