@@ -77,10 +77,21 @@ struct Expr; /* expr.h */
     } while (0)
 
 /*
- * Check if the specified list of 'Expr' structures has a specific
- * length using 'SL_EXPECT'.
+ * Check if the specified proper list has a specific length using
+ * 'expr_list_len'.
  *
- * TODO: Add 'SL_EXPECT_LEN' macro, use when the list is not an argument list.
+ * TODO: Don't call 'expr_list_len' twice.
+ */
+#define SL_EXPECT_LEN(EXPR_LIST, NUM)                                          \
+    SL_EXPECT(expr_list_len(EXPR_LIST) == (NUM),                               \
+              "Expected a list of length %d, got %d.",                         \
+              NUM,                                                             \
+              expr_list_len(EXPR_LIST))
+
+/*
+ * Check if the specified argument list has a specific length using
+ * 'expr_list_len'. Similar to 'SL_EXPECT_LEN', but with a different error
+ * message.
  */
 #define SL_EXPECT_ARG_NUM(EXPR_LIST, NUM)                                      \
     SL_EXPECT(expr_list_len(EXPR_LIST) == (NUM),                               \
@@ -89,8 +100,17 @@ struct Expr; /* expr.h */
               expr_list_len(EXPR_LIST))
 
 /*
- * Check if the specified expression matches the expected type using
- * 'SL_EXPECT'.
+ * Check if the specified argument list has a minimum length using
+ * 'expr_list_len'. Similar to 'SL_EXPECT_ARG_NUM'.
+ */
+#define SL_EXPECT_MIN_ARG_NUM(EXPR_LIST, NUM)                                  \
+    SL_EXPECT(expr_list_len(EXPR_LIST) >= (NUM),                               \
+              "Expected at least %d arguments, got %d.",                       \
+              NUM,                                                             \
+              expr_list_len(EXPR_LIST))
+
+/*
+ * Check if the specified expression matches the specified type.
  */
 #define SL_EXPECT_TYPE(EXPR, TYPE)                                             \
     SL_EXPECT((EXPR)->type == (TYPE),                                          \
@@ -98,6 +118,10 @@ struct Expr; /* expr.h */
               exprtype2str(TYPE),                                              \
               exprtype2str((EXPR)->type))
 
+/*
+ * Check if the specified expression is a proper list using
+ * 'expr_is_proper_list'.
+ */
 #define SL_EXPECT_PROPER_LIST(EXPR)                                            \
     SL_EXPECT(expr_is_proper_list(EXPR),                                       \
               "Expected a proper list, got '%s'.",                             \

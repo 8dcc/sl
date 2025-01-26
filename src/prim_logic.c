@@ -25,7 +25,7 @@
 
 Expr* prim_equal(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(expr_list_len(args) >= 2, "Expected at least 2 arguments.");
+    SL_EXPECT_MIN_ARG_NUM(args, 2);
 
     bool result = true;
 
@@ -42,7 +42,7 @@ Expr* prim_equal(Env* env, Expr* args) {
 
 Expr* prim_equal_num(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(expr_list_len(args) >= 2, "Expected at least 2 arguments.");
+    SL_EXPECT_MIN_ARG_NUM(args, 2);
     SL_EXPECT(expr_list_has_only_numbers(args),
               "Expected only numeric arguments.");
 
@@ -62,7 +62,7 @@ Expr* prim_equal_num(Env* env, Expr* args) {
 
 Expr* prim_lt(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(expr_list_len(args) >= 2, "Expected at least 2 arguments.");
+    SL_EXPECT_MIN_ARG_NUM(args, 2);
 
     bool result = true;
 
@@ -79,7 +79,7 @@ Expr* prim_lt(Env* env, Expr* args) {
 
 Expr* prim_gt(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(expr_list_len(args) >= 2, "Expected at least 2 arguments.");
+    SL_EXPECT_MIN_ARG_NUM(args, 2);
 
     bool result = true;
 
