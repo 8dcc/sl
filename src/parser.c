@@ -68,6 +68,12 @@ static size_t wrap_in_call(Expr* dst, const Token* tokens,
 /*
  * Parse an expression recursively. Writes to 'dst', and returns the number of
  * parsed tokens. See comment in 'parse' below.
+ *
+ * TODO: The following expressions fail assertions in the parser:
+ *   sl> `,@
+ * TODO: The following expressions should signal errors:
+ *   sl> .
+ *   sl> '(a . )
  */
 static size_t parse_recur(Expr* dst, const Token* tokens) {
     SL_ASSERT(tokens != NULL);
