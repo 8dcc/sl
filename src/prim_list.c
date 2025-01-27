@@ -27,15 +27,9 @@
 
 /*
  * Used by 'prim_append' when receiving list arguments.
- *
- * TODO: We could add an 'expr_list_append' function that takes two lists and
- * overwrites the last CDR of the first list with a pointer to the second
- * list. This could be used in 'handle_backquote_arg', inside 'prim_special.c'.
  */
 static Expr* list_append(Expr* args) {
-    Expr dummy_copy;
-    dummy_copy.val.pair.cdr = g_nil;
-    Expr* cur_copy          = &dummy_copy;
+    Expr* result = g_nil;
 
     for (; !expr_is_nil(args); args = CDR(args)) {
         const Expr* arg = CAR(args);
@@ -43,12 +37,10 @@ static Expr* list_append(Expr* args) {
         if (expr_is_nil(arg))
             continue;
 
-        CDR(cur_copy) = expr_clone_tree(arg);
-        while (!expr_is_nil(CDR(cur_copy)))
-            cur_copy = CDR(cur_copy);
+        result = expr_nconc(result, expr_clone_tree(arg));
     }
 
-    return dummy_copy.val.pair.cdr;
+    return result;
 }
 
 /* Used by 'prim_append' when receiving string arguments */

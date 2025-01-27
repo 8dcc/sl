@@ -46,6 +46,8 @@ static inline bool is_call_to(const Expr* list, const char* func) {
  *
  * If the argument is a list, this function is a "selective" version of the
  * 'eval_list' function from 'eval.c'.
+ *
+ * TODO: Rename 'args' to 'arg', etc.
  */
 static Expr* handle_backquote_arg(Env* env, const Expr* args) {
     /* Not a proper list, return unevaluated, just like `quote' */
@@ -79,10 +81,7 @@ static Expr* handle_backquote_arg(Env* env, const Expr* args) {
      * handle each element recursively to allow calls to unquote from nested
      * lists. We will also handle valid calls to the splice function (,@) here.
      */
-    Expr dummy_copy;
-    dummy_copy.val.pair.cdr = g_nil;
-    Expr* cur_copy          = &dummy_copy;
-
+    Expr* result = g_nil;
     for (; !expr_is_nil(args); args = CDR(args)) {
         const Expr* cur = CAR(args);
         if (expr_is_proper_list(cur) && is_call_to(cur, ",@")) {
@@ -108,16 +107,9 @@ static Expr* handle_backquote_arg(Env* env, const Expr* args) {
                       "list. Use unquote (,) instead.");
 
             /*
-             * If the evaluated expression is nil, we ignore it. However, if
-             * it's a non-empty list, we will append each element to the
-             * destination list.
+             * Concatenate the list we got from the evaluation to the result.
              */
-            for (; !expr_is_nil(evaluated); evaluated = CDR(evaluated)) {
-                CDR(cur_copy) = expr_new(EXPR_PAIR);
-                cur_copy      = CDR(cur_copy);
-                CAR(cur_copy) = CAR(evaluated);
-                CDR(cur_copy) = g_nil;
-            }
+            result = expr_nconc(result, evaluated);
         } else {
             /*
              * The current element of the list is not a call to the splice
@@ -128,14 +120,14 @@ static Expr* handle_backquote_arg(Env* env, const Expr* args) {
             if (EXPR_ERR_P(handled))
                 return handled;
 
-            CDR(cur_copy) = expr_new(EXPR_PAIR);
-            cur_copy      = CDR(cur_copy);
-            CAR(cur_copy) = handled;
-            CDR(cur_copy) = g_nil;
+            Expr* pair = expr_new(EXPR_PAIR);
+            CAR(pair)  = handled;
+            CDR(pair)  = g_nil;
+            result     = expr_nconc(result, pair);
         }
     }
 
-    return dummy_copy.val.pair.cdr;
+    return result;
 }
 
 /*----------------------------------------------------------------------------*/

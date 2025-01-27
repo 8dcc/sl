@@ -261,6 +261,20 @@ Expr* expr_list_nth(const Expr* list, size_t n) {
     return CAR(list);
 }
 
+Expr* expr_nconc(Expr* list, Expr* expr) {
+    SL_ASSERT(expr_is_proper_list(list));
+
+    if (expr_is_nil(list))
+        return expr;
+
+    Expr* last_pair = list;
+    while (EXPR_PAIR_P(CDR(last_pair)))
+        last_pair = CDR(last_pair);
+
+    CDR(last_pair) = expr;
+    return list;
+}
+
 bool expr_is_member(const Expr* list, const Expr* e) {
     SL_ASSERT(list != NULL && e != NULL);
     SL_ASSERT(expr_is_proper_list(list));

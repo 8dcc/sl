@@ -202,6 +202,15 @@ size_t expr_list_len(const Expr* list);
 Expr* expr_list_nth(const Expr* list, size_t n);
 
 /*
+ * Write the 'expr' pointer to the last CDR of 'list'. The pointer to the start
+ * of the list is returned.
+ *
+ * The list is iterated until a CDR is not a pair (e.g. `nil'), and it
+ * overwrites it with 'expr'. If the list is 'nil', 'expr' is returned.
+ */
+Expr* expr_nconc(Expr* list, Expr* expr);
+
+/*
  * Does the specified list contain the specified expression? The check is
  * performed using 'expr_equal'.
  *
