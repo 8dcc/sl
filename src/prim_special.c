@@ -46,17 +46,15 @@ static inline bool is_call_to(const Expr* list, const char* func) {
  *
  * If the argument is a list, this function is a "selective" version of the
  * 'eval_list' function from 'eval.c'.
- *
- * TODO: Rename 'args' to 'arg', etc.
  */
-static Expr* handle_backquote_arg(Env* env, const Expr* args) {
+static Expr* handle_backquote_arg(Env* env, const Expr* arg) {
     /* Not a proper list, return unevaluated, just like `quote' */
-    if (!expr_is_proper_list(args))
+    if (!expr_is_proper_list(arg))
         /*
          * TODO: Don't create a copy, return the reference directly (after
          * adding cons).
          */
-        return expr_clone(args);
+        return expr_clone(arg);
 
     /*
      * If we reached this point, the expression is a proper list. Check if
@@ -69,11 +67,11 @@ static Expr* handle_backquote_arg(Env* env, const Expr* args) {
      * 'handle_backquote_arg' function calls itself recursively below.
      *   `,expr  =>  (` (, expr))  =>  (eval expr)
      */
-    SL_EXPECT(!is_call_to(args, ",@"), "Can't splice (,@) outside of a list.");
-    if (is_call_to(args, ",")) {
-        SL_EXPECT(!expr_is_nil(CDR(args)) && expr_is_nil(CDDR(args)),
+    SL_EXPECT(!is_call_to(arg, ",@"), "Can't splice (,@) outside of a list.");
+    if (is_call_to(arg, ",")) {
+        SL_EXPECT(!expr_is_nil(CDR(arg)) && expr_is_nil(CDDR(arg)),
                   "Call to unquote (,) expected exactly one argument.");
-        return eval(env, CADR(args));
+        return eval(env, CADR(arg));
     }
 
     /*
@@ -82,8 +80,8 @@ static Expr* handle_backquote_arg(Env* env, const Expr* args) {
      * lists. We will also handle valid calls to the splice function (,@) here.
      */
     Expr* result = g_nil;
-    for (; !expr_is_nil(args); args = CDR(args)) {
-        const Expr* cur = CAR(args);
+    for (const Expr* list = arg; !expr_is_nil(list); list = CDR(list)) {
+        const Expr* cur = CAR(list);
         if (expr_is_proper_list(cur) && is_call_to(cur, ",@")) {
             /*
              * Calls to splice are handled when parsing a list:
