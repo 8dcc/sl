@@ -75,10 +75,6 @@ static Expr* string_append(Expr* args) {
 
 /*----------------------------------------------------------------------------*/
 
-/*
- * TODO: This doesn't need to be a primitive, we can just `cons' the arguments
- * with 'nil'. We should note all unnecessary primitives in 'primitives.h'.
- */
 Expr* prim_list(Env* env, Expr* args) {
     SL_UNUSED(env);
 
