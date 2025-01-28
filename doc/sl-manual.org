@@ -1381,6 +1381,24 @@ information of lists. The primitives in this section are defined in
     ⇒ "foobar"
   #+end_src
 
+  This function doesn't modify its arguments directly, it returns a new
+  list.
+
+  #+begin_comment org
+  TODO: Link =nconc= primitive, if added.
+  #+end_comment
+
+  #+begin_src lisp
+  (define my-list '(a b c))
+    ⇒ (a b c)
+
+  (append my-list '(x y z))
+    ⇒ (a b c x y z)
+
+  my-list
+    ⇒ (a b c)
+  #+end_src
+
   When called with no arguments, =append= returns =nil=.
 
   #+begin_src lisp
