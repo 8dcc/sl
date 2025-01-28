@@ -83,6 +83,24 @@ a Generic Number Type is returned.
 The C functions for handling Generic Number Types are defined as =inline=
 in the [[file:expr.h]] header.
 
+** Lists
+
+Lists are data structures used to combine Lisp expressions. They are
+built by joining together pairs.
+
+#+begin_comment org
+TODO: Link blog article about cons.
+TODO: Explain the list syntax, how ~(a b c)~ denotes a proper list and how
+the dot can be used to specify the cdr, etc.
+#+end_comment
+
+A /proper list/ is a list whose last /cdr/ is the symbol =nil=; and an
+improper lists is a list whose last /cdr/ is not the symbol =nil=.
+
+It is important to understand that lists like ~(a b c)~ are syntactic
+sugar for ~(a . (b . (c . nil)))~, and that ~()~ is syntactic sugar for the
+symbol ~nil~, described below ([[nil]]).
+
 * Variables
 
 These variables are defined by default in the global environment.
@@ -107,53 +125,40 @@ These symbols are bound to a constant value, and can't be redefined.
   nil
     ⇒ nil
 
+  'nil
+    ⇒ nil
+
+  (equal? 'nil nil)
+    ⇒ tru
+
+  (eval nil)
+    ⇒ nil
+  #+end_src
+
+  Internally, =nil= is just a normal symbol that is bound to itself in the
+  global environment. This symbol is used to terminate proper lists (see
+  [[*Lists][Lists]]), as the last /cdr/.
+
+  #+begin_src lisp
+  (cons 1 (cons 2 nil))
+    ⇒ (1 2)
+  #+end_src
+
+  As explained in [[*Lists][Lists]], an empty list with the form ~()~ is syntactic
+  sugar for the symbol =nil=. This conversion is made in the parser.
+
+  #+begin_src lisp
   '()
     ⇒ nil
 
   ()  ; Special case, not treated as function call
     ⇒ nil
 
-  (eval nil)
-    ⇒ nil
-
-  (cons 1 (cons 2 nil))
-    ⇒ (1 2)
-  #+end_src
-
-  This symbol is very special, since it represents the empty list =()=
-  even when quoted. The following four expressions evaluate to the same
-  value: The quoted symbol ='nil=, the symbol =nil=, the quoted empty list
-  ='()=, and the empty list =()=.
-
-  #+begin_src lisp
   (type-of nil)
-    ⇒ List
-
-  (type-of 'nil)
     ⇒ Symbol
 
-  (null? 'nil)
-    ⇒ tru
-
-  (equal? 'nil nil)
-    ⇒ tru
-  #+end_src
-
-  Note that this exception only applies to the symbol =nil=, it doesn't
-  happen with other symbols bound to the empty list.
-
-  #+begin_src lisp
-  (define var nil)
-    ⇒ nil
-
-  (type-of 'var)
+  (type-of '())
     ⇒ Symbol
-
-  (null? 'var)
-    ⇒ nil
-
-  (null? var)
-    ⇒ tru
   #+end_src
 
 - Variable: `tru' :: <<tru>>
