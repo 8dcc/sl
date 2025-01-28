@@ -74,8 +74,8 @@ SL_ASSERT_TYPES(GenericNum, LispFlt);
 /*
  * Structure used to represent a pair of expressions.
  *
+ * NOTE: We could store indexes in the pool instead of pointers to save memory.
  * TODO: Link article about cons pairs.
- * TODO: We could store indexes in the pool instead of pointers to save memory.
  */
 typedef struct ExprPair ExprPair;
 struct ExprPair {
