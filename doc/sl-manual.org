@@ -1524,19 +1524,21 @@ in general, not just /lists/, so they can be used with strings.
 - Function: re-match-groups regexp string &optional ignore-case :: <<re-match-groups>>
 
   Try to match every group in =regexp= against =string=, and return a list
-  with the matches. The first match in the returned list corresponds to
-  the whole =regexp=, and the remaining elements correspond to each
-  parenthesized group, if any. If the =regexp= didn't match =string=, the
-  function returns =nil=.
+  with the matches. Each match in the returned list is a /Pair/ with the
+  form ~(START . END)~, where =START= and =END= are integers that indicate the
+  /start/ and /end/ index of that match inside the =string=. Therefore, the
+  structure of the returned list is:
 
-  Each /match/ in the returned list is a list with the form ~(START END)~,
-  where =START= and =END= are integers that indicate the /start/ and /end/ index
-  of the match inside =string=, respectively.
+  #+begin_src lisp
+  ((START . END)
+   (START . END)
+   ...
+   (START . END))
+  #+end_src
 
-  #+begin_comment org
-  TODO: After implementing proper =cons=, return a list of =(START . END)=
-  pairs, not a list of two-element lists.
-  #+end_comment
+  The first match in the returned list corresponds to the entire =regexp=,
+  and the remaining elements correspond to each parenthesized group, if
+  any. If the =regexp= didn't match =string=, the function returns =nil=.
 
   By default, the search is case-sensitive, but this can be overwritten
   by specifying a non-nil argument for the optional parameter
@@ -1556,34 +1558,34 @@ in general, not just /lists/, so they can be used with strings.
   (define str "abc XYZ 123")
 
   (re-match-groups "abc" str)
-    ⇒ ((0 3))
+    ⇒ ((0 . 3))
 
   (re-match-groups "xyz" str)
     ⇒ nil
 
   (re-match-groups "xyz" str tru)
-    ⇒ ((4 7))
+    ⇒ ((4 . 7))
 
   (re-match-groups "^(abc) ([A-Z]+) ([[:digit:]]+)$" str)
-    ⇒ ((0 11) (0 3) (4 7) (8 11))
+    ⇒ ((0 . 11) (0 . 3) (4 . 7) (8 . 11))
   #+end_src
 
   Note that this function only returns information about the /first match/
   of =regexp= in =string=, not about all the possible matches:
 
   #+begin_src lisp
-  ;; Not ((0 1) (1 2) (2 3))
+  ;; Not ((0 . 1) (1 . 2) (2 . 3))
   (re-match-groups "a" "aaa")
-    ⇒ ((0 1))
+    ⇒ ((0 . 1))
   #+end_src
 
   Also note that, since any non-nil argument can be used for the
-  =ignore-case= parameter, sometimes it might be a good idea to use a more
-  descriptive value:
+  =ignore-case= parameter, sometimes it might be a good idea to use a
+  descriptive symbol:
 
   #+begin_src lisp
   (re-match-groups "abc" "ABC" 'ignore-case)
-    ⇒ ((0 3))
+    ⇒ ((0 . 3))
   #+end_src
 
 ** Arithmetic primitives
