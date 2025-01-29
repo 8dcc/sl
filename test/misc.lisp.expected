@@ -1,3 +1,5 @@
+Standard library loaded.
+Error: Unbound symbol: `unbound-error-var'.
 10
 20
 <primitive 0xDEADBEEF>

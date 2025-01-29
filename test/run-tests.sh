@@ -16,6 +16,10 @@ file_err() {
     echo -e "\033[31;1m$1:\033[37;1m $2\033[0m" 1>&2
 }
 
+remove_colors() {
+    echo "$1" | sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'
+}
+
 if [ ! $(command -v dirname) ] ||
        [ ! $(command -v readlink) ] ||
        [ ! $(command -v valgrind) ]; then
@@ -52,11 +56,11 @@ for file in $(ls "$SCRIPT_DIR"/*.lisp); do
         exit 1
     fi
 
-    normal_output="$(echo -e "$input_str" | $SL_BIN $file 2> /dev/null | sed "s/<primitive 0x[[:xdigit:]]\+>/<primitive 0xDEADBEEF>/g")"
+    normal_output="$(echo -e "$input_str" | $SL_BIN $file 2>&1 | sed "s/<primitive 0x[[:xdigit:]]\+>/<primitive 0xDEADBEEF>/g")"
     desired_output_file="${file}.expected"
 
     # FIXME: Don't call 'diff' twice, but still show colors when printing.
-    diff <(echo "$normal_output") $desired_output_file &>/dev/null
+    diff <(remove_colors "$normal_output") $desired_output_file &>/dev/null
     diff_code=$?
     if [ $diff_code -eq 1 ]; then
         err "Output mismatch. Showing differences and stopping..."
