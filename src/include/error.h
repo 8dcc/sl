@@ -77,37 +77,47 @@ struct Expr; /* expr.h */
     } while (0)
 
 /*
+ * Internal macro used to check if a proper list has a specific length using
+ * 'expr_list_len'. The 'MSG' argument should contain "%d" and "%zu".
+ *
+ * Used by 'SL_EXPECT_LEN' and 'SL_EXPECT_ARG_NUM'.
+ */
+#define SL_EXPECT_LEN_INTERNAL(EXPR_LIST, NUM, MSG)                            \
+    do {                                                                       \
+        const size_t actual_len_ = expr_list_len(EXPR_LIST);                   \
+        SL_EXPECT(actual_len_ == (NUM), MSG, NUM, actual_len_);                \
+    } while (0)
+
+/*
  * Check if the specified proper list has a specific length using
  * 'expr_list_len'.
- *
- * TODO: Don't call 'expr_list_len' twice.
  */
 #define SL_EXPECT_LEN(EXPR_LIST, NUM)                                          \
-    SL_EXPECT(expr_list_len(EXPR_LIST) == (NUM),                               \
-              "Expected a list of length %d, got %zu.",                        \
-              NUM,                                                             \
-              expr_list_len(EXPR_LIST))
+    SL_EXPECT_LEN_INTERNAL(EXPR_LIST,                                          \
+                           NUM,                                                \
+                           "Expected a list of length %d, got %zu.")
 
 /*
  * Check if the specified argument list has a specific length using
- * 'expr_list_len'. Similar to 'SL_EXPECT_LEN', but with a different error
- * message.
+ * 'expr_list_len'.
  */
 #define SL_EXPECT_ARG_NUM(EXPR_LIST, NUM)                                      \
-    SL_EXPECT(expr_list_len(EXPR_LIST) == (NUM),                               \
-              "Expected exactly %d arguments, got %zu.",                       \
-              NUM,                                                             \
-              expr_list_len(EXPR_LIST))
+    SL_EXPECT_LEN_INTERNAL(EXPR_LIST,                                          \
+                           NUM,                                                \
+                           "Expected exactly %d arguments, got %zu.")
 
 /*
  * Check if the specified argument list has a minimum length using
  * 'expr_list_len'. Similar to 'SL_EXPECT_ARG_NUM'.
  */
 #define SL_EXPECT_MIN_ARG_NUM(EXPR_LIST, NUM)                                  \
-    SL_EXPECT(expr_list_len(EXPR_LIST) >= (NUM),                               \
-              "Expected at least %d arguments, got %zu.",                      \
-              NUM,                                                             \
-              expr_list_len(EXPR_LIST))
+    do {                                                                       \
+        const size_t actual_len_ = expr_list_len(EXPR_LIST);                   \
+        SL_EXPECT(actual_len_ >= (NUM),                                        \
+                  "Expected at least %d arguments, got %zu.",                  \
+                  NUM,                                                         \
+                  actual_len_);                                                \
+    } while (0)
 
 /*
  * Check if the specified expression matches the specified type.
