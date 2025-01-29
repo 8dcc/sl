@@ -42,7 +42,7 @@ bool debug_is_traced_function(const Env* env, const Expr* e) {
     if (debug_trace_list == NULL || !expr_is_proper_list(debug_trace_list))
         return false;
 
-    return expr_is_member(debug_trace_list, e);
+    return expr_is_member(e, debug_trace_list);
 }
 
 void debug_trace_print_pre(FILE* fp, const Expr* func, const Expr* arg) {

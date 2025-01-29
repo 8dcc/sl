@@ -275,15 +275,15 @@ Expr* expr_nconc(Expr* list, Expr* expr) {
     return list;
 }
 
-bool expr_is_member(const Expr* list, const Expr* e) {
+Expr* expr_member(const Expr* e, const Expr* list) {
     SL_ASSERT(list != NULL && e != NULL);
     SL_ASSERT(expr_is_proper_list(list));
 
     for (; !expr_is_nil(list); list = CDR(list))
         if (expr_equal(CAR(list), e))
-            return true;
+            return (Expr*)list;
 
-    return false;
+    return NULL;
 }
 
 bool expr_list_is_homogeneous(const Expr* list) {

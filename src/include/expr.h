@@ -198,6 +198,8 @@ size_t expr_list_len(const Expr* list);
  *
  * The 'n' argument is supposed to be one-indexed and smaller than the size of
  * the list (according to 'expr_list_len'), or an assertion will fail.
+ *
+ * TODO: Add 'nth' primitive.
  */
 Expr* expr_list_nth(const Expr* list, size_t n);
 
@@ -211,15 +213,12 @@ Expr* expr_list_nth(const Expr* list, size_t n);
 Expr* expr_nconc(Expr* list, Expr* expr);
 
 /*
- * Does the specified list contain the specified expression? The check is
- * performed using 'expr_equal'.
+ * Return the first pair in 'list' whose CAR is 'e', or NULL if 'e' is not in
+ * 'list'. The check is performed using 'expr_equal'.
  *
- * TODO: Swap argument order, just like Scheme's `member' functions.
- * TODO: Add 'expr_member' function that returns the reference, like Scheme's
- * `member'. Make 'expr_is_member' inline for checking if it returned NULL or
- * not.
+ * TODO: Add 'member' primitive after we stop returning clones.
  */
-bool expr_is_member(const Expr* list, const Expr* e);
+Expr* expr_member(const Expr* e, const Expr* list);
 
 /*
  * Is the specified list homogeneous? In other words, do all elements share the
@@ -252,6 +251,14 @@ bool expr_list_has_only_lists(const Expr* list);
 static inline bool expr_list_has_only_type(const Expr* list,
                                            enum EExprType type) {
     return expr_list_is_homogeneous(list) && CAR(list)->type == type;
+}
+
+/*
+ * Does the specified list contain the specified expression? The check is
+ * performed using 'expr_equal'.
+ */
+static inline bool expr_is_member(const Expr* e, const Expr* list) {
+    return expr_member(e, list) != NULL;
 }
 
 /*----------------------------------------------------------------------------*/
