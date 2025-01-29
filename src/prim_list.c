@@ -153,6 +153,33 @@ Expr* prim_cdr(Env* env, Expr* args) {
     return expr_clone_tree(CDR(arg));
 }
 
+/*
+ * TODO: Don't create a copy, return the reference directly.
+ */
+Expr* prim_nth(Env* env, Expr* args) {
+    SL_UNUSED(env);
+    SL_EXPECT_ARG_NUM(args, 2);
+    const Expr* pos_expr = CAR(args);
+    SL_EXPECT_TYPE(pos_expr, EXPR_NUM_INT);
+    const Expr* list = CADR(args);
+    SL_EXPECT_PROPER_LIST(list);
+
+    const LispInt pos = pos_expr->val.n;
+    SL_EXPECT(pos > 0,
+              "Expected the `position' argument to be one-indexed (got %lld).",
+              pos);
+
+    const size_t upos     = pos;
+    const size_t list_len = expr_list_len(list);
+    SL_EXPECT(upos <= list_len,
+              "Expected the `position' argument (%zu) to be smaller or equal "
+              "than the length of the `list' (%zu).",
+              upos,
+              list_len);
+
+    return expr_clone_tree(expr_list_nth(list, pos));
+}
+
 Expr* prim_length(Env* env, Expr* args) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(args, 1);

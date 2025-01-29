@@ -129,6 +129,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "cons", cons);
     BIND_PRIM(env, "car", car);
     BIND_PRIM(env, "cdr", cdr);
+    BIND_PRIM(env, "nth", nth);
     BIND_PRIM(env, "length", length);
     BIND_PRIM(env, "append", append);
 

@@ -29,5 +29,7 @@
 (cdr '(a . b)) ; Expected: b
 (cdr '(a b c)) ; Expected: (b c)
 
+(nth 2 '(a b c)) ; Expected: b
+
 (length  nil)     ; Expected: 0
 (length '(a b c)) ; Expected: 3
