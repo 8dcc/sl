@@ -955,6 +955,26 @@ symbol =tru=.
     ⇒ nil
   #+end_src
 
+  This function is a primitive because the conversion to the generic
+  number type is done from C, but a similar function could be written
+  using =equal?= and type-conversion primitives:
+
+  #+begin_src lisp
+  (defun my-num-equal (a b)
+    (defun to-common-type (n)
+      (cond ((flt? n) n)
+            ((int? n) (int->flt n))
+            (tru (error "Invalid type."))))
+    (equal? (to-common-type a)
+            (to-common-type b)))
+
+  (my-num-equal 1 1.0)
+    ⇒ tru
+
+  (my-num-equal 1 2.0)
+    ⇒ nil
+  #+end_src
+
 - Function: < a b &rest rest :: <<lt>>
 
   Return =tru= if all arguments are monotonically increasing, that is,
@@ -1279,6 +1299,24 @@ information of lists. The primitives in this section are defined in
 
   (list 'a 'b '() nil)
     ⇒ (a b nil nil)
+  #+end_src
+
+  This function doesn't need to be a primitive, since we could just use
+  =cons=:
+
+  #+begin_src lisp
+  (defun my-list (&rest elts)
+    (if (null? elts)
+        nil
+        (cons (car elts)
+              (apply my-list (cdr elts)))))
+
+  (my-list 'a 'b 'c)
+      ⇒ (a b c)
+
+  ;; Alternatively, taking advantage of '&rest'.
+  (defun my-list (&rest elts)
+    elts)
   #+end_src
 
 - Function: cons a b :: <<cons>>
