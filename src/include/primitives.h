@@ -75,7 +75,7 @@ DECLARE_PRIM(list); /* Redundant */
 DECLARE_PRIM(cons);
 DECLARE_PRIM(car);
 DECLARE_PRIM(cdr);
-DECLARE_PRIM(length); /* Redundant */
+DECLARE_PRIM(length);
 DECLARE_PRIM(append); /* Redundant */
 
 /* String-related (prim_string.c) */
