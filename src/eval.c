@@ -82,6 +82,11 @@ static Expr* eval_list(Env* env, Expr* list) {
  * Evaluate a list expression as a function call, applying the (evaluated) `car'
  * to the `cdr'. This function is responsible for evaluating the arguments
  * (using 'eval_list') before applying the function, if necessary.
+ *
+ * TODO: Keep track of a simple call stack (perhaps with a fixed-size
+ * array). Store 'Expr*' pointer and human-readable form (if available, before
+ * evaluation). Perhaps this should be handled in 'debug.c' via some 'push',
+ * 'pop' and 'print' functions.
  */
 static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* car = CAR(e);
