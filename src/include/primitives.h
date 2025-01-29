@@ -33,7 +33,7 @@ DECLARE_PRIM(define);
 DECLARE_PRIM(define_global);
 DECLARE_PRIM(lambda);
 DECLARE_PRIM(macro);
-DECLARE_PRIM(begin); /* Redundant */
+DECLARE_PRIM(begin);
 DECLARE_PRIM(if);
 DECLARE_PRIM(or);  /* Redundant */
 DECLARE_PRIM(and); /* Redundant */
