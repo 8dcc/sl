@@ -144,6 +144,18 @@ These symbols are bound to a constant value, and can't be redefined.
     ⇒ (1 2)
   #+end_src
 
+  This symbol is treated by most primitives as a list, so it can be used
+  in most functions that accept pairs. For convenience, the =car= and =cdr=
+  of =nil= is also =nil=.
+
+  #+begin_src lisp
+  (car nil)
+    ⇒ nil
+
+  (cdr nil)
+    ⇒ nil
+  #+end_src
+
   As explained in [[*Lists][Lists]], an empty list with the form ~()~ is syntactic
   sugar for the symbol =nil=. This conversion is made in the parser.
 
@@ -1015,7 +1027,7 @@ See also [[*Types][Types]].
     ⇒ String
 
   (type-of '(a b c))
-    ⇒ List
+    ⇒ Pair
 
   (type-of +)
     ⇒ Primitive
@@ -1094,9 +1106,9 @@ See also [[*Types][Types]].
     ⇒ nil
   #+end_src
 
-- Function: list? expr :: <<list?>>
+- Function: pair? expr :: <<pair?>>
 
-  Returns =tru= if the argument is a /List/, =nil= otherwise. For more details
+  Returns =tru= if the argument is a /Pair/, =nil= otherwise. For more details
   on how the =nil= symbol is handled, see [[symbol?][=symbol?=]].
 
   #+begin_src lisp
@@ -1269,47 +1281,43 @@ information of lists. The primitives in this section are defined in
     ⇒ (a b nil nil)
   #+end_src
 
-- Function: cons expr lst :: <<cons>>
+- Function: cons a b :: <<cons>>
+
+  Construct a new /Pair/ whose /car/ is =a= and whose /cdr/ is =b=[fn::For more
+  information on the history of =cons=, see [[https://www-formal.stanford.edu/jmc/history/lisp/node2.html][John McCarthy (1979) /History
+  of Lisp/]]].
 
   #+begin_comment org
-  TODO: If =cons= is updated, update =cons=, =car= and =cdr= sections. Perhaps
-  even add a separate section for /cons pairs/.
+  TODO: After copying the reference (instead cloning), mention it here.
   #+end_comment
 
-  Prepend =expr= to the beginning of the list =lst=[fn::For more information
-  on the history of =cons=, see [[https://www-formal.stanford.edu/jmc/history/lisp/node2.html][John McCarthy (1979) /History of Lisp/]]].
-
-  Note that lists are currently not implemented as multiple =cons= pairs,
-  but as a simple linked list instead. I think this is more
-  memory-efficient, but this *will probably change* in the
-  future. Therefore, the =cons= implementation is a bit different that
-  most other Lisps.
-
   #+begin_src lisp
+  (cons 'a 'b)
+    ⇒ (a . b)
+
+  (cons 'a nil)
+    ⇒ (a)
+
   (cons 'a '(b c d))
     ⇒ (a b c d)
 
   (cons '(a b) '(c d))
     ⇒ ((a b) c d)
-
-  (cons 'a nil)
-    ⇒ (a)
-
-  (cons 'a 'b) ; NOTE: Not yet implemented
-    ⇒ Error: Expected expression of type 'List', got 'Symbol'.
   #+end_src
 
 - Function: car pair :: <<car>>
 
-  Return the first element of the specified /cons pair/[fn::For historical
+  Return the first element of the specified /Pair/[fn::For historical
   reasons, =car= stands for "Contents of the Address (part) of
-  Register".]. Therefore, since ~(car (cons a b))~ is always ~a~, the =car= of
-  a list is its first element.
+  Register".]. Since lists are built using pairs, the =car= of a list is
+  its first element.
 
-  The =car= of =nil= is always =nil=, even though it represents a list with no
-  elements.
+  The =car= of =nil= is always =nil=, even though it is a symbol. See [[nil]].
 
   #+begin_src lisp
+  (car '(a . b))
+    ⇒ a
+
   (car '(a b c))
     ⇒ a
 
@@ -1322,16 +1330,20 @@ information of lists. The primitives in this section are defined in
 
 - Function: cdr pair :: <<cdr>>
 
-  Return the second element of the specified /cons pair/[fn::For
+  Return the second element of the specified /Pair/[fn::For
   historical reasons, =cdr= stands for "Contents of the Decrement (part)
-  of Register".]. Therefore, since ~(cdr (cons a b))~ is always ~b~, the =cdr=
-  of a list is the part of the list that follows the first element (the
-  =car=).
+  of Register".]. Since lists are built using pairs, the =cdr= of a list is
+  the part of the list that follows the first element[fn::In other
+  languages like Haskell, the function for removing the first element of
+  a list is called =tail=. Note, however, that lists in Lisp are built
+  using pairs, and that the =cdr= function only operates with pairs.].
 
-  The =cdr= of =nil= is always =nil=, even though it represents a list with no
-  elements.
+  The =cdr= of =nil= is always =nil=, even though it is a symbol. See [[nil]].
 
   #+begin_src lisp
+  (cdr '(a . b))
+    ⇒ b
+
   (cdr '(a b c))
     ⇒ (b c)
 
@@ -1347,8 +1359,8 @@ information of lists. The primitives in this section are defined in
 
 - Function: length sequence :: <<length>>
 
-  Return the number of elements in a sequence, that is, a /List/ or
-  /String/.
+  Return the number of elements in a sequence, that is, a proper list or
+  a /String/.
 
   #+begin_src lisp
   (length '(a b c))
@@ -1366,9 +1378,9 @@ information of lists. The primitives in this section are defined in
 
 - Function: append &rest sequences :: <<append>>
 
-  Attach one sequence to another, that is, a /List/ or /String/. Note that
-  all arguments must share the same type, so you can't append a list to
-  a string.
+  Attach one sequence to another, that is, a proper list or /String/. Note
+  that all arguments must share the same type, so you can't append a
+  list to a string.
 
   #+begin_src lisp
   (append '(1 2 3) '(a b c) '(4 5 6))
