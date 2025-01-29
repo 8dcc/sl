@@ -39,7 +39,7 @@ bool debug_is_traced_function(const Env* env, const Expr* e) {
      * from a C list, and somehow allow the user to add items to it.
      */
     Expr* debug_trace_list = env_get(env, "*debug-trace*");
-    if (debug_trace_list == NULL || expr_is_proper_list(debug_trace_list))
+    if (debug_trace_list == NULL || !expr_is_proper_list(debug_trace_list))
         return false;
 
     return expr_is_member(debug_trace_list, e);
