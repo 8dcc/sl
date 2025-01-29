@@ -1414,6 +1414,20 @@ information of lists. The primitives in this section are defined in
     ⇒ 0
   #+end_src
 
+  This function needs to be a primitive for getting the length of the
+  strings, but we could write our own Lisp function for calculating the
+  length of a list:
+
+  #+begin_src lisp
+  (defun my-list-length (list)
+    (if (null? list)
+        0
+        (+ 1 (my-list-length (cdr list)))))
+
+  (my-list-length '(1 2 3))
+    ⇒ 3
+  #+end_src
+
 - Function: append &rest sequences :: <<append>>
 
   Attach one sequence to another, that is, a proper list or /String/. Note
@@ -1454,6 +1468,31 @@ information of lists. The primitives in this section are defined in
   #+begin_src lisp
   (append)
     ⇒ nil
+  #+end_src
+
+  This function does not need to be a primitive, and it could be defined
+  in Lisp. In the following example, we would need to use a =make-copy=
+  primitive, since =append= doesn't modify (i.e. it doesn't /cons/) its
+  arguments directly.
+
+  #+begin_src lisp
+  (defun make-copy (expr)
+    ;; ...
+    expr)
+
+  (defun my-append (&rest lists)
+    (defun my-append-two (a b)
+      (if (null? a)
+          b
+          (cons (car a)
+                (my-append-two (cdr a) b))))
+    (if (null? lists)
+        nil
+        (my-append-two (make-copy (car lists))
+                       (apply my-append (cdr lists)))))
+
+  (my-append '(a b) '(c) '(d e))
+    ⇒ (a b c d e)
   #+end_src
 
 ** String primitives
