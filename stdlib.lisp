@@ -71,6 +71,11 @@
 (defun cddar (lst) (cdr (cdr (car lst))))
 (defun cdddr (lst) (cdr (cdr (cdr lst))))
 
+(defun last (lst)
+  (if (null? (cdr lst))
+      (car lst)
+      (last (cdr lst))))
+
 ;;------------------------------------------------------------------------------
 ;; List-building functions
 ;;------------------------------------------------------------------------------
