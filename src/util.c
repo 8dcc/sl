@@ -99,7 +99,7 @@ bool sl_regex_match_groups(const char* pat, const char* str, bool ignore_case,
      * extra item for the entire match, which will be at index 0.
      */
     *nmatch = r.re_nsub + 1;
-    *pmatch = mem_alloc(*nmatch * sizeof(regmatch_t*));
+    *pmatch = mem_alloc(*nmatch * sizeof(regmatch_t));
 
     const int code = regexec(&r, str, *nmatch, *pmatch, 0);
     regfree(&r);
