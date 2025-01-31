@@ -98,8 +98,9 @@ A /proper list/ is a list whose last /cdr/ is the symbol =nil=; and an
 improper lists is a list whose last /cdr/ is not the symbol =nil=.
 
 It is important to understand that lists like ~(a b c)~ are syntactic
-sugar for ~(a . (b . (c . nil)))~, and that ~()~ is syntactic sugar for the
-symbol ~nil~, described below ([[nil]]).
+sugar for ~(a . (b . (c . nil)))~[fn::See [[https://web.mit.edu/6.001/6.037/sicp.pdf#subsection.2.2.1][section 2.2.1]] of /Structure and
+Interpretation of Computer Programs/.], and that ~()~ is syntactic sugar
+for the symbol ~nil~, described below ([[nil]]).
 
 * Variables
 
@@ -748,7 +749,8 @@ These primitives don't fit into other categories. They are defined in
      - Otherwise, the arguments are evaluated and the procedure is
        called. If one argument fails to evaluate, evaluation stops.
   3. Symbols evaluate to their bound values in the current
-     environment[fn::See also Section 3.2 of SICP.].
+     environment[fn::See also Section 3.2 of /Structure and
+     Interpretation of Computer Programs/.].
   4. Other expression types (numbers, strings, functions, etc.)
      evaluate to themselves.
 
