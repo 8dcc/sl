@@ -1090,14 +1090,7 @@ See also [[*Types][Types]].
 
 - Function: symbol? expr :: <<symbol?>>
 
-  Returns =tru= if the argument is a /Symbol/, =nil= otherwise. Note that,
-  even though the symbol =nil= and the empty list =()= are interchangeable,
-  only the former is a symbol according to this function. See [[nil][=nil=]].
-
-  #+begin_comment text
-  FIXME: Improve previous explanation, check how other Lisps deal with
-  it.
-  #+end_comment
+  Returns =tru= if the argument is a /Symbol/, =nil= otherwise.
 
   #+begin_src lisp
   (define foo 123)
@@ -1111,12 +1104,17 @@ See also [[*Types][Types]].
 
   (symbol? "Bar")
     ⇒ nil
+  #+end_src
 
+  Note that =nil= is a symbol that is bound to itself, so it's a symbol
+  even when not quoted.
+
+  #+begin_src lisp
   (symbol? 'nil)
     ⇒ tru
 
-  (symbol? nil) ; NOTE: This might change in the future
-    ⇒ nil
+  (symbol? nil)
+    ⇒ tru
   #+end_src
 
 - Function: string? expr :: <<string?>>
