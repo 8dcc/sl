@@ -5,31 +5,31 @@
 ;;   - List information: `length'
 ;;------------------------------------------------------------------------------
 
-(list)          ; Expected: nil
-(list 'a 'b 'c) ; Expected: (a b c)
+(list)
+(list 'a 'b 'c)
 
-(append)                   ; Expected: nil
-(append nil)               ; Expected: nil
-(append '(a) '(b c) '(d))  ; Expected: (a b c d)
-(append '(a b) nil '(c d)) ; Expected: (a b c d)
+(append)
+(append nil)
+(append '(a) '(b c) '(d))
+(append '(a b) nil '(c d))
 
-(cons 'a nil)              ; Expected: (a)
-(cons 'a 'b)               ; Expected: (a . b)
-(cons 'a '(b . (c . nil))) ; Expected: (a b c)
-(cons 'a '(b c))           ; Expected: (a b c)
-(cons '(a b) '(y z))       ; Expected: ((a b) y z)
+(cons 'a nil)
+(cons 'a 'b)
+(cons 'a '(b . (c . nil)))
+(cons 'a '(b c))
+(cons '(a b) '(y z))
 
-(car nil)      ; Expected: nil
-(car '(a))     ; Expected: a
-(car '(a . b)) ; Expected: a
-(car '(a b))   ; Expected: a
+(car nil)
+(car '(a))
+(car '(a . b))
+(car '(a b))
 
-(cdr nil)      ; Expected: nil
-(cdr '(a))     ; Expected: nil
-(cdr '(a . b)) ; Expected: b
-(cdr '(a b c)) ; Expected: (b c)
+(cdr nil)
+(cdr '(a))
+(cdr '(a . b))
+(cdr '(a b c))
 
-(nth 2 '(a b c)) ; Expected: b
+(nth 2 '(a b c))
 
-(length  nil)     ; Expected: 0
-(length '(a b c)) ; Expected: 3
+(length  nil)
+(length '(a b c))
