@@ -1131,20 +1131,34 @@ See also [[*Types][Types]].
 
 - Function: pair? expr :: <<pair?>>
 
-  Returns =tru= if the argument is a /Pair/, =nil= otherwise. For more details
-  on how the =nil= symbol is handled, see [[symbol?][=symbol?=]].
+  Returns =tru= if the argument is a /Pair/, =nil= otherwise.
 
   #+begin_src lisp
-  (list? '(a b c))
+  (pair? '(a . b))
     ⇒ tru
 
-  (list? (+ 1 2)) ; 3 is checked
+  (pair? (+ 1 2)) ; Arguments are evaluated first, so 3 is checked
+    ⇒ nil
+  #+end_src
+
+  Note that, since the ~(a b c)~ list syntax is syntactic sugar for a
+  chain of pairs, the following is true. See [[*Lists][Lists]].
+
+  #+begin_src lisp
+  ;; Syntactic sugar for (a . (b . (c . nil))
+  (pair? '(a b c))
+    ⇒ tru
+  #+end_src
+
+  Note that the empty list ~()~ is converted to the symbol =nil= in the
+  parser, so it's not a pair. See [[nil]].
+
+  #+begin_src lisp
+  (pair? nil)
     ⇒ nil
 
-  (list? nil)
-    ⇒ tru
-
-  (list? 'nil) ; NOTE: This might change in the future
+  ;; Syntactic sugar for (quote nil)
+  (pair? '())
     ⇒ nil
   #+end_src
 
