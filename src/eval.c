@@ -156,10 +156,6 @@ Expr* eval(Env* env, Expr* e) {
     if (e == NULL)
         return NULL;
 
-    /* `nil' evaluates to itself */
-    if (expr_is_nil(e))
-        return expr_clone(e);
-
     switch (e->type) {
         case EXPR_PAIR: {
             /* Evaluate the list as a procedure/macro call */
