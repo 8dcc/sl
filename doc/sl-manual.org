@@ -34,7 +34,7 @@ For adding Org dedicated targets to description list items.
 :COPYING: t
 :END:
 
-This manual is for SL (version 0.1), a Simple Lisp interpreter.
+This manual is for SL (version 0.2.0), a Simple Lisp interpreter.
 
 Copyright \copy 2024 8dcc.
 
