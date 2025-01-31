@@ -1162,6 +1162,46 @@ See also [[*Types][Types]].
     ⇒ nil
   #+end_src
 
+- Function: list? expr :: <<list?>>
+
+  Returns =tru= if the argument is a proper list, =nil= otherwise. See
+  [[*Lists][Lists]].
+
+  #+begin_src lisp
+  (list? '(a b c))
+    ⇒ tru
+
+  (list? '(a . (b . (c . nil))))
+    ⇒ tru
+
+  (list? nil)
+    ⇒ tru
+  #+end_src
+
+  Note that improper lists (i.e. lists whose last /cdr/ is not the symbol
+  =nil=) are not considered valid to this function.
+
+  #+begin_src lisp
+  (list? '(a b . c))
+    ⇒ nil
+  #+end_src
+
+  This function doesn't need to be a primitive, it can be defined in
+  Lisp.
+
+  #+begin_src lisp
+  (defun my-list? (e)
+    (cond ((null? e) tru)
+          ((pair? e) (my-list? (cdr e)))
+          (tru nil)))
+
+  (my-list? '(a b c))
+    ⇒ tru
+
+  (my-list? '(a b . c))
+    ⇒ nil
+  #+end_src
+
 - Function: primitive? expr :: <<primitive?>>
 
   Returns =tru= if the argument is a C /Primitive/, =nil= otherwise.
@@ -1410,6 +1450,36 @@ information of lists. The primitives in this section are defined in
 
   (cdr nil) ; Special case
     ⇒ nil
+  #+end_src
+
+- Function: nth position list :: <<nth>>
+
+  Return the element at the specified position in a list. The =position=
+  argument is one-indexed, and it must be smaller or equal than the
+  length of the list.
+
+  #+begin_src lisp
+  (nth 1 '(a b c))
+    ⇒ a
+
+  (nth 2 '(a b c))
+    ⇒ b
+  #+end_src
+
+  This function does not need to be a primitive, and it could be defined
+  in Lisp. The following version is not optimized, since we could check
+  if the =position= is within bounds only once (instead of every
+  iteration).
+
+  #+begin_src lisp
+  (defun my-nth (position lst)
+    (cond ((= position 1) (car lst))
+          ((or (< position 1) (> position (length lst)))
+           (error "Invalid position."))
+          (tru (my-nth (- position 1) (cdr lst)))))
+
+  (my-nth 2 '(a b c))
+    ⇒ b
   #+end_src
 
 - Function: length sequence :: <<length>>
