@@ -61,13 +61,15 @@ Expr* prim_is_string(Env* env, Expr* args) {
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 
-/*
- * TODO: `list?' function. Probably better to make it a primitive, although it's
- * not necessary.
- */
 Expr* prim_is_pair(Env* env, Expr* args) {
     SL_UNUSED(env);
     const bool result = expr_list_has_only_type(args, EXPR_PAIR);
+    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+}
+
+Expr* prim_is_list(Env* env, Expr* args) {
+    SL_UNUSED(env);
+    const bool result = expr_list_has_only_lists(args);
     return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
 }
 

@@ -1,5 +1,5 @@
 ;;------------------------------------------------------------------------------
-;; Miscellaneous tests that don't fit in the other files
+;; Miscellaneous tests that don't fit in the other files.
 ;;------------------------------------------------------------------------------
 
 unbound-error-var  ; Expected: Unbound symbol: unbound-error-var
@@ -24,10 +24,17 @@ unbound-error-var  ; Expected: Unbound symbol: unbound-error-var
 (= 1 1.0)      ; Expected: tru
 (= 1 1.000001) ; Expected: nil
 
-;; Symbol `nil' evaluates to itself, see manual.
+;; Symbol `nil' evaluates to itself, and an empty list is converted to `nil' in
+;; the parser. See the manual for more information.
 (type-of nil)     ; Expected: Symbol
 (type-of 'nil)    ; Expected: Symbol
+(type-of ())      ; Expected: Symbol
+(type-of '())     ; Expected: Symbol
 (equal? nil 'nil) ; Expected: tru
+
+(type-of '(a b c)) ; Expected: Pair
+(list? '(a b c))   ; Expected: tru
+(list? '(a b . c)) ; Expected: nil
 
 (> 1 1) ; Expected: nil
 (> 1 2) ; Expected: nil
