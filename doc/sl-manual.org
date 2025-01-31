@@ -157,13 +157,16 @@ These symbols are bound to a constant value, and can't be redefined.
   #+end_src
 
   As explained in [[*Lists][Lists]], an empty list with the form ~()~ is syntactic
-  sugar for the symbol =nil=. This conversion is made in the parser.
+  sugar for the symbol =nil=. This conversion is made in the parser, so ~()~
+  isn't a function call because it's not a pair[fn::To be a function
+  call, the expression needs to be a proper list with one or more
+  elements, so the smallest possible call is ~(f)~ or ~(f . nil)~.].
 
   #+begin_src lisp
-  '()
+  '() ; Same as (quote nil)
     ⇒ nil
 
-  ()  ; Special case, not treated as function call
+  ()  ; Same as nil, evaluates to itself
     ⇒ nil
 
   (type-of nil)
