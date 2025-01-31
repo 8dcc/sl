@@ -198,8 +198,6 @@ size_t expr_list_len(const Expr* list);
  *
  * The 'n' argument is supposed to be one-indexed and smaller than the size of
  * the list (according to 'expr_list_len'), or an assertion will fail.
- *
- * TODO: Add 'nth' primitive.
  */
 Expr* expr_list_nth(const Expr* list, size_t n);
 
