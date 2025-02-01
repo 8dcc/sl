@@ -204,7 +204,7 @@ Expr* prim_substring(Env* env, Expr* args) {
     /* First argument, string */
     const Expr* str_expr = expr_list_nth(args, 1);
     SL_EXPECT_TYPE(str_expr, EXPR_STRING);
-    const size_t str_len = strlen(str_expr->val.s);
+    const LispInt str_len = (LispInt)strlen(str_expr->val.s);
 
     /* Second argument, start index */
     LispInt start_idx = 0;
