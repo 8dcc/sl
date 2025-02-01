@@ -255,7 +255,7 @@ Expr* prim_lambda(Env* env, Expr* args) {
     const enum ELambdaCtxErr lambda_err = lambdactx_init(ctx, formals, body);
     if (lambda_err != LAMBDACTX_ERR_NONE) {
         lambdactx_free(ctx);
-        return err(lambdactx_strerror(lambda_err));
+        return err("%s", lambdactx_strerror(lambda_err));
     }
 
     Expr* ret       = expr_new(EXPR_LAMBDA);
@@ -278,7 +278,7 @@ Expr* prim_macro(Env* env, Expr* args) {
     const enum ELambdaCtxErr lambda_err = lambdactx_init(ctx, formals, body);
     if (lambda_err != LAMBDACTX_ERR_NONE) {
         lambdactx_free(ctx);
-        return err(lambdactx_strerror(lambda_err));
+        return err("%s", lambdactx_strerror(lambda_err));
     }
 
     /*
