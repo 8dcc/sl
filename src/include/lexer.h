@@ -18,6 +18,7 @@
 #ifndef LEXER_H_
 #define LEXER_H_ 1
 
+#include <stdbool.h>
 #include <stdio.h> /* FILE */
 
 #include "lisp_types.h" /* LispInt, LispFlt */

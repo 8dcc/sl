@@ -20,6 +20,7 @@
 #define LAMBDA_H_ 1
 
 #include <stddef.h>
+#include <stdbool.h>
 #include <stdio.h> /* FILE */
 
 struct Expr; /* expr.h */
@@ -100,19 +101,20 @@ void lambdactx_print_args(FILE* fp, const LambdaCtx* ctx);
  * Call the specified lambda 'func' in the specified environment 'env' with the
  * specified arguments 'args'.
  */
-Expr* lambda_call(struct Env* env, struct Expr* func, struct Expr* args);
+struct Expr* lambda_call(struct Env* env, struct Expr* func, struct Expr* args);
 
 /*
  * Expand the specified 'macro' in the specified environment 'env' with the
  * specified arguments 'args'.
  */
-Expr* macro_expand(struct Env* env, struct Expr* macro, struct Expr* args);
+struct Expr* macro_expand(struct Env* env, struct Expr* macro,
+                          struct Expr* args);
 
 /*
  * Call the specified 'macro' in the specified environment 'env' with the
  * specified arguments 'args'.
  */
-Expr* macro_call(struct Env* env, struct Expr* func, struct Expr* args);
+struct Expr* macro_call(struct Env* env, struct Expr* func, struct Expr* args);
 
 /*----------------------------------------------------------------------------*/
 
