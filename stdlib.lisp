@@ -19,8 +19,6 @@
 ;; Standard Lisp library for SL. <https://github.com/8dcc/sl>
 ;;
 ;; TODO:
-;;   - `let*'
-;;   - `nth'
 ;;   - `push', `pop'
 ;;   - `assoc'
 ;;   - `find'
@@ -135,6 +133,20 @@
       ,@body)
     ,@(mapcar cadr definitions)))
 
+;; (let* ((s1 e1)   >  (let ((s1 e1))
+;;        (s2 e2)   >    (let ((s2 e2))
+;;        (s3 e3))  >      (let ((s3 e3))
+;;   body1          >        body1
+;;   body2          >        body2
+;;   body3)         >        body3)))
+(defmacro let* (definitions &rest body)
+  (if (null? definitions)
+      `(begin ,@body)
+      ;;`(quote ,(caar definitions))))
+      `(let ((,(caar definitions) ,(cadar definitions)))
+         (let* ,(cdr definitions)
+           ,@body))))
+
 ;;------------------------------------------------------------------------------
 ;; General predicates
 ;;------------------------------------------------------------------------------
@@ -150,6 +162,7 @@
         ((not (f (car lst))) nil)
         (tru (every f (cdr lst)))))
 
+;; TODO: Use `or'.
 (defun some (f lst)
   (if (null? lst)
       nil
