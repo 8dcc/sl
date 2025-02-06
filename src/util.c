@@ -32,7 +32,7 @@ char escaped2byte(char escaped) {
     switch (escaped) {
         case 'a':  return '\a';
         case 'b':  return '\b';
-        case 'e':  return '\e';
+        case 'e':  return 0x1B;
         case 'f':  return '\f';
         case 'n':  return '\n';
         case 'r':  return '\r';
@@ -52,7 +52,7 @@ const char* byte2escaped(char byte) {
     switch (byte) {
         case '\a': return "\\a";
         case '\b': return "\\b";
-        case '\e': return "\\e";
+        case 0x1B: return "\\e";
         case '\f': return "\\f";
         case '\n': return "\\n";
         case '\r': return "\\r";

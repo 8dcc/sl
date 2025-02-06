@@ -24,11 +24,11 @@
 #include "include/memory.h"
 #include "include/error.h"
 
-#define COL_RESET       "\e[0m"
-#define COL_NORM_YELLOW "\e[0;33m"
-#define COL_NORM_RED    "\e[0;31m"
-#define COL_BOLD_CYAN   "\e[1;36m"
-#define COL_BOLD_RED    "\e[1;31m"
+#define COL_RESET       "\x1B[0m"
+#define COL_NORM_YELLOW "\x1B[0;33m"
+#define COL_NORM_RED    "\x1B[0;31m"
+#define COL_BOLD_CYAN   "\x1B[1;36m"
+#define COL_BOLD_RED    "\x1B[1;31m"
 
 Expr* err(const char* fmt, ...) {
     /*
