@@ -16,6 +16,8 @@
  * SL. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#define _POSIX_C_SOURCE 200809L /* open_memstream() */
+
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdio.h>
