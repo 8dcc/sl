@@ -119,7 +119,7 @@ enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const Expr* formals,
      */
     const Expr* cur_formal = formals;
     for (size_t i = 0; i < mandatory; i++) {
-        ctx->formals[i] = strdup(CAR(cur_formal)->val.s);
+        ctx->formals[i] = mem_strdup(CAR(cur_formal)->val.s);
         cur_formal      = CDR(cur_formal);
     }
 
@@ -128,7 +128,7 @@ enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const Expr* formals,
      * the context.
      */
     if (has_rest)
-        ctx->formal_rest = strdup(CADR(cur_formal)->val.s);
+        ctx->formal_rest = mem_strdup(CADR(cur_formal)->val.s);
 
     return LAMBDACTX_ERR_NONE;
 }
