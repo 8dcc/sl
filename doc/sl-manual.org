@@ -54,6 +54,11 @@ see https://www.gnu.org/licenses/.
 This section will explain some important concepts about the Lisp syntax,
 and about the interpreter itself.
 
+#+begin_comment org
+TODO: Explain other parser concepts (e.g. what characters can be
+escaped: =\n=, =\e=, etc.).
+#+end_comment
+
 ** Types
 
 All expressions have a single type that determines the kind of value it
