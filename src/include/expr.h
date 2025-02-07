@@ -103,7 +103,7 @@ struct Expr {
         LispInt n;
         LispFlt f;
         char* s;
-        ExprPair pair;
+        struct ExprPair pair;
         PrimitiveFuncPtr prim;
         struct LambdaCtx* lambda;
     } val;
