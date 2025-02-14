@@ -165,17 +165,14 @@
       (= a b)))
 
 (defun every (f lst)
-  (cond ((null? lst) tru)
-        ((not (f (car lst))) nil)
-        (tru (every f (cdr lst)))))
+  (or (null? lst)
+      (and (f (car lst))
+           (every f (cdr lst)))))
 
-;; TODO: Use `or'.
 (defun some (f lst)
-  (if (null? lst)
-      nil
-      (let ((result (f (car lst))))
-        (if result result
-            (some f (cdr lst))))))
+  (and lst
+       (or (f (car lst))
+           (some f (cdr lst)))))
 
 ;; NOTE: Should match C's `EXPRP_NUMBER'
 (defun number? (expr)
