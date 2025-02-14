@@ -274,6 +274,7 @@ static const EnvBinding* env_get_binding(const Env* env, const char* sym) {
      * We didn't find a value associated to that symbol. If there is a parent
      * environment, search in there.
      */
+    SL_ASSERT(env != env->parent);
     return (env->parent == NULL) ? NULL : env_get_binding(env->parent, sym);
 }
 
