@@ -220,8 +220,14 @@
 ;;------------------------------------------------------------------------------
 
 (defun expt (b e)
-  (defun iter (total e)
+  (defun iter-positive (total e)
     (cond ((= e 0) 1)
           ((= e 1) total)
-          (tru (iter (* total b) (- e 1)))))
-  (iter b e))
+          (tru (iter-positive (* total b) (- e 1)))))
+  (defun iter-negative (total e)
+    (if (= e 0)
+        total
+        (iter-negative (/ total b) (+ e 1))))
+  (if (>= e 0)
+      (iter-positive b e)
+      (iter-negative 1 e)))
