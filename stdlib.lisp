@@ -157,6 +157,14 @@
 (defun null? (expr)
   (not expr))
 
+(defun >= (a b)
+  (or (> a b)
+      (= a b)))
+
+(defun <= (a b)
+  (or (< a b)
+      (= a b)))
+
 (defun every (f lst)
   (cond ((null? lst) tru)
         ((not (f (car lst))) nil)
