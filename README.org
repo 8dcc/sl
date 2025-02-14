@@ -31,8 +31,10 @@ $ make
 
 * Usage
 
-The full manual can be found in the [[file:doc/sl-manual.org][doc]] folder. It's meant to be exported from
-=.org= to =.texi=, and then from =.texi= to =.pdf=, =.html=, =.info=, etc.
+The full manual can be found in the [[file:doc/sl-manual.org][doc]] directory. When running =make= from that
+directory, the initial Org file is exported to =.texi= using Emacs, and then from
+=.texi= to =.pdf= and =.html= using =makeinfo=. Note that both Emacs and =makeinfo= can
+export the original Org file to more formats, if needed.
 
 The [[file:test/][test]] folder also contains the Lisp code used for testing the interpreter.
 
@@ -41,27 +43,27 @@ $ ./sl
 sl> (+ 1 2 (- 5 4) (* 3 4) 10)
 26
 
-sl> (define my-addition +)
-<primitive 0x55d31f51ba21>
+sl> (cons 'a 'b)
+(a . b)
+
+sl> (cons 'a '(b . (c . nil)))
+(a b c)
 
 sl> (define my-global 10.0)
 10.000000
 
-sl> (define my-lambda
-      (lambda (x y)
-        (* my-global (my-addition x y))))
+sl> (defun my-func (x y)
+      (* my-global (+ x y)))
 <lambda>
 
-sl> (my-lambda 3 4)
+sl> (my-func 3 4)
 70.000000
 
-sl> (define defmacro
-      (macro (name formals body)
-        (list 'define name (list 'macro formals body))))
-<macro>
+sl> `(a b ,my-global c d ,@(list 1 2 3))
+(a b 10.000000 c d 1 2 3)
 
-sl> (defmacro inc (var)
-      (list 'define var (list '+ var 1)))
+sl> (defmacro inc (var-name)
+      `(define ,var-name (+ ,var-name 1)))
 <macro>
 
 sl> (inc my-global)

@@ -1,0 +1,28 @@
+Standard library loaded.
+"Hello, world!"
+"Multi-line\nstrings\nsupported."
+0
+3
+""
+"Concatenating multiple strings..."
+"(+ 1 2 3 (- 5 4))"
+"(lambda (x) (quote symbol) (func x 123 \"Hello, world!\\n\"))"
+"%s: Testing format specifiers!"
+"%d: 1 2 3"
+"%f: 1.000000 2.000000 3.000000"
+"--Testing substrings--"
+"Testing substrings"
+"Testing substrings"
+"substrings--"
+"substrings--"
+<macro>
+((0 . 15))
+((0 . 15))
+((0 . 34) (0 . 7))
+nil
+((0 . 34) (0 . 30) (31 . 34))
+tru
+tru
+nil
+tru
+nil

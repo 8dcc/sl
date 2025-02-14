@@ -16,6 +16,8 @@
  * this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#define _XOPEN_SOURCE 500 /* strdup() */
+
 #include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>

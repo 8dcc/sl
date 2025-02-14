@@ -18,27 +18,31 @@
 #ifndef LEXER_H_
 #define LEXER_H_ 1
 
+#include <stdbool.h>
 #include <stdio.h> /* FILE */
 
-enum ETokenTypes {
+#include "lisp_types.h" /* LispInt, LispFlt */
+
+enum ETokenType {
     /*
-     * Used to indicate the end of a `Token' array.
+     * Used to indicate the end of a 'Token' array.
      */
     TOKEN_EOF,
 
     /*
-     * The following make use of `Token.val'
+     * The following make use of 'Token.val'
      */
-    TOKEN_NUM_INT, /* Number (long long) */
-    TOKEN_NUM_FLT, /* Number (double) */
+    TOKEN_NUM_INT, /* Number (LispInt) */
+    TOKEN_NUM_FLT, /* Number (LispFlt) */
     TOKEN_SYMBOL,  /* Symbol (string) */
     TOKEN_STRING,  /* String (string) */
 
     /*
-     * The rest don't make use of `Token.val'.
+     * The rest don't make use of 'Token.val'.
      */
     TOKEN_LIST_OPEN,
     TOKEN_LIST_CLOSE,
+    TOKEN_DOT,
 
     /*
      * Indicates that the next expression should be wrapped in (quote ...),
@@ -51,10 +55,10 @@ enum ETokenTypes {
 };
 
 typedef struct Token {
-    enum ETokenTypes type;
+    enum ETokenType type;
     union {
-        long long n;
-        double f;
+        LispInt n;
+        LispFlt f;
         char* s;
     } val;
 } Token;
@@ -73,7 +77,7 @@ Token* tokenize(char* input);
 void tokens_free(Token* arr);
 
 /*
- * Is `c' a token separator? Used by `get_token' and `read_expr'.
+ * Is 'c' a token separator? Used by 'get_token' and 'read_expr'.
  */
 bool is_token_separator(char c);
 

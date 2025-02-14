@@ -23,14 +23,19 @@
 #include <stdbool.h>
 #include <stdio.h> /* FILE, fputc() */
 
-#include "error.h" /* SL_FATAL() */
+#include "lisp_types.h" /* LispInt, LispFlt, GenericNum */
+#include "error.h"      /* SL_FATAL() */
 
 struct Env;       /* env.h */
 struct LambdaCtx; /* lambda.h */
 
 /*----------------------------------------------------------------------------*/
+/* Types and enums */
 
-/* Pointer to a primitive C function. */
+/*
+ * Pointer to a Lisp primitive; that is, a C function that operates with
+ * expressions and that can be called from Lisp.
+ */
 typedef struct Expr* (*PrimitiveFuncPtr)(struct Env*, struct Expr*);
 
 /*
@@ -41,7 +46,7 @@ typedef struct Expr* (*PrimitiveFuncPtr)(struct Env*, struct Expr*);
  *
  *     (e->type & (EXPR_NUM_INT | EXPR_NUM_FLT)) != 0
  *
- * TODO: Rename to `EExprTypes' (plural).
+ * See also 'EXPR_NUM_GENERIC', defined above.
  */
 enum EExprType {
     EXPR_UNKNOWN = 0,
@@ -50,17 +55,39 @@ enum EExprType {
     EXPR_ERR     = (1 << 2),
     EXPR_SYMBOL  = (1 << 3),
     EXPR_STRING  = (1 << 4),
-    EXPR_PARENT  = (1 << 5),
+    EXPR_PAIR    = (1 << 5),
     EXPR_PRIM    = (1 << 6),
     EXPR_LAMBDA  = (1 << 7),
     EXPR_MACRO   = (1 << 8),
 };
 
 /*
+ * Expression type whose value has the same C type as 'GenericNum'.
+ *
+ * Expressions with 'EXPR_NUM_GENERIC' as the type are, for example, returned by
+ * arithmetic functions when their parameters don't share a common type
+ * (e.g. when calling '+' with an Integer and a Float).
+ */
+SL_ASSERT_TYPES(GenericNum, LispFlt);
+#define EXPR_NUM_GENERIC EXPR_NUM_FLT
+
+/*
+ * Structure used to represent a pair of expressions.
+ * See: https://8dcc.github.io/programming/cons-of-cons.html
+ *
+ * NOTE: We could store indexes in the pool instead of pointers to save memory.
+ */
+typedef struct ExprPair ExprPair;
+struct ExprPair {
+    struct Expr* car;
+    struct Expr* cdr;
+};
+
+/*
  * The main expression type. This will be used to hold basically all data in our
  * Lisp.
  *
- * The `type' member will determine what member we should access in the `val'
+ * The 'type' member will determine what member we should access in the 'val'
  * union. Some types use the same union member (e.g. EXPR_STRING and
  * EXPR_SYMBOL). See the enum above for more information.
  *
@@ -68,93 +95,71 @@ enum EExprType {
  * EXPR_LAMBDA, etc.) should own a unique pointer that is not being used by any
  * other expression. Therefore, we should be able to modify or free these
  * pointers without affecting other expressions.
- *
- * TODO: Use traditional cons-pair approach (used by most Lisps), rather than a
- * linked list (which is what clojure uses, basically).
- *
- * TODO: Don't hard-code types like 'long long' or 'double', typedef new ones.
  */
 typedef struct Expr Expr;
 struct Expr {
     enum EExprType type;
     union {
-        long long n;
-        double f;
+        LispInt n;
+        LispFlt f;
         char* s;
-        Expr* children;
+        struct ExprPair pair;
         PrimitiveFuncPtr prim;
         struct LambdaCtx* lambda;
     } val;
-
-    Expr* next;
 };
 
 /*----------------------------------------------------------------------------*/
+/* Callable macros */
 
 /* Expression predicates */
-/* TODO: Rename to ERR_P, etc. */
-#define EXPRP_ERR(E)    ((E)->type == EXPR_ERR)
-#define EXPRP_INT(E)    ((E)->type == EXPR_NUM_INT)
-#define EXPRP_FLT(E)    ((E)->type == EXPR_NUM_FLT)
-#define EXPRP_SYM(E)    ((E)->type == EXPR_SYMBOL)
-#define EXPRP_STR(E)    ((E)->type == EXPR_STRING)
-#define EXPRP_LST(E)    ((E)->type == EXPR_PARENT)
-#define EXPRP_PRIM(E)   ((E)->type == EXPR_PRIM)
-#define EXPRP_LAMBDA(E) ((E)->type == EXPR_LAMBDA)
-#define EXPRP_MACRO(E)  ((E)->type == EXPR_MACRO)
+#define EXPR_ERR_P(E)    ((E)->type == EXPR_ERR)
+#define EXPR_INT_P(E)    ((E)->type == EXPR_NUM_INT)
+#define EXPR_FLT_P(E)    ((E)->type == EXPR_NUM_FLT)
+#define EXPR_SYMBOL_P(E) ((E)->type == EXPR_SYMBOL)
+#define EXPR_STRING_P(E) ((E)->type == EXPR_STRING)
+#define EXPR_PAIR_P(E)   ((E)->type == EXPR_PAIR)
+#define EXPR_PRIM_P(E)   ((E)->type == EXPR_PRIM)
+#define EXPR_LAMBDA_P(E) ((E)->type == EXPR_LAMBDA)
+#define EXPR_MACRO_P(E)  ((E)->type == EXPR_MACRO)
 
-#define EXPRP_NUMBER(E)     (EXPRP_INT(E) || EXPRP_FLT(E))
-#define EXPRP_APPLICABLE(E) (EXPRP_PRIM(E) || EXPRP_LAMBDA(E) || EXPRP_MACRO(E))
-
-/*----------------------------------------------------------------------------*/
+#define EXPR_NUMBER_P(E) (EXPR_INT_P(E) || EXPR_FLT_P(E))
+#define EXPR_APPLICABLE_P(E)                                                   \
+    (EXPR_PRIM_P(E) || EXPR_LAMBDA_P(E) || EXPR_MACRO_P(E))
 
 /*
- * Allocate a new empty expression of the specified type. The returned pointer
- * should be freed by the caller using `expr_free'.
+ * List-related macros. Make sure you check the expression type before calling
+ * them.
+ */
+#define CAR(E)  ((E)->val.pair.car)
+#define CDR(E)  ((E)->val.pair.cdr)
+#define CADR(E) (CAR(CDR(E)))
+#define CDDR(E) (CDR(CDR(E)))
+
+/*----------------------------------------------------------------------------*/
+/* Functions for creating expressions */
+
+/*
+ * Allocate and initialize a new empty expression of the specified type.
+ * Wrapper for 'pool_alloc_or_expand'.
  */
 Expr* expr_new(enum EExprType type);
 
 /*
- * Free expression, along with their children, if any.
+ * Clone the specified 'Expr' structure into an allocated copy, and return it.
  *
- * Doesn't free adjacent expressions (i.e. ignores `e->next'). For freeing a
- * linked list of expressions, use `expr_list_free'.
- *
- * TODO: Make 'expr_free' inline.
- */
-void expr_free(Expr* e);
-
-/*
- * Free a linked list of `Expr' structures.
- */
-void expr_list_free(Expr* e);
-
-/*----------------------------------------------------------------------------*/
-
-/*
- * Clone the specified `Expr' structure into an allocated copy, and return it.
- * The returned pointer must be freed by the caller using `expr_free'.
- *
- * In the case of lists, it doesn't clone children. To clone recursively, use
- * `expr_clone_recur'.
- *
- * It also doesn't clone adjacent expressions (i.e. `e->next' is ignored and
- * `returned->next' is NULL). To clone a list of `Expr' structures, use
- * `expr_list_clone'.
+ * In the case of pairs, it copies the references, doesn't clone recursively. To
+ * clone recursively, use 'expr_clone_tree'.
  */
 Expr* expr_clone(const Expr* e);
 
 /*
- * Same as `expr_clone', but also clones children recursivelly.
+ * Same as 'expr_clone', but also clones pairs recursivelly.
  */
-Expr* expr_clone_recur(const Expr* e);
-
-/*
- * Clones a linked list of `Expr' structures by calling `expr_clone_recur'.
- */
-Expr* expr_list_clone(const Expr* e);
+Expr* expr_clone_tree(const Expr* e);
 
 /*----------------------------------------------------------------------------*/
+/* Predicates for expressions */
 
 /*
  * Is the specified expression an empty list? Note that the empty list is also
@@ -163,75 +168,104 @@ Expr* expr_list_clone(const Expr* e);
 bool expr_is_nil(const Expr* e);
 
 /*
- * Check if two linked lists of `Expr' structures are identical in length and
- * content using `expr_equal'.
- */
-bool expr_list_equal(const Expr* a, const Expr* b);
-
-/*
- * Return true if `a' and `b' have the same effective value.
+ * Return true if 'a' and 'b' have the same effective value.
  */
 bool expr_equal(const Expr* a, const Expr* b);
 
 /*
- * Return true if `a' is lesser/greater than `b'.
+ * Return true if 'a' is lesser/greater than 'b'.
  */
 bool expr_lt(const Expr* a, const Expr* b);
 bool expr_gt(const Expr* a, const Expr* b);
 
 /*----------------------------------------------------------------------------*/
+/* Functions for Lisp lists */
 
 /*
- * Count the number of elements in a linked list of `Expr' structures.
+ * Is the specified expression a proper Lisp list? A proper list can be either
+ * `nil', or one or more chained cons pairs whose last CDR is 'nil'.
  */
-size_t expr_list_len(const Expr* e);
+bool expr_is_proper_list(const Expr* e);
 
 /*
- * Is the expression `e' inside the linked list `lst'? Checks using
- * `expr_equal'.
+ * Count the number of elements the specified list.
  */
-bool expr_list_is_member(const Expr* lst, const Expr* e);
+size_t expr_list_len(const Expr* list);
 
 /*
- * Is the specified linked list homogeneous? In other words, do all elements
- * share the same type?
- */
-bool expr_list_is_homogeneous(const Expr* e);
-
-/*
- * Does the specified linked list contain at least one expression with the
- * specified type?
- */
-bool expr_list_has_type(const Expr* e, enum EExprType type);
-
-/*
- * Does the specified linked list contain ONLY expressions with numeric types?
+ * Return a pointer to the N-th element of the specified list. The returned
+ * expression is the N-th "car", not the N-th "pair".
  *
- * Uses the `EXPRP_NUMBER' inline function.
- * See also the `expr_list_has_only_type' inline function below.
+ * The 'n' argument is supposed to be one-indexed and smaller than the size of
+ * the list (according to 'expr_list_len'), or an assertion will fail.
  */
-bool expr_list_has_only_numbers(const Expr* e);
+Expr* expr_list_nth(const Expr* list, size_t n);
+
+/*
+ * Write the 'expr' pointer to the last CDR of 'list'. The pointer to the start
+ * of the list is returned.
+ *
+ * The list is iterated until a CDR is not a pair (e.g. `nil'), and it
+ * overwrites it with 'expr'. If the list is 'nil', 'expr' is returned.
+ */
+Expr* expr_nconc(Expr* list, Expr* expr);
+
+/*
+ * Return the first pair in 'list' whose CAR is 'e', or NULL if 'e' is not in
+ * 'list'. The check is performed using 'expr_equal'.
+ *
+ * TODO: Add 'member' primitive after we stop returning clones.
+ */
+Expr* expr_member(const Expr* e, const Expr* list);
+
+/*
+ * Is the specified list homogeneous? In other words, do all elements share the
+ * same type?
+ */
+bool expr_list_is_homogeneous(const Expr* list);
+
+/*
+ * Does the specified list contain at least one expression with the specified
+ * type?
+ */
+bool expr_list_has_type(const Expr* list, enum EExprType type);
+
+/*
+ * Does the specified list contain ONLY expressions with numeric types? Uses the
+ * 'EXPR_NUMBER_P' macro, defined above.
+ */
+bool expr_list_has_only_numbers(const Expr* list);
+
+/*
+ * Does the specified list contain ONLY proper lists? Uses the
+ * 'expr_is_proper_list' function.
+ */
+bool expr_list_has_only_lists(const Expr* list);
 
 /*
  * Does the specified linked list contain ONLY expressions with the specified
  * type?
  */
-static inline bool expr_list_has_only_type(const Expr* e, enum EExprType type) {
-    return expr_list_is_homogeneous(e) && e->type == type;
+static inline bool expr_list_has_only_type(const Expr* list,
+                                           enum EExprType type) {
+    return expr_list_is_homogeneous(list) && CAR(list)->type == type;
+}
+
+/*
+ * Does the specified list contain the specified expression? The check is
+ * performed using 'expr_equal'.
+ */
+static inline bool expr_is_member(const Expr* e, const Expr* list) {
+    return expr_member(e, list) != NULL;
 }
 
 /*----------------------------------------------------------------------------*/
-
-/*
- * Print a linked list of expressions using `expr_print', wrapped in
- * parentheses.
- */
-void expr_list_print(FILE* fp, const Expr* e);
+/* Expression functions for I/O */
 
 /*
  * Print an expression in a human-friendly form.
  */
-void expr_print(FILE* fp, const Expr* e);
+bool expr_print(FILE* fp, const Expr* e);
 
 /*
  * Print an expression in a way suitable for `read'.
@@ -263,7 +297,7 @@ static inline const char* exprtype2str(enum EExprType type) {
         case EXPR_ERR:     return "Error";
         case EXPR_SYMBOL:  return "Symbol";
         case EXPR_STRING:  return "String";
-        case EXPR_PARENT:  return "List";
+        case EXPR_PAIR:    return "Pair";
         case EXPR_PRIM:    return "Primitive";
         case EXPR_LAMBDA:  return "Lambda";
         case EXPR_MACRO:   return "Macro";
@@ -274,19 +308,13 @@ static inline const char* exprtype2str(enum EExprType type) {
 }
 
 /*----------------------------------------------------------------------------*/
-
-/*
- * Generic numeric type, used by `expr_set_generic_num' and
- * `expr_get_generic_num'.
- */
-typedef double GenericNum;
-#define EXPR_NUM_GENERIC EXPR_NUM_FLT
+/* Numerical functions */
 
 /*
  * Set the value and type of an expression of type EXPR_NUM_GENERIC.
  */
 static inline void expr_set_generic_num(Expr* e, GenericNum num) {
-    /* NOTE: This should change if `GenericNum' changes. */
+    SL_ASSERT_TYPES(GenericNum, LispFlt);
     e->val.f = num;
 }
 
@@ -305,6 +333,9 @@ static inline GenericNum expr_get_generic_num(const Expr* e) {
     }
 }
 
+/*
+ * Negate the value of an expression depending on its type.
+ */
 static inline void expr_negate_num_val(Expr* e) {
     switch (e->type) {
         case EXPR_NUM_INT:
@@ -318,7 +349,5 @@ static inline void expr_negate_num_val(Expr* e) {
                      exprtype2str(e->type));
     }
 }
-
-/*----------------------------------------------------------------------------*/
 
 #endif /* EXPR_H_ */

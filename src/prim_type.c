@@ -28,83 +28,93 @@
 /*----------------------------------------------------------------------------*/
 /* Type-checking primitives */
 
-Expr* prim_type_of(Env* env, Expr* e) {
+Expr* prim_type_of(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
 
     Expr* ret  = expr_new(EXPR_SYMBOL);
-    ret->val.s = mem_strdup(exprtype2str(e->type));
+    ret->val.s = mem_strdup(exprtype2str(CAR(args)->type));
     return ret;
 }
 
-Expr* prim_is_int(Env* env, Expr* e) {
+Expr* prim_is_int(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_NUM_INT);
+    const bool result = expr_list_has_only_type(args, EXPR_NUM_INT);
     return (result) ? g_tru : g_nil;
 }
 
-Expr* prim_is_flt(Env* env, Expr* e) {
+Expr* prim_is_flt(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_NUM_FLT);
+    const bool result = expr_list_has_only_type(args, EXPR_NUM_FLT);
     return (result) ? g_tru : g_nil;
 }
 
-Expr* prim_is_symbol(Env* env, Expr* e) {
+Expr* prim_is_symbol(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_SYMBOL);
+    const bool result = expr_list_has_only_type(args, EXPR_SYMBOL);
     return (result) ? g_tru : g_nil;
 }
 
-Expr* prim_is_string(Env* env, Expr* e) {
+Expr* prim_is_string(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_STRING);
+    const bool result = expr_list_has_only_type(args, EXPR_STRING);
     return (result) ? g_tru : g_nil;
 }
 
-Expr* prim_is_list(Env* env, Expr* e) {
+Expr* prim_is_pair(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_PARENT);
+    const bool result = expr_list_has_only_type(args, EXPR_PAIR);
     return (result) ? g_tru : g_nil;
 }
 
-Expr* prim_is_primitive(Env* env, Expr* e) {
+Expr* prim_is_list(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_PRIM);
+    const bool result = expr_list_has_only_lists(args);
     return (result) ? g_tru : g_nil;
 }
 
-Expr* prim_is_lambda(Env* env, Expr* e) {
+Expr* prim_is_primitive(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_LAMBDA);
+    const bool result = expr_list_has_only_type(args, EXPR_PRIM);
     return (result) ? g_tru : g_nil;
 }
 
-Expr* prim_is_macro(Env* env, Expr* e) {
+Expr* prim_is_lambda(Env* env, Expr* args) {
     SL_UNUSED(env);
-    const bool result = expr_list_has_only_type(e, EXPR_MACRO);
+    const bool result = expr_list_has_only_type(args, EXPR_LAMBDA);
+    return (result) ? g_tru : g_nil;
+}
+
+Expr* prim_is_macro(Env* env, Expr* args) {
+    SL_UNUSED(env);
+    const bool result = expr_list_has_only_type(args, EXPR_MACRO);
     return (result) ? g_tru : g_nil;
 }
 
 /*----------------------------------------------------------------------------*/
 /* Type conversion primitives */
 
-Expr* prim_int2flt(Env* env, Expr* e) {
+Expr* prim_int2flt(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_NUM_INT);
+    SL_EXPECT_ARG_NUM(args, 1);
+
+    const Expr* arg = CAR(args);
+    SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
 
     Expr* ret  = expr_new(EXPR_NUM_FLT);
-    ret->val.f = (double)e->val.n;
+    ret->val.f = (LispFlt)arg->val.n;
     return ret;
 }
 
-Expr* prim_flt2int(Env* env, Expr* e) {
+Expr* prim_flt2int(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_NUM_FLT);
+    SL_EXPECT_ARG_NUM(args, 1);
+
+    const Expr* arg = CAR(args);
+    SL_EXPECT_TYPE(arg, EXPR_NUM_FLT);
 
     Expr* ret  = expr_new(EXPR_NUM_INT);
-    ret->val.n = (long long)e->val.f;
+    ret->val.n = (LispInt)arg->val.f;
     return ret;
 }
 
@@ -112,13 +122,15 @@ Expr* prim_flt2int(Env* env, Expr* e) {
  * TODO: Are these `x2str' primitives necessary? Why not simply use
  * `write-to-str'?
  */
-Expr* prim_int2str(Env* env, Expr* e) {
+Expr* prim_int2str(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_NUM_INT);
+    SL_EXPECT_ARG_NUM(args, 1);
+
+    const Expr* arg = CAR(args);
+    SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
 
     char* s;
-    const size_t written = int2str(e->val.n, &s);
+    const size_t written = int2str(arg->val.n, &s);
     SL_EXPECT(written > 0, "Failed to convert Integer to String.");
 
     Expr* ret  = expr_new(EXPR_STRING);
@@ -126,13 +138,15 @@ Expr* prim_int2str(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_flt2str(Env* env, Expr* e) {
+Expr* prim_flt2str(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_NUM_FLT);
+    SL_EXPECT_ARG_NUM(args, 1);
+
+    const Expr* arg = CAR(args);
+    SL_EXPECT_TYPE(arg, EXPR_NUM_FLT);
 
     char* s;
-    const size_t written = flt2str(e->val.f, &s);
+    const size_t written = flt2str(arg->val.f, &s);
     SL_EXPECT(written > 0, "Failed to convert Float to String.");
 
     Expr* ret  = expr_new(EXPR_STRING);
@@ -140,22 +154,26 @@ Expr* prim_flt2str(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_str2int(Env* env, Expr* e) {
+Expr* prim_str2int(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_STRING);
+    SL_EXPECT_ARG_NUM(args, 1);
+
+    const Expr* arg = CAR(args);
+    SL_EXPECT_TYPE(arg, EXPR_STRING);
 
     Expr* ret  = expr_new(EXPR_NUM_INT);
-    ret->val.n = strtoll(e->val.s, NULL, STRTOLL_ANY_BASE);
+    ret->val.n = strtoll(arg->val.s, NULL, STRTOLL_ANY_BASE);
     return ret;
 }
 
-Expr* prim_str2flt(Env* env, Expr* e) {
+Expr* prim_str2flt(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT_TYPE(e, EXPR_STRING);
+    SL_EXPECT_ARG_NUM(args, 1);
+
+    const Expr* arg = CAR(args);
+    SL_EXPECT_TYPE(arg, EXPR_STRING);
 
     Expr* ret  = expr_new(EXPR_NUM_FLT);
-    ret->val.f = strtod(e->val.s, NULL);
+    ret->val.f = strtod(arg->val.s, NULL);
     return ret;
 }

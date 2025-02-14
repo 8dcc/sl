@@ -3,11 +3,9 @@
 #+AUTHOR: 8dcc
 #+OPTIONS: toc:2
 #+STARTUP: nofold
-#+TEXINFO_DIR_CATEGORY: Software development
 #+TEXINFO_DIR_NAME: SL
 #+TEXINFO_DIR_DESC: Simple Lisp
-
-#+TOC: headlines 2
+#+TEXINFO_DIR_CATEGORY: Software development
 
 * COMMENT Meta
 ** Document manipulation
@@ -36,7 +34,7 @@ For adding Org dedicated targets to description list items.
 :COPYING: t
 :END:
 
-This manual is for SL (version 0.1), a Simple Lisp interpreter.
+This manual is for SL (version 0.2.0), a Simple Lisp interpreter.
 
 Copyright \copy 2024 8dcc.
 
@@ -55,6 +53,11 @@ see https://www.gnu.org/licenses/.
 
 This section will explain some important concepts about the Lisp syntax,
 and about the interpreter itself.
+
+#+begin_comment org
+TODO: Explain other parser concepts (e.g. what characters can be
+escaped: =\n=, =\e=, etc.).
+#+end_comment
 
 ** Types
 
@@ -85,6 +88,25 @@ a Generic Number Type is returned.
 The C functions for handling Generic Number Types are defined as =inline=
 in the [[file:expr.h]] header.
 
+** Lists
+
+Lists are data structures used to combine Lisp expressions. They are
+built by joining together pairs.
+
+#+begin_comment org
+TODO: Link blog article about cons.
+TODO: Explain the list syntax, how ~(a b c)~ denotes a proper list and how
+the dot can be used to specify the cdr, etc.
+#+end_comment
+
+A /proper list/ is a list whose last /cdr/ is the symbol =nil=; and an
+improper lists is a list whose last /cdr/ is not the symbol =nil=.
+
+It is important to understand that lists like ~(a b c)~ are syntactic
+sugar for ~(a . (b . (c . nil)))~[fn::See [[https://web.mit.edu/6.001/6.037/sicp.pdf#subsection.2.2.1][section 2.2.1]] of /Structure and
+Interpretation of Computer Programs/.], and that ~()~ is syntactic sugar
+for the symbol ~nil~, described below ([[nil]]).
+
 * Variables
 
 These variables are defined by default in the global environment.
@@ -109,53 +131,55 @@ These symbols are bound to a constant value, and can't be redefined.
   nil
     ⇒ nil
 
-  '()
+  'nil
     ⇒ nil
 
-  ()  ; Special case, not treated as function call
-    ⇒ nil
+  (equal? 'nil nil)
+    ⇒ tru
 
   (eval nil)
     ⇒ nil
+  #+end_src
 
+  Internally, =nil= is just a normal symbol that is bound to itself in the
+  global environment. This symbol is used to terminate proper lists (see
+  [[*Lists][Lists]]), as the last /cdr/.
+
+  #+begin_src lisp
   (cons 1 (cons 2 nil))
     ⇒ (1 2)
   #+end_src
 
-  This symbol is very special, since it represents the empty list =()=
-  even when quoted. The following four expressions evaluate to the same
-  value: The quoted symbol ='nil=, the symbol =nil=, the quoted empty list
-  ='()=, and the empty list =()=.
+  This symbol is treated by most primitives as a list, so it can be used
+  in most functions that accept pairs. For convenience, the =car= and =cdr=
+  of =nil= is also =nil=.
 
   #+begin_src lisp
-  (type-of nil)
-    ⇒ List
+  (car nil)
+    ⇒ nil
 
-  (type-of 'nil)
-    ⇒ Symbol
-
-  (null? 'nil)
-    ⇒ tru
-
-  (equal? 'nil nil)
-    ⇒ tru
+  (cdr nil)
+    ⇒ nil
   #+end_src
 
-  Note that this exception only applies to the symbol =nil=, it doesn't
-  happen with other symbols bound to the empty list.
+  As explained in [[*Lists][Lists]], an empty list with the form ~()~ is syntactic
+  sugar for the symbol =nil=. This conversion is made in the parser, so ~()~
+  isn't a function call because it's not a pair[fn::To be a function
+  call, the expression needs to be a proper list with one or more
+  elements, so the smallest possible call is ~(f)~ or ~(f . nil)~.].
 
   #+begin_src lisp
-  (define var nil)
+  '() ; Same as (quote nil)
     ⇒ nil
 
-  (type-of 'var)
+  ()  ; Same as nil, evaluates to itself
+    ⇒ nil
+
+  (type-of nil)
     ⇒ Symbol
 
-  (null? 'var)
-    ⇒ nil
-
-  (null? var)
-    ⇒ tru
+  (type-of '())
+    ⇒ Symbol
   #+end_src
 
 - Variable: `tru' :: <<tru>>
@@ -372,10 +396,10 @@ and Interpretation of Computer Programs/[fn::
 
 - Special Form: define symbol expr :: <<define>>
 
-  Bind symbol to a value in the current environment.
+  Bind a symbol to a value in the current environment.
 
-  Evaluates the second argument, and binds it to the first one. Returns
-  the evaluated expression.
+  It binds the first argument (a symbol) to the result of evaluating the
+  second argument. Returns the evaluated expression.
 
   #+begin_src lisp
   n
@@ -411,7 +435,7 @@ and Interpretation of Computer Programs/[fn::
 
 - Special Form: define-global symbol expr :: <<define-global>>
 
-  Bind symbol to a value in the top-most environment. For more
+  Bind a symbol to a value in the top-most environment. For more
   information, see [[define][=define=]].
 
   #+begin_src lisp
@@ -730,7 +754,8 @@ These primitives don't fit into other categories. They are defined in
      - Otherwise, the arguments are evaluated and the procedure is
        called. If one argument fails to evaluate, evaluation stops.
   3. Symbols evaluate to their bound values in the current
-     environment[fn::See also Section 3.2 of SICP.].
+     environment[fn::See also Section 3.2 of /Structure and
+     Interpretation of Computer Programs/.].
   4. Other expression types (numbers, strings, functions, etc.)
      evaluate to themselves.
 
@@ -940,6 +965,26 @@ symbol =tru=.
     ⇒ nil
   #+end_src
 
+  This function is a primitive because the conversion to the generic
+  number type is done from C, but a similar function could be written
+  using =equal?= and type-conversion primitives:
+
+  #+begin_src lisp
+  (defun my-num-equal (a b)
+    (defun to-common-type (n)
+      (cond ((flt? n) n)
+            ((int? n) (int->flt n))
+            (tru (error "Invalid type."))))
+    (equal? (to-common-type a)
+            (to-common-type b)))
+
+  (my-num-equal 1 1.0)
+    ⇒ tru
+
+  (my-num-equal 1 2.0)
+    ⇒ nil
+  #+end_src
+
 - Function: < a b &rest rest :: <<lt>>
 
   Return =tru= if all arguments are monotonically increasing, that is,
@@ -1012,7 +1057,7 @@ See also [[*Types][Types]].
     ⇒ String
 
   (type-of '(a b c))
-    ⇒ List
+    ⇒ Pair
 
   (type-of +)
     ⇒ Primitive
@@ -1050,14 +1095,7 @@ See also [[*Types][Types]].
 
 - Function: symbol? expr :: <<symbol?>>
 
-  Returns =tru= if the argument is a /Symbol/, =nil= otherwise. Note that,
-  even though the symbol =nil= and the empty list =()= are interchangeable,
-  only the former is a symbol according to this function. See [[nil][=nil=]].
-
-  #+begin_comment text
-  FIXME: Improve previous explanation, check how other Lisps deal with
-  it.
-  #+end_comment
+  Returns =tru= if the argument is a /Symbol/, =nil= otherwise.
 
   #+begin_src lisp
   (define foo 123)
@@ -1071,12 +1109,17 @@ See also [[*Types][Types]].
 
   (symbol? "Bar")
     ⇒ nil
+  #+end_src
 
+  Note that =nil= is a symbol that is bound to itself, so it's a symbol
+  even when not quoted.
+
+  #+begin_src lisp
   (symbol? 'nil)
     ⇒ tru
 
-  (symbol? nil) ; NOTE: This might change in the future
-    ⇒ nil
+  (symbol? nil)
+    ⇒ tru
   #+end_src
 
 - Function: string? expr :: <<string?>>
@@ -1091,22 +1134,76 @@ See also [[*Types][Types]].
     ⇒ nil
   #+end_src
 
+- Function: pair? expr :: <<pair?>>
+
+  Returns =tru= if the argument is a /Pair/, =nil= otherwise.
+
+  #+begin_src lisp
+  (pair? '(a . b))
+    ⇒ tru
+
+  (pair? (+ 1 2)) ; Arguments are evaluated first, so 3 is checked
+    ⇒ nil
+  #+end_src
+
+  Note that, since the ~(a b c)~ list syntax is syntactic sugar for a
+  chain of pairs, the following is true. See [[*Lists][Lists]].
+
+  #+begin_src lisp
+  ;; Syntactic sugar for (a . (b . (c . nil))
+  (pair? '(a b c))
+    ⇒ tru
+  #+end_src
+
+  Note that the empty list ~()~ is converted to the symbol =nil= in the
+  parser, so it's not a pair. See [[nil]].
+
+  #+begin_src lisp
+  (pair? nil)
+    ⇒ nil
+
+  ;; Syntactic sugar for (quote nil)
+  (pair? '())
+    ⇒ nil
+  #+end_src
+
 - Function: list? expr :: <<list?>>
 
-  Returns =tru= if the argument is a /List/, =nil= otherwise. For more details
-  on how the =nil= symbol is handled, see [[symbol?][=symbol?=]].
+  Returns =tru= if the argument is a proper list, =nil= otherwise. See
+  [[*Lists][Lists]].
 
   #+begin_src lisp
   (list? '(a b c))
     ⇒ tru
 
-  (list? (+ 1 2)) ; 3 is checked
-    ⇒ nil
+  (list? '(a . (b . (c . nil))))
+    ⇒ tru
 
   (list? nil)
     ⇒ tru
+  #+end_src
 
-  (list? 'nil) ; NOTE: This might change in the future
+  Note that improper lists (i.e. lists whose last /cdr/ is not the symbol
+  =nil=) are not considered valid to this function.
+
+  #+begin_src lisp
+  (list? '(a b . c))
+    ⇒ nil
+  #+end_src
+
+  This function doesn't need to be a primitive, it can be defined in
+  Lisp.
+
+  #+begin_src lisp
+  (defun my-list? (e)
+    (cond ((null? e) tru)
+          ((pair? e) (my-list? (cdr e)))
+          (tru nil)))
+
+  (my-list? '(a b c))
+    ⇒ tru
+
+  (my-list? '(a b . c))
     ⇒ nil
   #+end_src
 
@@ -1266,47 +1363,61 @@ information of lists. The primitives in this section are defined in
     ⇒ (a b nil nil)
   #+end_src
 
-- Function: cons expr lst :: <<cons>>
-
-  #+begin_comment org
-  TODO: If =cons= is updated, update =cons=, =car= and =cdr= sections. Perhaps
-  even add a separate section for /cons pairs/.
-  #+end_comment
-
-  Prepend =expr= to the beginning of the list =lst=[fn::For more information
-  on the history of =cons=, see [[https://www-formal.stanford.edu/jmc/history/lisp/node2.html][John McCarthy (1979) /History of Lisp/]]].
-
-  Note that lists are currently not implemented as multiple =cons= pairs,
-  but as a simple linked list instead. I think this is more
-  memory-efficient, but this *will probably change* in the
-  future. Therefore, the =cons= implementation is a bit different that
-  most other Lisps.
+  This function doesn't need to be a primitive, since we could just use
+  =cons=:
 
   #+begin_src lisp
+  (defun my-list (&rest elts)
+    (if (null? elts)
+        nil
+        (cons (car elts)
+              (apply my-list (cdr elts)))))
+
+  (my-list 'a 'b 'c)
+      ⇒ (a b c)
+
+  ;; Alternatively, taking advantage of '&rest'.
+  (defun my-list (&rest elts)
+    elts)
+  #+end_src
+
+- Function: cons a b :: <<cons>>
+
+  Construct a new /Pair/ whose /car/ is =a= and whose /cdr/ is =b=[fn::For more
+  information on the history of =cons=, see [[https://www-formal.stanford.edu/jmc/history/lisp/node2.html][John McCarthy (1979) /History
+  of Lisp/]]].
+
+  #+begin_comment org
+  TODO: After copying the reference (instead cloning), mention it here.
+  #+end_comment
+
+  #+begin_src lisp
+  (cons 'a 'b)
+    ⇒ (a . b)
+
+  (cons 'a nil)
+    ⇒ (a)
+
   (cons 'a '(b c d))
     ⇒ (a b c d)
 
   (cons '(a b) '(c d))
     ⇒ ((a b) c d)
-
-  (cons 'a nil)
-    ⇒ (a)
-
-  (cons 'a 'b) ; NOTE: Not yet implemented
-    ⇒ Error: Expected expression of type 'List', got 'Symbol'.
   #+end_src
 
 - Function: car pair :: <<car>>
 
-  Return the first element of the specified /cons pair/[fn::For historical
+  Return the first element of the specified /Pair/[fn::For historical
   reasons, =car= stands for "Contents of the Address (part) of
-  Register".]. Therefore, since ~(car (cons a b))~ is always ~a~, the =car= of
-  a list is its first element.
+  Register".]. Since lists are built using pairs, the =car= of a list is
+  its first element.
 
-  The =car= of =nil= is always =nil=, even though it represents a list with no
-  elements.
+  The =car= of =nil= is always =nil=, even though it is a symbol. See [[nil]].
 
   #+begin_src lisp
+  (car '(a . b))
+    ⇒ a
+
   (car '(a b c))
     ⇒ a
 
@@ -1319,16 +1430,20 @@ information of lists. The primitives in this section are defined in
 
 - Function: cdr pair :: <<cdr>>
 
-  Return the second element of the specified /cons pair/[fn::For
+  Return the second element of the specified /Pair/[fn::For
   historical reasons, =cdr= stands for "Contents of the Decrement (part)
-  of Register".]. Therefore, since ~(cdr (cons a b))~ is always ~b~, the =cdr=
-  of a list is the part of the list that follows the first element (the
-  =car=).
+  of Register".]. Since lists are built using pairs, the =cdr= of a list is
+  the part of the list that follows the first element[fn::In other
+  languages like Haskell, the function for removing the first element of
+  a list is called =tail=. Note, however, that lists in Lisp are built
+  using pairs, and that the =cdr= function only operates with pairs.].
 
-  The =cdr= of =nil= is always =nil=, even though it represents a list with no
-  elements.
+  The =cdr= of =nil= is always =nil=, even though it is a symbol. See [[nil]].
 
   #+begin_src lisp
+  (cdr '(a . b))
+    ⇒ b
+
   (cdr '(a b c))
     ⇒ (b c)
 
@@ -1342,10 +1457,40 @@ information of lists. The primitives in this section are defined in
     ⇒ nil
   #+end_src
 
+- Function: nth position list :: <<nth>>
+
+  Return the element at the specified position in a list. The =position=
+  argument is one-indexed, and it must be smaller or equal than the
+  length of the list.
+
+  #+begin_src lisp
+  (nth 1 '(a b c))
+    ⇒ a
+
+  (nth 2 '(a b c))
+    ⇒ b
+  #+end_src
+
+  This function does not need to be a primitive, and it could be defined
+  in Lisp. The following version is not optimized, since we could check
+  if the =position= is within bounds only once (instead of every
+  iteration).
+
+  #+begin_src lisp
+  (defun my-nth (position lst)
+    (cond ((= position 1) (car lst))
+          ((or (< position 1) (> position (length lst)))
+           (error "Invalid position."))
+          (tru (my-nth (- position 1) (cdr lst)))))
+
+  (my-nth 2 '(a b c))
+    ⇒ b
+  #+end_src
+
 - Function: length sequence :: <<length>>
 
-  Return the number of elements in a sequence, that is, a /List/ or
-  /String/.
+  Return the number of elements in a sequence, that is, a proper list or
+  a /String/.
 
   #+begin_src lisp
   (length '(a b c))
@@ -1361,11 +1506,25 @@ information of lists. The primitives in this section are defined in
     ⇒ 0
   #+end_src
 
+  This function needs to be a primitive for getting the length of the
+  strings, but we could write our own Lisp function for calculating the
+  length of a list:
+
+  #+begin_src lisp
+  (defun my-list-length (list)
+    (if (null? list)
+        0
+        (+ 1 (my-list-length (cdr list)))))
+
+  (my-list-length '(1 2 3))
+    ⇒ 3
+  #+end_src
+
 - Function: append &rest sequences :: <<append>>
 
-  Attach one sequence to another, that is, a /List/ or /String/. Note that
-  all arguments must share the same type, so you can't append a list to
-  a string.
+  Attach one sequence to another, that is, a proper list or /String/. Note
+  that all arguments must share the same type, so you can't append a
+  list to a string.
 
   #+begin_src lisp
   (append '(1 2 3) '(a b c) '(4 5 6))
@@ -1378,11 +1537,54 @@ information of lists. The primitives in this section are defined in
     ⇒ "foobar"
   #+end_src
 
+  This function doesn't modify its arguments directly, it returns a new
+  list.
+
+  #+begin_comment org
+  TODO: Link =nconc= primitive, if added.
+  #+end_comment
+
+  #+begin_src lisp
+  (define my-list '(a b c))
+    ⇒ (a b c)
+
+  (append my-list '(x y z))
+    ⇒ (a b c x y z)
+
+  my-list
+    ⇒ (a b c)
+  #+end_src
+
   When called with no arguments, =append= returns =nil=.
 
   #+begin_src lisp
   (append)
     ⇒ nil
+  #+end_src
+
+  This function does not need to be a primitive, and it could be defined
+  in Lisp. In the following example, we would need to use a =make-copy=
+  primitive, since =append= doesn't modify (i.e. it doesn't /cons/) its
+  arguments directly.
+
+  #+begin_src lisp
+  (defun make-copy (expr)
+    ;; ...
+    expr)
+
+  (defun my-append (&rest lists)
+    (defun my-append-two (a b)
+      (if (null? a)
+          b
+          (cons (car a)
+                (my-append-two (cdr a) b))))
+    (if (null? lists)
+        nil
+        (my-append-two (make-copy (car lists))
+                       (apply my-append (cdr lists)))))
+
+  (my-append '(a b) '(c) '(d e))
+    ⇒ (a b c d e)
   #+end_src
 
 ** String primitives
@@ -1526,19 +1728,21 @@ in general, not just /lists/, so they can be used with strings.
 - Function: re-match-groups regexp string &optional ignore-case :: <<re-match-groups>>
 
   Try to match every group in =regexp= against =string=, and return a list
-  with the matches. The first match in the returned list corresponds to
-  the whole =regexp=, and the remaining elements correspond to each
-  parenthesized group, if any. If the =regexp= didn't match =string=, the
-  function returns =nil=.
+  with the matches. Each match in the returned list is a /Pair/ with the
+  form ~(START . END)~, where =START= and =END= are integers that indicate the
+  /start/ and /end/ index of that match inside the =string=. Therefore, the
+  structure of the returned list is:
 
-  Each /match/ in the returned list is a list with the form ~(START END)~,
-  where =START= and =END= are integers that indicate the /start/ and /end/ index
-  of the match inside =string=, respectively.
+  #+begin_src lisp
+  ((START . END)
+   (START . END)
+   ...
+   (START . END))
+  #+end_src
 
-  #+begin_comment org
-  TODO: After implementing proper =cons=, return a list of =(START . END)=
-  pairs, not a list of two-element lists.
-  #+end_comment
+  The first match in the returned list corresponds to the entire =regexp=,
+  and the remaining elements correspond to each parenthesized group, if
+  any. If the =regexp= didn't match =string=, the function returns =nil=.
 
   By default, the search is case-sensitive, but this can be overwritten
   by specifying a non-nil argument for the optional parameter
@@ -1558,34 +1762,34 @@ in general, not just /lists/, so they can be used with strings.
   (define str "abc XYZ 123")
 
   (re-match-groups "abc" str)
-    ⇒ ((0 3))
+    ⇒ ((0 . 3))
 
   (re-match-groups "xyz" str)
     ⇒ nil
 
   (re-match-groups "xyz" str tru)
-    ⇒ ((4 7))
+    ⇒ ((4 . 7))
 
   (re-match-groups "^(abc) ([A-Z]+) ([[:digit:]]+)$" str)
-    ⇒ ((0 11) (0 3) (4 7) (8 11))
+    ⇒ ((0 . 11) (0 . 3) (4 . 7) (8 . 11))
   #+end_src
 
   Note that this function only returns information about the /first match/
   of =regexp= in =string=, not about all the possible matches:
 
   #+begin_src lisp
-  ;; Not ((0 1) (1 2) (2 3))
+  ;; Not ((0 . 1) (1 . 2) (2 . 3))
   (re-match-groups "a" "aaa")
-    ⇒ ((0 1))
+    ⇒ ((0 . 1))
   #+end_src
 
   Also note that, since any non-nil argument can be used for the
-  =ignore-case= parameter, sometimes it might be a good idea to use a more
-  descriptive value:
+  =ignore-case= parameter, sometimes it might be a good idea to use a
+  descriptive symbol:
 
   #+begin_src lisp
   (re-match-groups "abc" "ABC" 'ignore-case)
-    ⇒ ((0 3))
+    ⇒ ((0 . 3))
   #+end_src
 
 ** Arithmetic primitives

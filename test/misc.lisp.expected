@@ -1,0 +1,38 @@
+Standard library loaded.
+Error: Unbound symbol: `unbound-error-var'.
+10
+20
+<primitive 0xDEADBEEF>
+30
+my-addition
+30
+tru
+nil
+nil
+tru
+nil
+Symbol
+Symbol
+Symbol
+Symbol
+tru
+Pair
+tru
+nil
+nil
+nil
+tru
+nil
+nil
+tru
+tru
+tru
+nil
+tru
+nil
+3
+tru
+nil
+tru
+1195
+6.286430

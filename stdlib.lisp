@@ -19,8 +19,6 @@
 ;; Standard Lisp library for SL. <https://github.com/8dcc/sl>
 ;;
 ;; TODO:
-;;   - `let*'
-;;   - `nth'
 ;;   - `push', `pop'
 ;;   - `assoc'
 ;;   - `find'
@@ -31,7 +29,8 @@
 ;;       - `mapc'
 ;;       - `mapcdr'
 ;;   - `thread-last' (perhaps rename, check other lisps)
-;;   - `member' (return arg0 when car is arg1)
+;;   - `memq' (return arg0 when car is `eq?' to arg1)
+;;   - `member' (return arg0 when car is `equal?' to arg1)
 ;;   - `member?' (is arg1 in arg0?)
 ;;   - `string-split' using regex
 ;;   - See Emacs' "M-x shortdoc" categories.
@@ -69,6 +68,11 @@
 (defun cdadr (lst) (cdr (car (cdr lst))))
 (defun cddar (lst) (cdr (cdr (car lst))))
 (defun cdddr (lst) (cdr (cdr (cdr lst))))
+
+(defun last (lst)
+  (if (null? (cdr lst))
+      (car lst)
+      (last (cdr lst))))
 
 ;;------------------------------------------------------------------------------
 ;; List-building functions
@@ -129,6 +133,20 @@
       ,@body)
     ,@(mapcar cadr definitions)))
 
+;; (let* ((s1 e1)   >  (let ((s1 e1))
+;;        (s2 e2)   >    (let ((s2 e2))
+;;        (s3 e3))  >      (let ((s3 e3))
+;;   body1          >        body1
+;;   body2          >        body2
+;;   body3)         >        body3)))
+(defmacro let* (definitions &rest body)
+  (if (null? definitions)
+      `(begin ,@body)
+      ;;`(quote ,(caar definitions))))
+      `(let ((,(caar definitions) ,(cadar definitions)))
+         (let* ,(cdr definitions)
+           ,@body))))
+
 ;;------------------------------------------------------------------------------
 ;; General predicates
 ;;------------------------------------------------------------------------------
@@ -136,20 +154,25 @@
 (defun not (predicate)
   (if predicate nil tru))
 
-(defun null? (expr)
-  (not expr))
+(define null? not)
+
+(defun >= (a b)
+  (or (> a b)
+      (= a b)))
+
+(defun <= (a b)
+  (or (< a b)
+      (= a b)))
 
 (defun every (f lst)
-  (cond ((null? lst) tru)
-        ((not (f (car lst))) nil)
-        (tru (every f (cdr lst)))))
+  (or (null? lst)
+      (and (f (car lst))
+           (every f (cdr lst)))))
 
 (defun some (f lst)
-  (if (null? lst)
-      nil
-      (let ((result (f (car lst))))
-        (if result result
-            (some f (cdr lst))))))
+  (and lst
+       (or (f (car lst))
+           (some f (cdr lst)))))
 
 ;; NOTE: Should match C's `EXPRP_NUMBER'
 (defun number? (expr)
@@ -187,3 +210,20 @@
       nil
       (cons (f (car lst))
             (mapcar f (cdr lst)))))
+
+;;------------------------------------------------------------------------------
+;; Math functions
+;;------------------------------------------------------------------------------
+
+(defun expt (b e)
+  (defun iter-positive (total e)
+    (cond ((= e 0) 1)
+          ((= e 1) total)
+          (tru (iter-positive (* total b) (- e 1)))))
+  (defun iter-negative (total e)
+    (if (= e 0)
+        total
+        (iter-negative (/ total b) (+ e 1))))
+  (if (>= e 0)
+      (iter-positive b e)
+      (iter-negative 1 e)))

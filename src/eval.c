@@ -39,51 +39,58 @@
  * Is this expression a special form symbol?
  */
 static inline bool is_special_form(const Env* env, const Expr* e) {
-    return (e->type == EXPR_SYMBOL && e->val.s != NULL &&
-            (env_get_flags(env, e->val.s) & ENV_FLAG_SPECIAL) != 0);
+    return EXPR_SYMBOL_P(e) && e->val.s != NULL &&
+           (env_get_flags(env, e->val.s) & ENV_FLAG_SPECIAL) != 0;
 }
 
 /*
- * Evaluate each expression in a linked list by calling `eval', and return
- * another linked list with the results.
+ * Evaluate each expression in a list by calling 'eval', and return another list
+ * with the results. In Lisp jargon, map 'eval' to the specified list.
+ *
+ * TODO: We could rename this function to something like 'map_eval', or even add
+ * a 'mapcar' C function that receives a 'PrimitiveFuncPtr'.
  */
 static Expr* eval_list(Env* env, Expr* list) {
-    /* The first item will be stored in `dummy_copy.next' */
-    Expr dummy_copy;
-    dummy_copy.next = NULL;
-    Expr* cur_copy  = &dummy_copy;
+    SL_ASSERT(expr_is_proper_list(list));
 
-    for (Expr* cur = list; cur != NULL; cur = cur->next) {
+    Expr dummy_copy;
+    dummy_copy.val.pair.cdr = g_nil;
+    Expr* cur_copy          = &dummy_copy;
+
+    for (; !expr_is_nil(list); list = CDR(list)) {
         /*
-         * Evaluate each argument. If one of them returns an error, free what we
-         * had evaluated and propagate it upwards.
+         * Evaluate each argument. If one of them returns an error, propagate it
+         * upwards.
          *
          * Otherwise, save the evaluation in our copy, and move to the next
          * argument in our linked list.
          */
-        Expr* evaluated = eval(env, cur);
-        if (EXPRP_ERR(evaluated))
+        Expr* evaluated = eval(env, CAR(list));
+        if (EXPR_ERR_P(evaluated))
             return evaluated;
 
-        cur_copy->next = evaluated;
-        cur_copy       = cur_copy->next;
+        CDR(cur_copy) = expr_new(EXPR_PAIR);
+        cur_copy      = CDR(cur_copy);
+        CAR(cur_copy) = evaluated;
+        CDR(cur_copy) = g_nil;
     }
 
-    return dummy_copy.next;
+    return dummy_copy.val.pair.cdr;
 }
 
 /*
  * Evaluate a list expression as a function call, applying the (evaluated) `car'
  * to the `cdr'. This function is responsible for evaluating the arguments
- * (using `eval_list') before applying the function, if necessary.
+ * (using 'eval_list') before applying the function, if necessary.
+ *
+ * TODO: Keep track of a simple call stack (perhaps with a fixed-size
+ * array). Store 'Expr*' pointer and human-readable form (if available, before
+ * evaluation). Perhaps this should be handled in 'debug.c' via some 'push',
+ * 'pop' and 'print' functions.
  */
 static Expr* eval_function_call(Env* env, Expr* e) {
-    /* Caller should have checked if `e' is `nil' */
-    SL_ASSERT(e->val.children != NULL);
-
-    /* The `car' represents the function, and `cdr' represents the arguments */
-    Expr* car = e->val.children;
-    Expr* cdr = e->val.children->next;
+    Expr* car = CAR(e);
+    Expr* cdr = CDR(e);
 
     /* Check if the function is a special form symbol, before evaluating it */
     const bool got_special_form = is_special_form(env, car);
@@ -95,9 +102,9 @@ static Expr* eval_function_call(Env* env, Expr* e) {
      * we are done.
      */
     Expr* func = eval(env, car);
-    if (EXPRP_ERR(func))
+    if (EXPR_ERR_P(func))
         return func;
-    SL_EXPECT(EXPRP_APPLICABLE(func),
+    SL_EXPECT(EXPR_APPLICABLE_P(func),
               "Expected function or macro, got '%s'.",
               exprtype2str(func->type));
 
@@ -113,7 +120,7 @@ static Expr* eval_function_call(Env* env, Expr* e) {
      * This boolean will be used when evaluating and freeing.
      */
     const bool should_eval_args =
-      (cdr != NULL && !got_special_form && func->type != EXPR_MACRO);
+      (!expr_is_nil(cdr) && !got_special_form && !EXPR_MACRO_P(func));
 
     /*
      * If the arguments should be evaluated, evaluate them. If one of them
@@ -125,7 +132,7 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* args;
     if (should_eval_args) {
         args = eval_list(env, cdr);
-        if (EXPRP_ERR(args))
+        if (EXPR_ERR_P(args))
             return args;
     } else {
         args = cdr;
@@ -149,19 +156,11 @@ Expr* eval(Env* env, Expr* e) {
     if (e == NULL)
         return NULL;
 
-    /*
-     * TODO: Move `nil' outside of EXPR_PARENT case so the symbol is not
-     * converted to List. We should probably do this after adding cons pairs,
-     * and using a constant address as `nil'. Lists won't be a thing, so this
-     * will be a different problem.
-     */
     switch (e->type) {
-        case EXPR_PARENT: {
-            /* `nil' evaluates to itself */
-            if (expr_is_nil(e))
-                return e;
-
+        case EXPR_PAIR: {
             /* Evaluate the list as a procedure/macro call */
+            SL_EXPECT(expr_is_proper_list(e),
+                      "Expected a proper list for the procedure/macro call.");
             return eval_function_call(env, e);
         }
 
@@ -193,17 +192,18 @@ Expr* eval(Env* env, Expr* e) {
 
 Expr* apply(Env* env, Expr* func, Expr* args) {
     /*
-     * Some important notes about the implementation of `apply':
+     * Some important notes about the implementation of 'apply':
      *   - It expects a valid environment and a valid applicable function (see
-     *     the `EXPRP_APPLICABLE' function in "expr.h").
+     *     the 'EXPRP_APPLICABLE' function in "expr.h").
      *   - The arguments, are expected to be evaluated by the caller whenever
      *     necessary. The arguments are passed to the function unchanged.
-     *   - The `args' pointer can be NULL, since some functions expect no
+     *   - The 'args' pointer can be NULL, since some functions expect no
      *     arguments. Again, the pointer is passed as-is.
      */
     SL_ASSERT(env != NULL);
     SL_ASSERT(func != NULL);
-    SL_ASSERT(EXPRP_APPLICABLE(func));
+    SL_ASSERT(EXPR_APPLICABLE_P(func));
+    SL_ASSERT(expr_is_proper_list(args));
 
     Expr* result;
     switch (func->type) {
@@ -214,7 +214,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
 
             /*
              * Call primitive C function with the evaluated arguments we got
-             * from `eval'.
+             * from 'eval'.
              */
             result = primitive(env, args);
         } break;
@@ -240,7 +240,7 @@ Expr* apply(Env* env, Expr* func, Expr* args) {
         } break;
 
         default: {
-            result = err("Expected 'Primitive' or 'Lambda', got '%s'.",
+            result = err("Expected 'Primitive', 'Lambda' or 'Macro'; got '%s'.",
                          exprtype2str(func->type));
         } break;
     }

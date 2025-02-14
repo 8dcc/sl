@@ -61,7 +61,7 @@ static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
             printf("\nsl> ");
 
         /*
-         * Allocate string and read an expression. If `read_expr' returned NULL,
+         * Allocate string and read an expression. If 'read_expr' returned NULL,
          * it encountered EOF.
          */
         char* input = read_expr(file);
@@ -74,7 +74,7 @@ static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
         /* Tokenize input. We don't need to check for NULL. */
         Token* tokens = tokenize(input);
 
-        /* We are done with the string from `read_expr', free it */
+        /* We are done with the string from 'read_expr', free it */
         free(input);
 
         /* Get expression (AST) from token array */
@@ -92,10 +92,18 @@ static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
             continue;
 
         if (print_evaluated)
-            expr_println(stdout, evaluated);
+            expr_println(EXPR_ERR_P(evaluated) ? stderr : stdout, evaluated);
 
-        /* Collect all garbage that is not in the current environment */
+        /*
+         * Collect all garbage that is not in the current environment.
+         *
+         * TODO: Marking globals is temporary, until we save references directly
+         * in the environment.
+         */
         gc_unmark_all();
+        gc_mark_expr(g_nil);
+        gc_mark_expr(g_tru);
+        gc_mark_expr(g_debug_trace_list);
         gc_mark_env(env);
         gc_collect();
     }
@@ -107,7 +115,7 @@ int main(int argc, char** argv) {
 
     /* Allocate the expression pool. It will be expanded when needed. */
     if (!pool_init(BASE_POOL_SZ))
-        SL_FATAL("Failed to initialize pool of %zu expressions.\n",
+        SL_FATAL("Failed to initialize pool of %d expressions.\n",
                  BASE_POOL_SZ);
 
     /* Initialize global environment with symbols like "nil" */
@@ -115,7 +123,7 @@ int main(int argc, char** argv) {
     SL_ASSERT(global_env != NULL);
     env_init_defaults(global_env);
 
-    /* Set unique random seed, can be overwritten with `prim_set_random_seed' */
+    /* Set unique random seed, can be overwritten with 'prim_set_random_seed' */
     srand(time(NULL));
 
 #ifndef SL_NO_STDLIB

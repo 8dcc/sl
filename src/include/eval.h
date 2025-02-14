@@ -25,18 +25,18 @@ struct Expr; /* expr.h */
 /*
  * Evaluate expression recursively.
  *
- * Symbols return their associated value from `env'. Lists are treated as
- * function applications using `apply'.
+ * Symbols return their associated value from 'env'. Lists are treated as
+ * function applications using 'apply'.
  *
- * No data from `e' is re-used, so it should be freed by the caller.
+ * No data from 'e' is re-used, so it should be freed by the caller.
  */
 struct Expr* eval(struct Env* env, struct Expr* e);
 
 /*
- * Call `func' with the specified `args'.
+ * Call 'func' with the specified 'args'.
  *
- * The `env' and `func' pointers should not be NULL, and `func' should be an
- * "applicable" expression as specified by `EXPRP_APPLICABLE'.
+ * The 'env' and 'func' pointers should not be NULL, and 'func' should be an
+ * "applicable" expression as specified by 'EXPRP_APPLICABLE'.
  *
  * The arguments are passed to the function unchanged, so the evaluation is up
  * to the caller.

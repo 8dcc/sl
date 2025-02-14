@@ -22,6 +22,8 @@
 #include <string.h>
 
 #include "include/expr.h"
+#include "include/env.h"
+#include "include/expr_pool.h"
 #include "include/util.h"
 #include "include/memory.h"
 #include "include/lexer.h"
@@ -29,31 +31,49 @@
 
 static size_t parse_recur(Expr* dst, const Token* tokens);
 
+static inline bool is_list_closer(enum ETokenType token_type) {
+    return token_type == TOKEN_LIST_CLOSE || token_type == TOKEN_EOF;
+}
+
 /*
- * Parse the next expression in `tokens', and wrap it in a list whose first
- * element is the symbol `func_name'. Return the number of parsed tokens.
+ * Parse the next expression in 'tokens', and wrap it in a list whose first
+ * element is the symbol 'func_name'. Return the number of parsed tokens.
  */
 static size_t wrap_in_call(Expr* dst, const Token* tokens,
                            const char* func_name) {
-    /* Create a list whose `car' is `func_name' */
-    dst->type                = EXPR_PARENT;
-    dst->val.children        = expr_new(EXPR_SYMBOL);
-    dst->val.children->val.s = mem_strdup(func_name);
+    /*
+     * First item of the list is the function name:
+     *   (FUNC-NAME . ???)
+     */
+    dst->type       = EXPR_PAIR;
+    CAR(dst)        = expr_new(EXPR_SYMBOL);
+    CAR(dst)->val.s = mem_strdup(func_name);
 
     /*
      * The second element is the actual expression, which might consist of
      * multiple Tokens.
+     *
+     * The parsed expression will be placed in the `cadr' of the destination:
+     *   (FUNC-NAME . (UNKNOWN . nil))
      */
-    dst->val.children->next     = expr_new(EXPR_UNKNOWN);
-    const size_t parsed_in_call = parse_recur(dst->val.children->next, tokens);
+    CDR(dst)  = expr_new(EXPR_PAIR);
+    CADR(dst) = expr_new(EXPR_UNKNOWN);
+    CDDR(dst) = g_nil;
 
+    const size_t parsed_in_call = parse_recur(CADR(dst), tokens);
     SL_ASSERT(parsed_in_call > 0);
     return parsed_in_call;
 }
 
 /*
- * Parse an expression recursively. Writes to `dst', and returns the number of
- * parsed tokens. See comment in `parse' below.
+ * Parse an expression recursively. Writes to 'dst', and returns the number of
+ * parsed tokens. See comment in 'parse' below.
+ *
+ * TODO: The following expressions fail assertions in the parser:
+ *   sl> `,@
+ * TODO: The following expressions should signal errors:
+ *   sl> .
+ *   sl> '(a . )
  */
 static size_t parse_recur(Expr* dst, const Token* tokens) {
     SL_ASSERT(tokens != NULL);
@@ -91,26 +111,59 @@ static size_t parse_recur(Expr* dst, const Token* tokens) {
         } break;
 
         case TOKEN_LIST_OPEN: {
-            dst->type = EXPR_PARENT;
             parsed++;
 
-            /* dummy.next will contain the first children of the list */
-            Expr dummy;
-            dummy.next      = NULL;
-            Expr* cur_child = &dummy;
+            /*
+             * Empty lists get replaced by the symbol "nil" in the parser.
+             */
+            if (is_list_closer(tokens[parsed].type)) {
+                dst->type  = EXPR_SYMBOL;
+                dst->val.s = mem_strdup("nil");
+                parsed++;
+                break;
+            }
 
-            while (tokens[parsed].type != TOKEN_LIST_CLOSE &&
-                   tokens[parsed].type != TOKEN_EOF) {
-                SL_ASSERT(cur_child != NULL);
+            /*
+             * We got a non-empty list/pair, write the first 'car' and loop over
+             * the rest of the list.
+             */
+            dst->type             = EXPR_PAIR;
+            CAR(dst)              = expr_new(EXPR_UNKNOWN);
+            size_t parsed_in_call = parse_recur(CAR(dst), &tokens[parsed]);
+            CDR(dst)              = g_nil;
+            SL_ASSERT(parsed_in_call > 0);
+            parsed += parsed_in_call;
+
+            Expr* cur = dst;
+            while (!is_list_closer(tokens[parsed].type)) {
+                /*
+                 * If there is a dot inside the list, it indicates that the next
+                 * element is the CDR, not the CAR of a new pair.
+                 */
+                if (tokens[parsed].type == TOKEN_DOT) {
+                    parsed++;
+
+                    /* TODO: Dot without a CDR value, propagate error upwards */
+                    if (is_list_closer(tokens[parsed].type))
+                        break;
+
+                    CDR(cur)       = expr_new(EXPR_UNKNOWN);
+                    parsed_in_call = parse_recur(CDR(cur), &tokens[parsed]);
+                    SL_ASSERT(parsed_in_call > 0);
+                    parsed += parsed_in_call;
+                    break;
+                }
+
+                CDR(cur) = expr_new(EXPR_PAIR);
+                cur      = CDR(cur);
 
                 /*
                  * Parse the current children recursively, storing the parsed
                  * Tokens in that call.
                  */
-                cur_child->next = expr_new(EXPR_UNKNOWN);
-                const size_t parsed_in_call =
-                  parse_recur(cur_child->next, &tokens[parsed]);
-                cur_child = cur_child->next;
+                CAR(cur)       = expr_new(EXPR_UNKNOWN);
+                parsed_in_call = parse_recur(CAR(cur), &tokens[parsed]);
+                CDR(cur)       = g_nil;
 
                 /*
                  * Add the number of Tokens parsed in the previous call to the
@@ -121,10 +174,11 @@ static size_t parse_recur(Expr* dst, const Token* tokens) {
             }
 
             /* Store that we also parsed the LIST_CLOSE or EOF Token */
-            parsed += 1;
+            parsed++;
+        } break;
 
-            /* Store the start of the linked list in the parent expression */
-            dst->val.children = dummy.next;
+        case TOKEN_DOT: {
+            /* TODO: Dot outside of a list, propagate error upwards */
         } break;
 
         case TOKEN_QUOTE: {
@@ -162,26 +216,26 @@ static size_t parse_recur(Expr* dst, const Token* tokens) {
 
 Expr* parse(const Token* tokens) {
     /*
-     * We need another function that writes to an `Expr' parameter and that
+     * We need another function that writes to an 'Expr' parameter and that
      * returns the written bytes, since the function will call itself
-     * recursively, and the caller must know how many elements of the `Token'
+     * recursively, and the caller must know how many elements of the 'Token'
      * array were parsed inside that recursive call (to skip over them).
      *
-     * For example, if we received the following string from `input_read':
+     * For example, if we received the following string from 'input_read':
      *
      *   (list '(a b c) 123)
      *
-     * Would be converted into the following `Token' array (as printed by
-     * `tokens_print'):
+     * Would be converted into the following 'Token' array (as printed by
+     * 'tokens_print'):
      *
      *   [ LIST_OPEN, "list", QUOTE, LIST_OPEN, "a", "b", "c", LIST_CLOSE, 123,
      *     LIST_CLOSE, EOF ]
      *
      * When encountering QUOTE, we want to parse the next expression, but it
      * takes more than one token (the whole list, 5 tokens). In this case, the
-     * expression next to the quote ends on the last LIST_CLOSE token. The
-     * recursive call to `parse_recur' will use its return value to let the
-     * caller know how many elements of the `Token' array were parsed, so it can
+     * expression next to the quote ends on the first LIST_CLOSE token. The
+     * recursive call to 'parse_recur' will use its return value to let the
+     * caller know how many elements of the 'Token' array were parsed, so it can
      * continue where it needs (in this case, at the number 123).
      *
      * Same concept applies when parsing the list itself. After the recursive
@@ -191,7 +245,7 @@ Expr* parse(const Token* tokens) {
     Expr* expr                 = expr_new(EXPR_UNKNOWN);
     const size_t tokens_parsed = parse_recur(expr, tokens);
     if (tokens_parsed == 0) {
-        expr_free(expr);
+        pool_free(expr);
         return NULL;
     }
     return expr;

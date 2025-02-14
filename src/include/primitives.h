@@ -35,8 +35,8 @@ DECLARE_PRIM(lambda);
 DECLARE_PRIM(macro);
 DECLARE_PRIM(begin);
 DECLARE_PRIM(if);
-DECLARE_PRIM(or);
-DECLARE_PRIM(and);
+DECLARE_PRIM(or);  /* Redundant */
+DECLARE_PRIM(and); /* Redundant */
 
 /* General (prim_general.c) */
 DECLARE_PRIM(eval);
@@ -47,7 +47,7 @@ DECLARE_PRIM(set_random_seed);
 
 /* Logical (prim_logic.c) */
 DECLARE_PRIM(equal);
-DECLARE_PRIM(equal_num);
+DECLARE_PRIM(equal_num); /* Redundant */
 DECLARE_PRIM(lt);
 DECLARE_PRIM(gt);
 
@@ -57,7 +57,8 @@ DECLARE_PRIM(is_int);
 DECLARE_PRIM(is_flt);
 DECLARE_PRIM(is_symbol);
 DECLARE_PRIM(is_string);
-DECLARE_PRIM(is_list);
+DECLARE_PRIM(is_pair);
+DECLARE_PRIM(is_list); /* Redundant */
 DECLARE_PRIM(is_primitive);
 DECLARE_PRIM(is_lambda);
 DECLARE_PRIM(is_macro);
@@ -71,12 +72,13 @@ DECLARE_PRIM(str2int);
 DECLARE_PRIM(str2flt);
 
 /* List-related (prim_list.c) */
-DECLARE_PRIM(list);
+DECLARE_PRIM(list); /* Redundant */
 DECLARE_PRIM(cons);
 DECLARE_PRIM(car);
 DECLARE_PRIM(cdr);
+DECLARE_PRIM(nth); /* Redundant */
 DECLARE_PRIM(length);
-DECLARE_PRIM(append);
+DECLARE_PRIM(append); /* Redundant */
 
 /* String-related (prim_string.c) */
 DECLARE_PRIM(write_to_str);

@@ -11,10 +11,10 @@
 
 "Multi-line
 strings
-supported." ; Expected: "Multi-line\nstrings\nsupported."
+supported."
 
-(length "")    ; Expected: 0
-(length "foo") ; Expected: 3
+(length "")
+(length "foo")
 
 (append "" "")
 (append "Concatenating" " multiple " "strings...")
@@ -37,18 +37,18 @@ supported." ; Expected: "Multi-line\nstrings\nsupported."
 (defmacro test-re-groups (regexp ignore-case)
   `(re-match-groups ,regexp "Testing regular expressions... 123" ,ignore-case))
 
-(test-re-groups "Testing regular" nil)       ; Expected: ((0 15))
-(test-re-groups "testing REGULAR" tru)       ; Expected: ((0 15))
-(test-re-groups "^(Testing).*$" nil)         ; Expected: ((0 34) (0 7))
-(test-re-groups "^INVALID.*$" nil)           ; Expected: nil
-(test-re-groups "^(.+) ([[:digit:]]+)$" nil) ; Expected: ((0 34) (0 30) (31 34))
+(test-re-groups "Testing regular" nil)
+(test-re-groups "testing REGULAR" tru)
+(test-re-groups "^(Testing).*$" nil)
+(test-re-groups "^INVALID.*$" nil)
+(test-re-groups "^(.+) ([[:digit:]]+)$" nil)
 
 (equal?
  "All printed strings
 must be valid inputs."                         ; Initial string
  "All printed strings\nmust be valid inputs.") ; Printed after evaluating
 
-(< "abc" "abz") ; Expected: tru
-(< "abc" "abc") ; Expected: nil
-(> "abz" "abc") ; Expected: tru
-(> "abc" "abc") ; Expected: nil
+(< "abc" "abz")
+(< "abc" "abc")
+(> "abz" "abc")
+(> "abc" "abc")

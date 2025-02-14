@@ -44,10 +44,10 @@
 
 ;;------------------------------------------------------------------------------
 
-(list (+) (-) (*)) ; Expected: (0 0 1)
+(list (+) (-) (*))
 
-(+ 1 2 3 (- 3 4) (* 3 4))   ; Expected: 17
-(+ 1 2 3 (- 3 4) (* 3 4.0)) ; Expected: 17.0
+(+ 1 2 3 (- 3 4) (* 3 4))
+(+ 1 2 3 (- 3 4) (* 3 4.0))
 
 (assert-type-conversion 10     int->flt flt->int)
 (assert-type-conversion 10.0   flt->int int->flt)
@@ -56,28 +56,28 @@
 (assert-type-conversion "10"   str->int int->str)
 (assert-type-conversion "10.0" str->flt flt->str)
 
-(test-signed-floats +)          ; Expected: (12.0 7.0 -7.0 -12.0)
-(test-signed-floats -)          ; Expected: (7.0 12.0 -12.0 -7.0)
-(test-signed-floats *)          ; Expected: (23.75 -23.75 -23.75 23.75)
-(test-signed-floats /)          ; Expected: (3.8 -3.8 -3.8 3.8)
-(test-signed-floats mod)        ; Expected: (2.00 -0.50 0.50 -2.00)
-(test-signed-floats assert-mod) ; Expected: (tru tru tru tru)
+(test-signed-floats +)
+(test-signed-floats -)
+(test-signed-floats *)
+(test-signed-floats /)
+(test-signed-floats mod)
+(test-signed-floats assert-mod)
 
-(test-signed-integers +)                ; Expected: (11 7 -7 -11)
-(test-signed-integers -)                ; Expected: (7 11 -11 -7)
-(test-signed-integers *)                ; Expected: (18 -18 -18 18)
-(test-signed-integers quotient)         ; Expected: (4 -4 -4 4)
-(test-signed-integers remainder)        ; Expected: (1 1 -1 -1)
-(test-signed-integers assert-remainder) ; Expected: (tru tru tru tru)
+(test-signed-integers +)
+(test-signed-integers -)
+(test-signed-integers *)
+(test-signed-integers quotient)
+(test-signed-integers remainder)
+(test-signed-integers assert-remainder)
 
-(test-round-func round)    ; ((5 5.0 -5.0) (5.0 6.0 6.0) (-5.0 -6.0 -6.0))
-(test-round-func floor)    ; ((5 5.0 -5.0) (5.0 5.0 5.0) (-6.0 -6.0 -6.0))
-(test-round-func ceiling)  ; ((5 5.0 -5.0) (6.0 6.0 6.0) (-5.0 -5.0 -5.0))
-(test-round-func truncate) ; ((5 5.0 -5.0) (5.0 5.0 5.0) (-5.0 -5.0 -5.0))
+(test-round-func round)
+(test-round-func floor)
+(test-round-func ceiling)
+(test-round-func truncate)
 
-(hex (bit-and 0x123456 0xFF00FF)) ; Expected: 0x120056
-(hex (bit-or 0xFF00 0x00FF))      ; Expected: 0xffff
-(hex (bit-xor 0x5555 0xFFFF))     ; Expected: 0xaaaa
-(hex (bit-not 0xFF))              ; Expected: 0xffffffffffffff00
-(hex (shr 0xFF00 8))              ; Expected: 0xff
-(hex (shl 0x00FF 8))              ; Expected: 0xff00
+(hex (bit-and 0x123456 0xFF00FF))
+(hex (bit-or 0xFF00 0x00FF))
+(hex (bit-xor 0x5555 0xFFFF))
+(hex (bit-not 0xFF))
+(hex (shr 0xFF00 8))
+(hex (shl 0x00FF 8))

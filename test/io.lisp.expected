@@ -1,0 +1,16 @@
+Standard library loaded.
+<lambda>
+Reading two expressions...
+123
+(+ 1 2 3 (- 5 4))
+tru
+
+Writing two expressions...
+(+ 1 2 3 (f (quote sym) "str"))
+(lambda (e) (write e) (print-str "\n") tru)
+tru
+
+Scanning two user strings...
+"User string..."
+"Another delimited line"
+tru

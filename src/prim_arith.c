@@ -24,10 +24,14 @@
 #include "include/util.h"
 #include "include/primitives.h"
 
-Expr* prim_add(Env* env, Expr* e) {
+Expr* prim_add(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
+
+    const bool no_args = expr_is_nil(args);
+    SL_EXPECT(no_args || expr_list_has_only_numbers(args),
               "Unexpected non-numeric argument.");
+
+    const Expr* first_arg = CAR(args);
 
     /*
      * If there are no arguments, return zero.
@@ -40,41 +44,45 @@ Expr* prim_add(Env* env, Expr* e) {
      *   (+ 9.0 5.0 1.0) => 15.0
      */
     Expr* ret;
-    if (e == NULL) {
+    if (no_args) {
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = 0;
-    } else if (!expr_list_is_homogeneous(e)) {
-        GenericNum total = expr_get_generic_num(e);
-        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
-            total += expr_get_generic_num(arg);
+    } else if (!expr_list_is_homogeneous(args)) {
+        GenericNum total = 0;
+        for (; !expr_is_nil(args); args = CDR(args))
+            total += expr_get_generic_num(CAR(args));
 
         ret = expr_new(EXPR_NUM_GENERIC);
         expr_set_generic_num(ret, total);
-    } else if (e->type == EXPR_NUM_INT) {
-        long long total = e->val.n;
-        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
-            total += arg->val.n;
+    } else if (EXPR_INT_P(first_arg)) {
+        LispInt total = 0;
+        for (; !expr_is_nil(args); args = CDR(args))
+            total += CAR(args)->val.n;
 
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = total;
-    } else if (e->type == EXPR_NUM_FLT) {
-        double total = e->val.f;
-        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
-            total += arg->val.f;
+    } else if (EXPR_FLT_P(first_arg)) {
+        LispFlt total = 0.0;
+        for (; !expr_is_nil(args); args = CDR(args))
+            total += CAR(args)->val.f;
 
         ret        = expr_new(EXPR_NUM_FLT);
         ret->val.f = total;
     } else {
-        SL_FATAL("Unhandled numeric type (%s).", exprtype2str(e->type));
+        SL_FATAL("Unhandled numeric type (%s).", exprtype2str(first_arg->type));
     }
 
     return ret;
 }
 
-Expr* prim_sub(Env* env, Expr* e) {
+Expr* prim_sub(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
+
+    const bool no_args = expr_is_nil(args);
+    SL_EXPECT(no_args || expr_list_has_only_numbers(args),
               "Unexpected non-numeric argument.");
+
+    const Expr* first_arg = CAR(args);
 
     /*
      * If there are no arguments, return zero.
@@ -89,44 +97,48 @@ Expr* prim_sub(Env* env, Expr* e) {
      *   (- 9.0 5.0 1.0) => 3.0
      */
     Expr* ret;
-    if (e == NULL) {
+    if (no_args) {
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = 0;
-    } else if (e->next == NULL) {
-        ret = expr_clone(e);
+    } else if (expr_is_nil(CDR(args))) {
+        ret = expr_clone(first_arg);
         expr_negate_num_val(ret);
-    } else if (!expr_list_is_homogeneous(e)) {
-        GenericNum total = expr_get_generic_num(e);
-        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
-            total -= expr_get_generic_num(arg);
+    } else if (!expr_list_is_homogeneous(args)) {
+        GenericNum total = expr_get_generic_num(first_arg);
+        for (args = CDR(args); !expr_is_nil(args); args = CDR(args))
+            total -= expr_get_generic_num(CAR(args));
 
         ret = expr_new(EXPR_NUM_GENERIC);
         expr_set_generic_num(ret, total);
-    } else if (e->type == EXPR_NUM_INT) {
-        long long total = e->val.n;
-        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
-            total -= arg->val.n;
+    } else if (EXPR_INT_P(first_arg)) {
+        LispInt total = first_arg->val.n;
+        for (args = CDR(args); !expr_is_nil(args); args = CDR(args))
+            total -= CAR(args)->val.n;
 
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = total;
-    } else if (e->type == EXPR_NUM_FLT) {
-        double total = e->val.f;
-        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
-            total -= arg->val.f;
+    } else if (EXPR_FLT_P(first_arg)) {
+        LispFlt total = first_arg->val.f;
+        for (args = CDR(args); !expr_is_nil(args); args = CDR(args))
+            total -= CAR(args)->val.f;
 
         ret        = expr_new(EXPR_NUM_FLT);
         ret->val.f = total;
     } else {
-        SL_FATAL("Unhandled numeric type (%s).", exprtype2str(e->type));
+        SL_FATAL("Unhandled numeric type (%s).", exprtype2str(first_arg->type));
     }
 
     return ret;
 }
 
-Expr* prim_mul(Env* env, Expr* e) {
+Expr* prim_mul(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(e == NULL || expr_list_has_only_numbers(e),
+
+    const bool no_args = expr_is_nil(args);
+    SL_EXPECT(no_args || expr_list_has_only_numbers(args),
               "Unexpected non-numeric argument.");
+
+    const Expr* first_arg = CAR(args);
 
     /*
      * If there are no arguments, return one.
@@ -141,50 +153,50 @@ Expr* prim_mul(Env* env, Expr* e) {
      *   (* 9.0 5.0 1.0) => 3.0
      */
     Expr* ret;
-    if (e == NULL) {
+    if (no_args) {
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = 1;
-    } else if (!expr_list_is_homogeneous(e)) {
-        GenericNum total = expr_get_generic_num(e);
-        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
-            total *= expr_get_generic_num(arg);
+    } else if (!expr_list_is_homogeneous(args)) {
+        GenericNum total = expr_get_generic_num(first_arg);
+        for (args = CDR(args); !expr_is_nil(args); args = CDR(args))
+            total *= expr_get_generic_num(CAR(args));
 
         ret = expr_new(EXPR_NUM_GENERIC);
         expr_set_generic_num(ret, total);
-    } else if (e->type == EXPR_NUM_INT) {
-        long long total = e->val.n;
-        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
-            total *= arg->val.n;
+    } else if (EXPR_INT_P(first_arg)) {
+        LispInt total = first_arg->val.n;
+        for (args = CDR(args); !expr_is_nil(args); args = CDR(args))
+            total *= CAR(args)->val.n;
 
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = total;
-    } else if (e->type == EXPR_NUM_FLT) {
-        double total = e->val.f;
-        for (Expr* arg = e->next; arg != NULL; arg = arg->next)
-            total *= arg->val.f;
+    } else if (EXPR_FLT_P(first_arg)) {
+        LispFlt total = first_arg->val.f;
+        for (args = CDR(args); !expr_is_nil(args); args = CDR(args))
+            total *= CAR(args)->val.f;
 
         ret        = expr_new(EXPR_NUM_FLT);
         ret->val.f = total;
     } else {
-        SL_FATAL("Unhandled numeric type (%s).", exprtype2str(e->type));
+        SL_FATAL("Unhandled numeric type (%s).", exprtype2str(first_arg->type));
     }
 
     return ret;
 }
 
-Expr* prim_div(Env* env, Expr* e) {
+Expr* prim_div(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(e != NULL, "Expected at least one argument.");
-    SL_EXPECT(expr_list_has_only_numbers(e),
+    SL_EXPECT(!expr_is_nil(args), "Expected at least one argument.");
+    SL_EXPECT(expr_list_has_only_numbers(args),
               "Unexpected non-numeric argument.");
 
     /*
-     * The `div' primitive always returns a `GenericNum' result. For integer
+     * The `div' primitive always returns a 'GenericNum' result. For integer
      * division, use `quotient'.
      */
-    GenericNum total = expr_get_generic_num(e);
-    for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
-        const GenericNum n = expr_get_generic_num(arg);
+    GenericNum total = expr_get_generic_num(CAR(args));
+    for (args = CDR(args); !expr_is_nil(args); args = CDR(args)) {
+        const GenericNum n = expr_get_generic_num(CAR(args));
         SL_EXPECT(n != 0, "Trying to divide by zero.");
         total /= n;
     }
@@ -194,10 +206,10 @@ Expr* prim_div(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_mod(Env* env, Expr* e) {
+Expr* prim_mod(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(e != NULL, "Expected at least one argument.");
-    SL_EXPECT(expr_list_has_only_numbers(e),
+    SL_EXPECT(!expr_is_nil(args), "Expected at least one argument.");
+    SL_EXPECT(expr_list_has_only_numbers(args),
               "Unexpected non-numeric argument.");
 
     /*
@@ -205,7 +217,7 @@ Expr* prim_mod(Env* env, Expr* e) {
      * See: https://8dcc.github.io/programming/fmod.html
      *
      * Similarly to how the Elisp manual describes `mod', the following should
-     * be equal to the `dividend':
+     * be equal to the 'dividend':
      *
      *   (+ (mod dividend divisor)
      *      (* (floor (/ dividend divisor)) divisor))
@@ -213,9 +225,9 @@ Expr* prim_mod(Env* env, Expr* e) {
      * Note that, although the behavior of `mod' in SL is the same as in Elisp,
      * the `floor' and `/' functions are not.
      */
-    GenericNum total = expr_get_generic_num(e);
-    for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
-        const GenericNum num = expr_get_generic_num(arg);
+    GenericNum total = expr_get_generic_num(CAR(args));
+    for (args = CDR(args); !expr_is_nil(args); args = CDR(args)) {
+        const GenericNum num = expr_get_generic_num(CAR(args));
         SL_EXPECT(num != 0, "Trying to divide by zero.");
         total = fmod(total, num);
         if (num < 0 ? total > 0 : total < 0)
@@ -227,17 +239,20 @@ Expr* prim_mod(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_quotient(Env* env, Expr* e) {
+Expr* prim_quotient(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(e != NULL, "Expected at least one argument.");
+    SL_EXPECT(!expr_is_nil(args), "Expected at least one argument.");
+
+    const Expr* first_arg = CAR(args);
+    SL_EXPECT_TYPE(first_arg, EXPR_NUM_INT);
 
     /*
      * The `quotient' function is just like `/', but it only operates with
      * integers.
      */
-    SL_EXPECT_TYPE(e, EXPR_NUM_INT);
-    long long total = e->val.n;
-    for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
+    LispInt total = first_arg->val.n;
+    for (args = CDR(args); !expr_is_nil(args); args = CDR(args)) {
+        const Expr* arg = CAR(args);
         SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
         SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
         total /= arg->val.n;
@@ -248,9 +263,12 @@ Expr* prim_quotient(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_remainder(Env* env, Expr* e) {
+Expr* prim_remainder(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(e != NULL, "Missing arguments.");
+    SL_EXPECT(!expr_is_nil(args), "Expected at least one argument.");
+
+    const Expr* first_arg = CAR(args);
+    SL_EXPECT_TYPE(first_arg, EXPR_NUM_INT);
 
     /*
      * The `remainder' function is just like `mod', but it only operates with
@@ -259,9 +277,9 @@ Expr* prim_remainder(Env* env, Expr* e) {
      *   (+ (remainder dividend divisor)
      *      (* (quotient dividend divisor) divisor))
      */
-    SL_EXPECT_TYPE(e, EXPR_NUM_INT);
-    long long total = e->val.n;
-    for (Expr* arg = e->next; arg != NULL; arg = arg->next) {
+    LispInt total = first_arg->val.n;
+    for (args = CDR(args); !expr_is_nil(args); args = CDR(args)) {
+        const Expr* arg = CAR(args);
         SL_EXPECT_TYPE(arg, EXPR_NUM_INT);
         SL_EXPECT(arg->val.n != 0, "Trying to divide by zero.");
         total %= arg->val.n;
@@ -272,18 +290,20 @@ Expr* prim_remainder(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_round(Env* env, Expr* e) {
+Expr* prim_round(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    Expr* ret = expr_new(e->type);
-    switch (e->type) {
+    const Expr* arg = CAR(args);
+    SL_EXPECT(EXPR_NUMBER_P(arg), "Expected numeric argument.");
+
+    Expr* ret = expr_new(arg->type);
+    switch (arg->type) {
         case EXPR_NUM_INT:
-            ret->val.n = e->val.n;
+            ret->val.n = arg->val.n;
             break;
         case EXPR_NUM_FLT:
-            ret->val.f = round(e->val.f);
+            ret->val.f = round(arg->val.f);
             break;
         default:
             SL_FATAL("Unhandled numeric type.");
@@ -291,18 +311,20 @@ Expr* prim_round(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_floor(Env* env, Expr* e) {
+Expr* prim_floor(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    Expr* ret = expr_new(e->type);
-    switch (e->type) {
+    const Expr* arg = CAR(args);
+    SL_EXPECT(EXPR_NUMBER_P(arg), "Expected numeric argument.");
+
+    Expr* ret = expr_new(arg->type);
+    switch (arg->type) {
         case EXPR_NUM_INT:
-            ret->val.n = e->val.n;
+            ret->val.n = arg->val.n;
             break;
         case EXPR_NUM_FLT:
-            ret->val.f = floor(e->val.f);
+            ret->val.f = floor(arg->val.f);
             break;
         default:
             SL_FATAL("Unhandled numeric type.");
@@ -310,18 +332,20 @@ Expr* prim_floor(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_ceiling(Env* env, Expr* e) {
+Expr* prim_ceiling(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    Expr* ret = expr_new(e->type);
-    switch (e->type) {
+    const Expr* arg = CAR(args);
+    SL_EXPECT(EXPR_NUMBER_P(arg), "Expected numeric argument.");
+
+    Expr* ret = expr_new(arg->type);
+    switch (arg->type) {
         case EXPR_NUM_INT:
-            ret->val.n = e->val.n;
+            ret->val.n = arg->val.n;
             break;
         case EXPR_NUM_FLT:
-            ret->val.f = ceil(e->val.f);
+            ret->val.f = ceil(arg->val.f);
             break;
         default:
             SL_FATAL("Unhandled numeric type.");
@@ -329,18 +353,20 @@ Expr* prim_ceiling(Env* env, Expr* e) {
     return ret;
 }
 
-Expr* prim_truncate(Env* env, Expr* e) {
+Expr* prim_truncate(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
-    SL_EXPECT(EXPRP_NUMBER(e), "Expected numeric argument.");
+    SL_EXPECT_ARG_NUM(args, 1);
 
-    Expr* ret = expr_new(e->type);
-    switch (e->type) {
+    const Expr* arg = CAR(args);
+    SL_EXPECT(EXPR_NUMBER_P(arg), "Expected numeric argument.");
+
+    Expr* ret = expr_new(arg->type);
+    switch (arg->type) {
         case EXPR_NUM_INT:
-            ret->val.n = e->val.n;
+            ret->val.n = arg->val.n;
             break;
         case EXPR_NUM_FLT:
-            ret->val.f = trunc(e->val.f);
+            ret->val.f = trunc(arg->val.f);
             break;
         default:
             SL_FATAL("Unhandled numeric type.");

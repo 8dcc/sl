@@ -39,20 +39,22 @@ bool debug_is_traced_function(const Env* env, const Expr* e) {
      * from a C list, and somehow allow the user to add items to it.
      */
     Expr* debug_trace_list = env_get(env, "*debug-trace*");
-    if (debug_trace_list == NULL || debug_trace_list->type != EXPR_PARENT)
+    if (debug_trace_list == NULL || !expr_is_proper_list(debug_trace_list))
         return false;
 
-    return expr_list_is_member(debug_trace_list->val.children, e);
+    return expr_is_member(e, debug_trace_list);
 }
 
 void debug_trace_print_pre(FILE* fp, const Expr* func, const Expr* arg) {
+    SL_ASSERT(expr_is_proper_list(arg));
+
     print_trace_number(fp);
 
     fputc('(', fp);
     expr_print(fp, func);
-    for (; arg != NULL; arg = arg->next) {
+    for (; !expr_is_nil(arg); arg = CDR(arg)) {
         fputc(' ', fp);
-        expr_print(fp, arg);
+        expr_print(fp, CAR(arg));
     }
     fprintf(fp, ")\n");
 

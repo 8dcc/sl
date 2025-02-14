@@ -28,27 +28,10 @@
 #include "include/garbage_collector.h"
 #include "include/error.h"
 
-/*----------------------------------------------------------------------------*/
-
-/*
- * Mark for garbage collection the expressions in the body of the specified
- * lambda context.
- *
- * NOTE: We don't currently mark expressions in the lambda environment.
- */
-static void mark_lambdactx(LambdaCtx* ctx) {
-    SL_ASSERT(ctx != NULL);
-
-    for (Expr* cur = ctx->body; cur != NULL; cur = cur->next)
-        gc_mark_expr(cur);
-}
-
-/*----------------------------------------------------------------------------*/
-
 void gc_unmark_all(void) {
     for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next)
         for (size_t i = 0; i < a->arr_sz; i++)
-            pool_node_flag_unset(&a->arr[i], NODE_FLAG_GCMARKED);
+            pool_item_flag_unset(&a->arr[i], POOL_FLAG_GCMARKED);
 }
 
 void gc_mark_env(Env* env) {
@@ -62,14 +45,15 @@ void gc_mark_expr(Expr* e) {
     SL_ASSERT(e != NULL);
 
     switch (e->type) {
-        case EXPR_PARENT:
-            for (Expr* cur = e->val.children; cur != NULL; cur = cur->next)
-                gc_mark_expr(cur);
+        case EXPR_PAIR:
+            gc_mark_expr(CAR(e));
+            gc_mark_expr(CDR(e));
             break;
 
         case EXPR_LAMBDA:
         case EXPR_MACRO:
-            mark_lambdactx(e->val.lambda);
+            /* We don't currently mark expressions in the lambda environment */
+            gc_mark_expr(e->val.lambda->body);
             break;
 
         case EXPR_UNKNOWN:
@@ -82,8 +66,8 @@ void gc_mark_expr(Expr* e) {
             break;
     }
 
-    PoolNode* node = expr2node(e);
-    pool_node_flag_set(node, NODE_FLAG_GCMARKED);
+    PoolItem* pool_item = pool_item_from_expr(e);
+    pool_item_flag_set(pool_item, POOL_FLAG_GCMARKED);
 }
 
 void gc_collect(void) {
@@ -92,10 +76,10 @@ void gc_collect(void) {
      * collect (free) all expressions that are not marked (and not free).
      */
     for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
-        PoolNode* cur_arr = a->arr;
+        PoolItem* cur_arr = a->arr;
         for (size_t i = 0; i < a->arr_sz; i++)
-            if ((pool_node_flags(&cur_arr[i]) &
-                 (NODE_FLAG_GCMARKED | NODE_FLAG_FREE)) == 0)
+            if ((pool_item_flags(&cur_arr[i]) &
+                 (POOL_FLAG_GCMARKED | POOL_FLAG_FREE)) == 0)
                 pool_free(&cur_arr[i].val.expr);
     }
 }

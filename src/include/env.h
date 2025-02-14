@@ -24,8 +24,19 @@
 
 struct Expr; /* expr.h */
 
+/*----------------------------------------------------------------------------*/
+
 /*
- * Possible flags for each `EnvBinding' structure. They can be OR'd together.
+ * Environment error codes, returned by functions like 'env_bind'. See also
+ * 'env_strerror' below.
+ */
+enum EEnvErr {
+    ENV_ERR_NONE = 0,
+    ENV_ERR_CONST,
+};
+
+/*
+ * Possible flags for each 'EnvBinding' structure. They can be OR'd together.
  */
 enum EEnvBindingFlags {
     ENV_FLAG_NONE    = 0,
@@ -34,8 +45,8 @@ enum EEnvBindingFlags {
 };
 
 /*
- * An `EnvBinding' structure is used to bind a symbol to its expression, with
- * some specified flags from the `EEnvBindingFlags' enum.
+ * An 'EnvBinding' structure is used to bind a symbol to its expression, with
+ * some specified flags from the 'EEnvBindingFlags' enum.
  */
 typedef struct EnvBinding EnvBinding;
 struct EnvBinding {
@@ -45,7 +56,7 @@ struct EnvBinding {
 };
 
 /*
- * An environment is simply an array of `EnvBinding' structures, and a parent
+ * An environment is simply an array of 'EnvBinding' structures, and a parent
  * environment.
  */
 typedef struct Env Env;
@@ -73,7 +84,7 @@ extern struct Expr* g_debug_trace_list;
 /*----------------------------------------------------------------------------*/
 
 /*
- * Allocate and return an empty `Env' structure without specifying the parent.
+ * Allocate and return an empty 'Env' structure without specifying the parent.
  */
 Env* env_new(void);
 
@@ -92,32 +103,29 @@ Env* env_clone(Env* env);
  */
 void env_free(Env* env);
 
-/*
- * Bind the symbol string `sym' to the expression `val' in environment `env',
- * with the specified `flags'. Note that the expression is stored by reference,
- * so a copy is not created.
- *
- * Returns true on success, or false on failure. The caller is responsible for
- * checking the returned value and handling errors.
- *
- * TODO: In the future, if this function fails with multiple conditions
- * (e.g. after adding more `EEnvBindingFlags'), we should create a new enum and
- * return an error code. The caller should check if the function succeeded, and
- * if not, print the returned value of some `env_strerror' function.
- */
-bool env_bind(Env* env, const char* sym, struct Expr* val,
-              enum EEnvBindingFlags flags);
+/*----------------------------------------------------------------------------*/
 
 /*
- * Bind the symbol `sym' to the expression `val' in the top-most parent of
- * environment `env', with the specified `flags'.
+ * Bind the symbol 'sym' to the expression 'val' in environment 'env', with the
+ * specified 'flags'.
+ *
+ * Returns 'ENV_ERR_NONE' (zero) on success, or non-zero on failure. The caller
+ * is responsible for checking the returned value, handling errors and
+ * optionally printing them with 'env_strerror'.
  */
-bool env_bind_global(Env* env, const char* sym, struct Expr* val,
-                     enum EEnvBindingFlags flags);
+enum EEnvErr env_bind(Env* env, const char* sym, struct Expr* val,
+                      enum EEnvBindingFlags flags);
 
 /*
- * Get a copy of the expression associated to the symbol `sym' in environment
- * `env', or in parent environments. The returned copy must be freed by the
+ * Bind the symbol 'sym' to the expression 'val' in the top-most parent of
+ * environment 'env', with the specified 'flags'.
+ */
+enum EEnvErr env_bind_global(Env* env, const char* sym, struct Expr* val,
+                             enum EEnvBindingFlags flags);
+
+/*
+ * Get a copy of the expression associated to the symbol 'sym' in environment
+ * 'env', or in parent environments. The returned copy must be freed by the
  * caller.
  *
  * Returns NULL if the expression is not found.
@@ -134,9 +142,29 @@ struct Expr* env_get(const Env* env, const char* sym);
  */
 enum EEnvBindingFlags env_get_flags(const Env* env, const char* sym);
 
+/*----------------------------------------------------------------------------*/
+
 /*
  * Print environment in Lisp list format.
  */
 void env_print(FILE* fp, const Env* env);
+
+/*----------------------------------------------------------------------------*/
+
+/*
+ * Return an immutable string that describes the specified environment error.
+ */
+static inline const char* env_strerror(enum EEnvErr code) {
+    const char* s;
+    switch (code) {
+        case ENV_ERR_NONE:
+            s = "No error.";
+            break;
+        case ENV_ERR_CONST:
+            s = "Cannot overwrite constant variable.";
+            break;
+    }
+    return s;
+}
 
 #endif /* ENV_H_ */

@@ -18,7 +18,7 @@
  * ---------------------------------------------------------------------------
  *
  * TODO: Rename these functions to "scanner", or something other than
- * reader? Since Lisp's `read' also parses the input into an `Expr'.
+ * reader? Since Lisp's `read' also parses the input into an 'Expr'.
  */
 
 #include <stdbool.h>
@@ -43,8 +43,8 @@
 #define IS_COMMENT_END(C)   ((C) == '\n')
 
 /*
- * Get the incoming character from `fp'. Calls `fgetc' and, if it's not EOF,
- * calls `ungetc'.
+ * Get the incoming character from 'fp'. Calls 'fgetc' and, if it's not EOF,
+ * calls 'ungetc'.
  */
 static int get_incoming(FILE* fp) {
     int incoming = fgetc(fp);
@@ -54,7 +54,7 @@ static int get_incoming(FILE* fp) {
 }
 
 /*
- * Read characters from `fp' until a non-comment is found using `get_incoming',
+ * Read characters from 'fp' until a non-comment is found using 'get_incoming',
  * without actually reading it.
  *
  * Returns false if EOF was encountered before the non-comment, or true
@@ -76,7 +76,7 @@ static bool read_until_incoming_non_comment(FILE* fp) {
 }
 
 /*
- * Get the first non-comment character from `fp' using `fgetc'. If EOF is
+ * Get the first non-comment character from 'fp' using 'fgetc'. If EOF is
  * encountered inside a comment, it is returned literally.
  */
 static int get_next_non_comment(FILE* fp) {
@@ -89,9 +89,9 @@ static int get_next_non_comment(FILE* fp) {
 /*----------------------------------------------------------------------------*/
 
 /*
- * Read a double-quote-terminated string into the `dst' buffer, modifying its
+ * Read a double-quote-terminated string into the 'dst' buffer, modifying its
  * size and position. Assumes the opening double-quote has just been written to
- * `dst'; and reads up to the final non-escaped double-quote, included.
+ * 'dst'; and reads up to the final non-escaped double-quote, included.
  *
  * The string will be reallocated if necessary, ensuring there is enough space
  * for the null terminator after the closing double-quote, but without actually
@@ -163,7 +163,7 @@ static char* read_user_list(FILE* fp) {
          * decrease the nesting level, respectively.
          *
          * If we encounter a double-quote, we should handle it similarly to
-         * `read_isolated_user_string', since parentheses should be ignored
+         * 'read_isolated_user_string', since parentheses should be ignored
          * inside strings, escaped quotes should be handled, etc.
          */
         switch (c) {
@@ -191,7 +191,7 @@ static char* read_user_list(FILE* fp) {
 /*
  * Read an isolated user string. Assumes the caller just received a
  * double-quote, but didn't write it anywhere. Writes the opening double-quote,
- * reads a string using the `read_user_string' function (used in other places),
+ * reads a string using the 'read_user_string' function (used in other places),
  * and writes the final null terminator.
  */
 static char* read_isolated_user_string(FILE* fp) {
@@ -217,7 +217,7 @@ static char* read_isolated_atom(FILE* fp) {
 
     /*
      * Read until the incoming character is a token separator. This includes
-     * spaces, but also parentheses, for example. The `is_token_separator'
+     * spaces, but also parentheses, for example. The 'is_token_separator'
      * function is declared in <lexer.h>.
      */
     for (;;) {

@@ -32,7 +32,7 @@ char escaped2byte(char escaped) {
     switch (escaped) {
         case 'a':  return '\a';
         case 'b':  return '\b';
-        case 'e':  return '\e';
+        case 'e':  return 0x1B;
         case 'f':  return '\f';
         case 'n':  return '\n';
         case 'r':  return '\r';
@@ -52,7 +52,7 @@ const char* byte2escaped(char byte) {
     switch (byte) {
         case '\a': return "\\a";
         case '\b': return "\\b";
-        case '\e': return "\\e";
+        case 0x1B: return "\\e";
         case '\f': return "\\f";
         case '\n': return "\\n";
         case '\r': return "\\r";
@@ -99,7 +99,7 @@ bool sl_regex_match_groups(const char* pat, const char* str, bool ignore_case,
      * extra item for the entire match, which will be at index 0.
      */
     *nmatch = r.re_nsub + 1;
-    *pmatch = mem_alloc(*nmatch * sizeof(regmatch_t*));
+    *pmatch = mem_alloc(*nmatch * sizeof(regmatch_t));
 
     const int code = regexec(&r, str, *nmatch, *pmatch, 0);
     regfree(&r);
@@ -146,12 +146,13 @@ bool sl_concat_format(char** dst, size_t* dst_sz, size_t* dst_offset,
 
 /*----------------------------------------------------------------------------*/
 
-size_t int2str(long long x, char** dst) {
+size_t int2str(LispInt x, char** dst) {
     /*
-     * A call to `snprintf' with (NULL, 0, ...) as arguments can be used to get
+     * A call to 'snprintf' with (NULL, 0, ...) as arguments can be used to get
      * the number of bytes to be written. We still have to add one for the
      * null-terminator.
      */
+    SL_ASSERT_TYPES(LispInt, long long);
     const int size = snprintf(NULL, 0, "%lld", x);
     if (size < 0) {
         *dst = NULL;
@@ -163,7 +164,8 @@ size_t int2str(long long x, char** dst) {
     return size;
 }
 
-size_t flt2str(double x, char** dst) {
+size_t flt2str(LispFlt x, char** dst) {
+    SL_ASSERT_TYPES(LispFlt, double);
     const int size = snprintf(NULL, 0, "%f", x);
     if (size < 0) {
         *dst = NULL;

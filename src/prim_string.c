@@ -16,6 +16,8 @@
  * SL. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#define _POSIX_C_SOURCE 200809L /* open_memstream() */
+
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -27,21 +29,22 @@
 #include "include/memory.h"
 #include "include/primitives.h"
 
-Expr* prim_write_to_str(Env* env, Expr* e) {
+Expr* prim_write_to_str(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT_ARG_NUM(e, 1);
+    SL_EXPECT_ARG_NUM(args, 1);
+    const Expr* arg = CAR(args);
 
     char* str;
     size_t sz;
     FILE* fp = open_memstream(&str, &sz);
 
-    const bool success = expr_write(fp, e);
+    const bool success = expr_write(fp, arg);
     fclose(fp);
 
     if (!success) {
         free(str);
         return err("Couldn't write expression of type '%s'.",
-                   exprtype2str(e->type));
+                   exprtype2str(arg->type));
     }
 
     Expr* ret  = expr_new(EXPR_STRING);
@@ -57,13 +60,13 @@ Expr* prim_write_to_str(Env* env, Expr* e) {
 
 #define FORMAT_BUFSZ 100
 
-Expr* prim_format(Env* env, Expr* e) {
+Expr* prim_format(Env* env, Expr* args) {
     SL_UNUSED(env);
-    SL_EXPECT(e != NULL, "Missing arguments.");
-    SL_EXPECT_TYPE(e, EXPR_STRING);
+    SL_EXPECT(!expr_is_nil(args), "Expected at least a format argument.");
 
-    const char* fmt     = e->val.s;
-    const Expr* cur_arg = e->next;
+    SL_EXPECT_TYPE(CAR(args), EXPR_STRING);
+    const char* fmt = CAR(args)->val.s;
+    args            = CDR(args);
 
     size_t dst_pos = 0;
     size_t dst_sz  = FORMAT_BUFSZ;
@@ -87,7 +90,7 @@ Expr* prim_format(Env* env, Expr* e) {
         fmt++;
 
         /* Make sure the user supplied enough arguments. */
-        if (cur_arg == NULL) {
+        if (expr_is_nil(args)) {
             free(dst);
             return err("Not enough arguments for the specified format.");
         }
@@ -143,12 +146,13 @@ Expr* prim_format(Env* env, Expr* e) {
          * Make sure the current format specifier is valid for the current
          * argument.
          */
-        if (expr_type != cur_arg->type) {
+        const Expr* arg = CAR(args);
+        if (expr_type != arg->type) {
             free(dst);
             return err("Format specifier expected argument of type '%s', got "
                        "'%s'.",
                        exprtype2str(expr_type),
-                       exprtype2str(cur_arg->type));
+                       exprtype2str(arg->type));
         }
 
         /*
@@ -157,27 +161,15 @@ Expr* prim_format(Env* env, Expr* e) {
          */
         switch (expr_type) {
             case EXPR_STRING:
-                sl_concat_format(&dst,
-                                 &dst_sz,
-                                 &dst_pos,
-                                 c_format,
-                                 cur_arg->val.s);
+                sl_concat_format(&dst, &dst_sz, &dst_pos, c_format, arg->val.s);
                 break;
 
             case EXPR_NUM_INT:
-                sl_concat_format(&dst,
-                                 &dst_sz,
-                                 &dst_pos,
-                                 c_format,
-                                 cur_arg->val.n);
+                sl_concat_format(&dst, &dst_sz, &dst_pos, c_format, arg->val.n);
                 break;
 
             case EXPR_NUM_FLT:
-                sl_concat_format(&dst,
-                                 &dst_sz,
-                                 &dst_pos,
-                                 c_format,
-                                 cur_arg->val.f);
+                sl_concat_format(&dst, &dst_sz, &dst_pos, c_format, arg->val.f);
                 break;
 
             default:
@@ -186,14 +178,14 @@ Expr* prim_format(Env* env, Expr* e) {
         }
 
         /* Move to the next argument, for the next format specifier. */
-        cur_arg = cur_arg->next;
+        args = CDR(args);
     }
 
 done:
     dst[dst_pos] = '\0';
 
     /*
-     * NOTE: We could warn the user if `cur_arg != NULL', since that means he
+     * NOTE: We could warn the user if 'args != NULL', since that means he
      * specified to many arguments for this format.
      */
 
@@ -204,32 +196,40 @@ done:
 
 /*----------------------------------------------------------------------------*/
 
-Expr* prim_substring(Env* env, Expr* e) {
+Expr* prim_substring(Env* env, Expr* args) {
     SL_UNUSED(env);
 
-    const size_t arg_num = expr_list_len(e);
+    const size_t arg_num = expr_list_len(args);
     SL_EXPECT(arg_num >= 1 || arg_num <= 3,
               "Expected between 1 and 3 arguments.");
 
-    SL_EXPECT_TYPE(e, EXPR_STRING);
-    const long long str_len = (long long)strlen(e->val.s);
-    long long start_idx     = 0;
-    long long end_idx       = str_len;
+    /* First argument, string */
+    const Expr* str_expr = expr_list_nth(args, 1);
+    SL_EXPECT_TYPE(str_expr, EXPR_STRING);
+    const LispInt str_len = (LispInt)strlen(str_expr->val.s);
 
     /* Second argument, start index */
-    if (arg_num >= 2 && !expr_is_nil(e->next)) {
-        SL_EXPECT_TYPE(e->next, EXPR_NUM_INT);
-        start_idx = e->next->val.n;
-        if (start_idx < 0)
-            start_idx += str_len;
+    LispInt start_idx = 0;
+    if (arg_num >= 2) {
+        const Expr* start_idx_expr = expr_list_nth(args, 2);
+        if (!expr_is_nil(start_idx_expr)) {
+            SL_EXPECT_TYPE(start_idx_expr, EXPR_NUM_INT);
+            start_idx = start_idx_expr->val.n;
+            if (start_idx < 0)
+                start_idx += str_len;
+        }
     }
 
     /* Third argument, end index */
-    if (arg_num >= 3 && !expr_is_nil(e->next->next)) {
-        SL_EXPECT_TYPE(e->next->next, EXPR_NUM_INT);
-        end_idx = e->next->next->val.n;
-        if (end_idx < 0)
-            end_idx += str_len;
+    LispInt end_idx = str_len;
+    if (arg_num >= 3) {
+        const Expr* end_idx_expr = expr_list_nth(args, 3);
+        if (!expr_is_nil(end_idx_expr)) {
+            SL_EXPECT_TYPE(end_idx_expr, EXPR_NUM_INT);
+            end_idx = end_idx_expr->val.n;
+            if (end_idx < 0)
+                end_idx += str_len;
+        }
     }
 
     /*
@@ -246,9 +246,9 @@ Expr* prim_substring(Env* env, Expr* e) {
     Expr* ret  = expr_new(EXPR_STRING);
     ret->val.s = mem_alloc(end_idx - start_idx + 1);
 
-    long long dst_i, src_i;
+    LispInt dst_i, src_i;
     for (dst_i = 0, src_i = start_idx; src_i < end_idx; dst_i++, src_i++)
-        ret->val.s[dst_i] = e->val.s[src_i];
+        ret->val.s[dst_i] = str_expr->val.s[src_i];
     ret->val.s[dst_i] = '\0';
 
     return ret;
@@ -256,71 +256,70 @@ Expr* prim_substring(Env* env, Expr* e) {
 
 /*----------------------------------------------------------------------------*/
 
-Expr* prim_re_match_groups(Env* env, Expr* e) {
+Expr* prim_re_match_groups(Env* env, Expr* args) {
     SL_UNUSED(env);
 
-    const size_t arg_num = expr_list_len(e);
-    SL_EXPECT(arg_num >= 2 || arg_num <= 3, "Expected 2 or 3 arguments.");
-
-    SL_EXPECT_TYPE(e, EXPR_STRING);
-    const char* pattern = e->val.s;
-
-    SL_EXPECT_TYPE(e->next, EXPR_STRING);
-    const char* string = e->next->val.s;
-
-    const bool ignore_case = (arg_num >= 3 && !expr_is_nil(e->next->next));
+    const size_t arg_num = expr_list_len(args);
+    SL_EXPECT(arg_num == 2 || arg_num == 3, "Expected 2 or 3 arguments.");
 
     /*
      * Argument syntax: (regexp string &optional ignore-case)
      *
-     * The `re-match-groups' function returns a list of matches. The first match
-     * corresponds to the entire regular expression, and the rest correspond to
-     * each parenthesized sub-expression.  Only the matches are included in the
-     * returned list, so `nil' means that no match was found for the entire
-     * expression.
+     * The `re-match-groups' function returns a list of matches. Each item in
+     * the returned list is a pair with two integers corresponding to the start
+     * and end indexes of that match inside 'string'. Therefore, the structure
+     * of the returned list is:
      *
-     * Each item in the returned list is a list of two integers corresponding to
-     * the start and end indexes of that match inside `string'.
+     *   ((START . END)
+     *    (START . END)
+     *    ...
+     *    (START . END))
+     *
+     * The first match corresponds to the entire regular expression, and the
+     * rest correspond to each parenthesized sub-expression. Only the matches
+     * are included in the returned list, so `nil' means that no match was found
+     * for the entire expression.
      *
      * It uses Extended Regular Expression (ERE) syntax. See:
      *   https://www.gnu.org/software/sed/manual/html_node/ERE-syntax.html
      *   https://www.gnu.org/software/sed/manual/html_node/BRE-vs-ERE.html
      *   https://www.gnu.org/software/sed/manual/html_node/Character-Classes-and-Bracket-Expressions.html
      */
-    Expr* ret = expr_new(EXPR_PARENT);
+    SL_EXPECT_TYPE(CAR(args), EXPR_STRING);
+    const char* pattern = CAR(args)->val.s;
+
+    SL_EXPECT_TYPE(CADR(args), EXPR_STRING);
+    const char* string = CADR(args)->val.s;
+
+    const bool ignore_case =
+      (arg_num >= 3 && !expr_is_nil(expr_list_nth(args, 3)));
 
     size_t nmatch;
     regmatch_t* pmatch;
-    if (!sl_regex_match_groups(pattern,
-                               string,
-                               ignore_case,
-                               &nmatch,
-                               &pmatch)) {
-        ret->val.children = NULL;
-        return ret;
-    }
+    if (!sl_regex_match_groups(pattern, string, ignore_case, &nmatch, &pmatch))
+        return expr_clone(g_nil);
 
     Expr dummy_copy;
-    dummy_copy.next = NULL;
-    Expr* cur_copy  = &dummy_copy;
+    dummy_copy.val.pair.cdr = g_nil;
+    Expr* cur_copy          = &dummy_copy;
 
     for (size_t i = 0; i < nmatch; i++) {
         if (pmatch[i].rm_so == -1 || pmatch[i].rm_eo == -1)
             break;
 
         /* (cons start-offset end-offset) */
-        Expr* match_pair                      = expr_new(EXPR_PARENT);
-        match_pair->val.children              = expr_new(EXPR_NUM_INT);
-        match_pair->val.children->val.n       = pmatch[i].rm_so;
-        match_pair->val.children->next        = expr_new(EXPR_NUM_INT);
-        match_pair->val.children->next->val.n = pmatch[i].rm_eo;
+        Expr* match_pair       = expr_new(EXPR_PAIR);
+        CAR(match_pair)        = expr_new(EXPR_NUM_INT);
+        CAR(match_pair)->val.n = pmatch[i].rm_so;
+        CDR(match_pair)        = expr_new(EXPR_NUM_INT);
+        CDR(match_pair)->val.n = pmatch[i].rm_eo;
 
-        cur_copy->next = match_pair;
-        cur_copy       = cur_copy->next;
+        CDR(cur_copy) = expr_new(EXPR_PAIR);
+        cur_copy      = CDR(cur_copy);
+        CAR(cur_copy) = match_pair;
+        CDR(cur_copy) = g_nil;
     }
 
-    ret->val.children = dummy_copy.next;
-
     free(pmatch);
-    return ret;
+    return dummy_copy.val.pair.cdr;
 }
