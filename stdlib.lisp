@@ -154,8 +154,7 @@
 (defun not (predicate)
   (if predicate nil tru))
 
-(defun null? (expr)
-  (not expr))
+(define null? not)
 
 (defun >= (a b)
   (or (> a b)
