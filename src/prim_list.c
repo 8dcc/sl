@@ -16,6 +16,8 @@
  * SL. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#define _POSIX_C_SOURCE 200809L /* stpcpy() */
+
 #include <stddef.h>
 #include <string.h>
 
