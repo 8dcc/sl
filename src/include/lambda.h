@@ -74,6 +74,10 @@ enum ELambdaCtxErr lambdactx_init(struct Env* env, LambdaCtx* ctx,
 /*
  * Copy the specified 'LambdaCtx' structure into an allocated copy, and return
  * it.
+ *
+ * Note that the list of body expressions is copied by reference, and that the
+ * environment is cloned using `env_clone', which also copies references (i.e.
+ * expressions are not cloned).
  */
 LambdaCtx* lambdactx_clone(const LambdaCtx* ctx);
 

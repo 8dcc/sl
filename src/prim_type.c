@@ -40,55 +40,55 @@ Expr* prim_type_of(Env* env, Expr* args) {
 Expr* prim_is_int(Env* env, Expr* args) {
     SL_UNUSED(env);
     const bool result = expr_list_has_only_type(args, EXPR_NUM_INT);
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
 
 Expr* prim_is_flt(Env* env, Expr* args) {
     SL_UNUSED(env);
     const bool result = expr_list_has_only_type(args, EXPR_NUM_FLT);
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
 
 Expr* prim_is_symbol(Env* env, Expr* args) {
     SL_UNUSED(env);
     const bool result = expr_list_has_only_type(args, EXPR_SYMBOL);
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
 
 Expr* prim_is_string(Env* env, Expr* args) {
     SL_UNUSED(env);
     const bool result = expr_list_has_only_type(args, EXPR_STRING);
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
 
 Expr* prim_is_pair(Env* env, Expr* args) {
     SL_UNUSED(env);
     const bool result = expr_list_has_only_type(args, EXPR_PAIR);
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
 
 Expr* prim_is_list(Env* env, Expr* args) {
     SL_UNUSED(env);
     const bool result = expr_list_has_only_lists(args);
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
 
 Expr* prim_is_primitive(Env* env, Expr* args) {
     SL_UNUSED(env);
     const bool result = expr_list_has_only_type(args, EXPR_PRIM);
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
 
 Expr* prim_is_lambda(Env* env, Expr* args) {
     SL_UNUSED(env);
     const bool result = expr_list_has_only_type(args, EXPR_LAMBDA);
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
 
 Expr* prim_is_macro(Env* env, Expr* args) {
     SL_UNUSED(env);
     const bool result = expr_list_has_only_type(args, EXPR_MACRO);
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
 
 /*----------------------------------------------------------------------------*/

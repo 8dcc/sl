@@ -66,7 +66,7 @@ Expr* prim_write(Env* env, Expr* args) {
               "Couldn't write expression of type '%s'.",
               exprtype2str(arg->type));
 
-    return expr_clone(g_tru);
+    return g_tru;
 }
 
 Expr* prim_scan_str(Env* env, Expr* args) {
@@ -120,11 +120,11 @@ Expr* prim_print_str(Env* env, Expr* args) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(args);
+    Expr* arg = CAR(args);
     SL_EXPECT_TYPE(arg, EXPR_STRING);
 
     printf("%s", arg->val.s);
-    return expr_clone(arg);
+    return arg;
 }
 
 Expr* prim_error(Env* env, Expr* args) {

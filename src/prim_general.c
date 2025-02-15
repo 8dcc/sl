@@ -110,5 +110,5 @@ Expr* prim_set_random_seed(Env* env, Expr* args) {
     SL_EXPECT_TYPE(seed, EXPR_NUM_INT);
 
     srand(seed->val.n);
-    return expr_clone(g_tru);
+    return g_tru;
 }

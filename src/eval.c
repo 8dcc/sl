@@ -179,7 +179,7 @@ Expr* eval(Env* env, Expr* e) {
         case EXPR_LAMBDA:
         case EXPR_MACRO:
             /* Not a parent nor a symbol, evaluates to itself */
-            return expr_clone(e);
+            return e;
 
         case EXPR_UNKNOWN:
             SL_FATAL("Tried to evaluate an expression of type 'Unknown'.");
