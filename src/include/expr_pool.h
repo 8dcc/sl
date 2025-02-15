@@ -186,6 +186,13 @@ void pool_dump(FILE* fp);
 /* Static functions */
 
 /*
+ * Is the specified item flagged as free?
+ */
+static inline bool pool_item_is_free(PoolItem* pool_item) {
+    return (pool_item_flags(pool_item) & POOL_FLAG_FREE) != 0;
+}
+
+/*
  * Return the pool item for the specified expression.
  *
  * We are able to cast an 'Expr' pointer to a 'PoolItem' one because the

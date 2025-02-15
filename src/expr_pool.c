@@ -60,13 +60,6 @@ ExprPool* g_expr_pool = NULL;
 /* Static functions */
 
 /*
- * Is the specified item flagged as free?
- */
-static inline bool pool_item_is_free(PoolItem* pool_item) {
-    return (pool_item_flags(pool_item) & POOL_FLAG_FREE) != 0;
-}
-
-/*
  * Free all previously-allocated members of an expression when necessary.
  * Doesn't free other expressions, just members that were allocated using
  * 'mem_alloc' or similar. Doesn't free the 'Expr' structure itself.
