@@ -77,12 +77,9 @@ void gc_mark_expr(Expr* e) {
 
         case EXPR_LAMBDA:
         case EXPR_MACRO:
-            /*
-             * Mark the environment of the lambda and its body as in use.  We
-             * don't currently mark expressions stored in the lambda
-             * environment.
-             */
+            /* Mark the environment of the lambda and its body */
             e->val.lambda->env->is_used = true;
+            gc_mark_env_contents(e->val.lambda->env);
             gc_mark_expr(e->val.lambda->body);
             break;
 
