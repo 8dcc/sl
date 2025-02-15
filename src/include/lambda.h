@@ -76,7 +76,8 @@ enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const struct Expr* formals,
 LambdaCtx* lambdactx_clone(const LambdaCtx* ctx);
 
 /*
- * Free all members of a 'LambdaCtx' structure, and the structure itself.
+ * Free all members of a 'LambdaCtx' structure, including its environment, and
+ * the structure itself.
  */
 void lambdactx_free(LambdaCtx* ctx);
 

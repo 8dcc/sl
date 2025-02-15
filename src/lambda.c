@@ -159,9 +159,10 @@ LambdaCtx* lambdactx_clone(const LambdaCtx* ctx) {
 
 void lambdactx_free(LambdaCtx* ctx) {
     /*
-     * 1. Free the lambda environment, which shouldn't be in use anymore.
-     *    Expressions in that environment are not freed, so they can still be
-     *    used somewhere else.
+     * 1. Free the lambda environment. We assume that if the environment was in
+     *    use somewhere else, the 'LambdaCtx' wouldn't have been freed.  Either
+     *    way, expressions in that environment are not freed, so they can still
+     *    be used somewhere else.
      * 2. Free each formal argument string, and the pointer to the array itself.
      * 3. Free the "&rest" formal string. This might be NULL, but it's a valid
      *    value for 'free'.

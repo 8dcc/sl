@@ -58,12 +58,19 @@ struct EnvBinding {
 /*
  * An environment is simply an array of 'EnvBinding' structures, and a parent
  * environment.
+ *
+ * The 'is_used' member is needed to avoid accidentally freeing a lambda's
+ * environment if it's being used as the parent of another environment.
+ *
+ * TODO: It's not ideal to store garbage-collection information in this
+ * structure, this should be moved somewhere else if possible.
  */
 typedef struct Env Env;
 struct Env {
     Env* parent;
     size_t size;
     EnvBinding* bindings;
+    bool is_used;
 };
 
 /*----------------------------------------------------------------------------*/

@@ -53,6 +53,7 @@ Env* env_new(void) {
     env->parent   = NULL;
     env->size     = 0;
     env->bindings = NULL;
+    env->is_used  = true;
     return env;
 }
 

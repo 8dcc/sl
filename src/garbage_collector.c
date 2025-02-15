@@ -29,9 +29,29 @@
 #include "include/error.h"
 
 void gc_unmark_all(void) {
-    for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next)
-        for (size_t i = 0; i < a->arr_sz; i++)
-            pool_item_flag_unset(&a->arr[i], POOL_FLAG_GCMARKED);
+    for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
+        for (size_t i = 0; i < a->arr_sz; i++) {
+            PoolItem* pool_item = &a->arr[i];
+            pool_item_flag_unset(pool_item, POOL_FLAG_GCMARKED);
+
+            /*
+             * If the current expression uses a 'LambdaCtx', unmark its
+             * environment and their parents.
+             */
+            if (!pool_item_is_free(pool_item)) {
+                const Expr* e = &pool_item->val.expr;
+
+                /*
+                 * TODO: This check is repeated in 'gc_collect', we should
+                 * abstract it.
+                 */
+                if (e->type == EXPR_LAMBDA || e->type == EXPR_MACRO)
+                    for (Env* env = e->val.lambda->env; env != NULL;
+                         env      = env->parent)
+                        env->is_used = false;
+            }
+        }
+    }
 }
 
 void gc_mark_env_contents(Env* env) {
@@ -52,7 +72,12 @@ void gc_mark_expr(Expr* e) {
 
         case EXPR_LAMBDA:
         case EXPR_MACRO:
-            /* We don't currently mark expressions in the lambda environment */
+            /*
+             * Mark the environment of the lambda and its body as in use.  We
+             * don't currently mark expressions stored in the lambda
+             * environment.
+             */
+            e->val.lambda->env->is_used = true;
             gc_mark_expr(e->val.lambda->body);
             break;
 
@@ -72,14 +97,27 @@ void gc_mark_expr(Expr* e) {
 
 void gc_collect(void) {
     /*
-     * Iterate the list of array starts, then iterate the arrays themselves. We
-     * collect (free) all expressions that are not marked (and not free).
+     * Iterate the list of array starts, then iterate the arrays themselves.
+     *
+     * We skip items that are either marked or already free. If the expression
+     * has an associated environment (i.e. it uses a 'LambdaCtx'), and it's
+     * still in use, we skip the expression entirely.
      */
     for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
         PoolItem* cur_arr = a->arr;
-        for (size_t i = 0; i < a->arr_sz; i++)
-            if ((pool_item_flags(&cur_arr[i]) &
-                 (POOL_FLAG_GCMARKED | POOL_FLAG_FREE)) == 0)
-                pool_free(&cur_arr[i].val.expr);
+        for (size_t i = 0; i < a->arr_sz; i++) {
+            const PoolItem* pool_item = &cur_arr[i];
+
+            if ((pool_item_flags(pool_item) &
+                 (POOL_FLAG_GCMARKED | POOL_FLAG_FREE)) != 0)
+                continue;
+
+            const Expr* e = &pool_item->val.expr;
+            if ((e->type == EXPR_LAMBDA || e->type == EXPR_MACRO) &&
+                e->val.lambda->env->is_used)
+                continue;
+
+            pool_free(&cur_arr[i].val.expr);
+        }
     }
 }
