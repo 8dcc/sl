@@ -64,6 +64,11 @@ void gc_mark_env_contents(Env* env) {
 void gc_mark_expr(Expr* e) {
     SL_ASSERT(e != NULL);
 
+    PoolItem* pool_item = pool_item_from_expr(e);
+    if (pool_item_is_gcmarked(pool_item))
+        return;
+    pool_item_flag_set(pool_item, POOL_FLAG_GCMARKED);
+
     switch (e->type) {
         case EXPR_PAIR:
             gc_mark_expr(CAR(e));
@@ -90,9 +95,6 @@ void gc_mark_expr(Expr* e) {
         case EXPR_PRIM:
             break;
     }
-
-    PoolItem* pool_item = pool_item_from_expr(e);
-    pool_item_flag_set(pool_item, POOL_FLAG_GCMARKED);
 }
 
 void gc_collect(void) {
