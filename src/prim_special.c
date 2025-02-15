@@ -243,8 +243,9 @@ Expr* prim_lambda(Env* env, Expr* args) {
      * lambda definition, and finally store that context structure in the actual
      * expression we will return.
      */
-    LambdaCtx* ctx                      = lambdactx_new();
-    const enum ELambdaCtxErr lambda_err = lambdactx_init(ctx, formals, body);
+    LambdaCtx* ctx = lambdactx_new();
+    const enum ELambdaCtxErr lambda_err =
+      lambdactx_init(env, ctx, formals, body);
     if (lambda_err != LAMBDACTX_ERR_NONE) {
         lambdactx_free(ctx);
         return err("%s", lambdactx_strerror(lambda_err));
@@ -266,8 +267,9 @@ Expr* prim_macro(Env* env, Expr* args) {
     const Expr* body = CDR(args);
     SL_EXPECT_PROPER_LIST(body);
 
-    LambdaCtx* ctx                      = lambdactx_new();
-    const enum ELambdaCtxErr lambda_err = lambdactx_init(ctx, formals, body);
+    LambdaCtx* ctx = lambdactx_new();
+    const enum ELambdaCtxErr lambda_err =
+      lambdactx_init(env, ctx, formals, body);
     if (lambda_err != LAMBDACTX_ERR_NONE) {
         lambdactx_free(ctx);
         return err("%s", lambdactx_strerror(lambda_err));
