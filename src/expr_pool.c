@@ -91,7 +91,7 @@ static void free_heap_expr_members(Expr* e) {
 /*----------------------------------------------------------------------------*/
 /* Public wrappers */
 
-enum EPoolItemFlags pool_item_flags(PoolItem* pool_item) {
+enum EPoolItemFlags pool_item_flags(const PoolItem* pool_item) {
     VALGRIND_MAKE_MEM_DEFINED(&pool_item->flags, sizeof(enum EPoolItemFlags));
     const enum EPoolItemFlags result = pool_item->flags;
     VALGRIND_MAKE_MEM_NOACCESS(&pool_item->flags, sizeof(enum EPoolItemFlags));

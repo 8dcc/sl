@@ -120,7 +120,7 @@ extern ExprPool* g_expr_pool;
  * NOTE: This means that if the item was previously marked as 'DEFINED', you
  * will need to set it again.
  */
-enum EPoolItemFlags pool_item_flags(PoolItem* item);
+enum EPoolItemFlags pool_item_flags(const PoolItem* item);
 void pool_item_flag_set(PoolItem* item, enum EPoolItemFlags flag);
 void pool_item_flag_unset(PoolItem* item, enum EPoolItemFlags flag);
 
