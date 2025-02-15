@@ -78,7 +78,7 @@ LambdaCtx* lambdactx_new(void) {
     return ret;
 }
 
-enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const Expr* formals,
+enum ELambdaCtxErr lambdactx_init(Env* env, LambdaCtx* ctx, const Expr* formals,
                                   const Expr* body) {
     SL_ASSERT(expr_is_proper_list(formals));
     SL_ASSERT(expr_is_proper_list(body));
@@ -92,18 +92,56 @@ enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const Expr* formals,
         return formal_err;
 
     /*
-     * Initialize the 'LambdaCtx' structure with:
-     *   - A new environment whose parent will be set when making the actual
-     *     function call.
-     *   - A string array for the formal arguments of the function, the first
-     *     argument of `lambda'. It will be filled below.
-     *   - The body of the function, the rest of the arguments of `lambda'.
+     * Initialize the lambda's environment. This environment will be used to:
      *
-     * Note that since `lambda' is a special form and they are handled
-     * differently in `eval', we assume that the Lisp arguments were not
-     * evaluated implicitly.
+     *   1. Bind the formal argument symbols to the argument values, when the
+     *      lambda is called.
+     *   2. If more symbols are bound inside this function call, the current
+     *      lambda's environment will be used (restricting the scope of nested
+     *      functions, for example).
+     *
+     * When the lambda is created, no symbols are bound in their
+     * environment. However, we need to set the parent environment when the
+     * lambda is created (instead of when called), so it's able to create a
+     * closure with the caller:
+     *
+     *     (lambda (a)
+     *       (lambda (b)  ; Inner lambda needs to access 'a' later.
+     *         (+ a b)))
+     *
+     *
+     * There is another problem: whenever we free a lambda, we are also freeing
+     * its environment. Since the lifetime of the parent environment might be
+     * shorter than the one of the lambda we are creating, we should create a
+     * clone of the parent environment instead.
+     *
+     * Since a lambda can't access the environment where it was called,
+     * something like this is not valid, because 'b' was not defined when the
+     * lambda was created:
+     *
+     *     (define func
+     *       (lambda (a)
+     *         (+ a b)))
+     *     (let ((b 2))
+     *       (func 3)) ; Error.
+     *
+     * This last detail is the difference between "dynamic" and "lexical"
+     * binding. This Lisp uses lexical binding.
      */
     ctx->env         = env_new();
+    ctx->env->parent = env;
+
+    /*
+     * Apart from the environment, the lambda needs to store:
+     *
+     *   - A string array for the formal arguments of the function, the first
+     *     argument of `lambda'.
+     *   - The body of the function, consisting the rest of the arguments of
+     *     `lambda'.
+     *
+     * Note that since `lambda' is a special form, and it is handled differently
+     * in `eval', we know that the Lisp arguments were not evaluated implicitly.
+     */
     ctx->formals_num = mandatory;
     ctx->formals     = mem_alloc(mandatory * sizeof(char*));
     ctx->formal_rest = NULL;
@@ -229,7 +267,7 @@ void lambdactx_print_args(FILE* fp, const LambdaCtx* ctx) {
 
 /*----------------------------------------------------------------------------*/
 
-static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
+static Expr* lambdactx_eval_body(LambdaCtx* ctx, Expr* args) {
     SL_ASSERT(expr_is_proper_list(args));
 
     /* Count the number of arguments that we received */
@@ -269,13 +307,6 @@ static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
     }
 
     /*
-     * Set the environment used when calling the lambda as the parent
-     * environment of the lambda itself. It's important that we set this now,
-     * and not when defining the lambda.
-     */
-    ctx->env->parent = env;
-
-    /*
      * Evaluate each expression in the body of the lambda, using its environment
      * with the bound the formal arguments. Return the last evaluated
      * expression.
@@ -291,13 +322,15 @@ static Expr* lambdactx_eval_body(Env* env, LambdaCtx* ctx, Expr* args) {
 }
 
 Expr* lambda_call(Env* env, Expr* func, Expr* args) {
+    SL_UNUSED(env);
     SL_ASSERT(EXPR_LAMBDA_P(func));
-    return lambdactx_eval_body(env, func->val.lambda, args);
+    return lambdactx_eval_body(func->val.lambda, args);
 }
 
 Expr* macro_expand(Env* env, Expr* func, Expr* args) {
+    SL_UNUSED(env);
     SL_ASSERT(EXPR_MACRO_P(func));
-    return lambdactx_eval_body(env, func->val.lambda, args);
+    return lambdactx_eval_body(func->val.lambda, args);
 }
 
 Expr* macro_call(Env* env, Expr* func, Expr* args) {
