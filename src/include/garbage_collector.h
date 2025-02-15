@@ -35,7 +35,7 @@ void gc_unmark_all(void);
  * This only marks the expressions directly in the specified environment, it
  * does not mark parent environments.
  */
-void gc_mark_env(struct Env* env);
+void gc_mark_env_contents(struct Env* env);
 
 /*
  * Mark the specified expression as currently used, recursively. This function

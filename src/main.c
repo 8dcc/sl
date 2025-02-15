@@ -104,7 +104,7 @@ static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
         gc_mark_expr(g_nil);
         gc_mark_expr(g_tru);
         gc_mark_expr(g_debug_trace_list);
-        gc_mark_env(env);
+        gc_mark_env_contents(env);
         gc_collect();
     }
 }

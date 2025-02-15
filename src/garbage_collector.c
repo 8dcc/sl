@@ -34,7 +34,7 @@ void gc_unmark_all(void) {
             pool_item_flag_unset(&a->arr[i], POOL_FLAG_GCMARKED);
 }
 
-void gc_mark_env(Env* env) {
+void gc_mark_env_contents(Env* env) {
     SL_ASSERT(env != NULL);
 
     for (size_t i = 0; i < env->size; i++)
