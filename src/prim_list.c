@@ -107,7 +107,7 @@ Expr* prim_car(Env* env, Expr* args) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(args);
+    Expr* arg = CAR(args);
     SL_EXPECT(EXPR_PAIR_P(arg) || expr_is_nil(arg),
               "Expected an expression of type '%s' or `nil', got '%s'.",
               exprtype2str(EXPR_PAIR),
@@ -119,7 +119,7 @@ Expr* prim_car(Env* env, Expr* args) {
      * (car '((a b) y z)) ===> (a b)
      */
     if (expr_is_nil(arg))
-        return expr_clone(arg);
+        return g_nil;
 
     return CAR(arg);
 }
@@ -141,7 +141,7 @@ Expr* prim_cdr(Env* env, Expr* args) {
      * (cdr '((a b) y z)) ===> (y z)
      */
     if (expr_is_nil(arg))
-        return arg;
+        return g_nil;
 
     return CDR(arg);
 }
@@ -197,7 +197,7 @@ Expr* prim_append(Env* env, Expr* args) {
 
     /* (append) ===> nil */
     if (expr_is_nil(args))
-        return expr_clone(g_nil);
+        return g_nil;
 
     if (!expr_list_has_only_lists(args) &&
         !expr_list_has_only_type(args, EXPR_STRING))
