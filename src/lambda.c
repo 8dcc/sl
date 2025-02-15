@@ -138,11 +138,8 @@ LambdaCtx* lambdactx_clone(const LambdaCtx* ctx) {
     LambdaCtx* ret = mem_alloc(sizeof(LambdaCtx));
 
     /* Copy the environment and the list of body expressions */
-    ret->env = env_clone(ctx->env);
-    /*
-     * TODO: Should we clone the expressions, or store the original references?
-     */
-    ret->body = expr_clone_tree(ctx->body);
+    ret->env  = env_clone(ctx->env);
+    ret->body = ctx->body;
 
     /* Allocate a new string array for the mandatory formals, and copy them */
     ret->formals_num = ctx->formals_num;

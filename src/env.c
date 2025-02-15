@@ -177,12 +177,9 @@ Env* env_clone(Env* env) {
     cloned->size     = env->size;
     cloned->bindings = mem_alloc(cloned->size * sizeof(EnvBinding));
 
-    /*
-     * TODO: Should we clone the expressions, or store the original references?
-     */
     for (size_t i = 0; i < cloned->size; i++) {
         cloned->bindings[i].sym   = mem_strdup(env->bindings[i].sym);
-        cloned->bindings[i].val   = expr_clone_tree(env->bindings[i].val);
+        cloned->bindings[i].val   = env->bindings[i].val;
         cloned->bindings[i].flags = env->bindings[i].flags;
     }
 

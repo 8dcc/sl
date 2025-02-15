@@ -87,9 +87,6 @@ Expr* prim_list(Env* env, Expr* args) {
     return expr_clone_tree(args);
 }
 
-/*
- * TODO: Don't create copies, store the reference directly.
- */
 Expr* prim_cons(Env* env, Expr* args) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(args, 2);
@@ -100,15 +97,12 @@ Expr* prim_cons(Env* env, Expr* args) {
      * (cons 'a nil)    ===> (a)
      */
     Expr* ret = expr_new(EXPR_PAIR);
-    CAR(ret)  = expr_clone_tree(expr_list_nth(args, 1));
-    CDR(ret)  = expr_clone_tree(expr_list_nth(args, 2));
+    CAR(ret)  = expr_list_nth(args, 1);
+    CDR(ret)  = expr_list_nth(args, 2);
 
     return ret;
 }
 
-/*
- * TODO: Don't create a copy, return the reference directly.
- */
 Expr* prim_car(Env* env, Expr* args) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(args, 1);
@@ -127,17 +121,14 @@ Expr* prim_car(Env* env, Expr* args) {
     if (expr_is_nil(arg))
         return expr_clone(arg);
 
-    return expr_clone_tree(CAR(arg));
+    return CAR(arg);
 }
 
-/*
- * TODO: Don't create a copy, return the reference directly.
- */
 Expr* prim_cdr(Env* env, Expr* args) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(args, 1);
 
-    const Expr* arg = CAR(args);
+    Expr* arg = CAR(args);
     SL_EXPECT(EXPR_PAIR_P(arg) || expr_is_nil(arg),
               "Expected an expression of type '%s' or `nil', got '%s'.",
               exprtype2str(EXPR_PAIR),
@@ -150,14 +141,11 @@ Expr* prim_cdr(Env* env, Expr* args) {
      * (cdr '((a b) y z)) ===> (y z)
      */
     if (expr_is_nil(arg))
-        return expr_clone(arg);
+        return arg;
 
-    return expr_clone_tree(CDR(arg));
+    return CDR(arg);
 }
 
-/*
- * TODO: Don't create a copy, return the reference directly.
- */
 Expr* prim_nth(Env* env, Expr* args) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(args, 2);
@@ -179,7 +167,7 @@ Expr* prim_nth(Env* env, Expr* args) {
               upos,
               list_len);
 
-    return expr_clone_tree(expr_list_nth(list, pos));
+    return expr_list_nth(list, pos);
 }
 
 Expr* prim_length(Env* env, Expr* args) {

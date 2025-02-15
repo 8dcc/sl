@@ -95,6 +95,9 @@ void env_init_defaults(Env* env);
 
 /*
  * Clone a linked list of Env structures into new allocated memory.
+ *
+ * Note that the expressions stored in the environment are copied by reference,
+ * they are not cloned.
  */
 Env* env_clone(Env* env);
 

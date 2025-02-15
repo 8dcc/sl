@@ -47,14 +47,10 @@ static inline bool is_call_to(const Expr* list, const char* func) {
  * If the argument is a list, this function is a "selective" version of the
  * 'eval_list' function from 'eval.c'.
  */
-static Expr* handle_backquote_arg(Env* env, const Expr* arg) {
+static Expr* handle_backquote_arg(Env* env, Expr* arg) {
     /* Not a proper list, return unevaluated, just like `quote' */
     if (!expr_is_proper_list(arg))
-        /*
-         * TODO: Don't create a copy, return the reference directly (after
-         * adding cons).
-         */
-        return expr_clone(arg);
+        return arg;
 
     /*
      * If we reached this point, the expression is a proper list. Check if
@@ -81,7 +77,7 @@ static Expr* handle_backquote_arg(Env* env, const Expr* arg) {
      */
     Expr* result = g_nil;
     for (const Expr* list = arg; !expr_is_nil(list); list = CDR(list)) {
-        const Expr* cur = CAR(list);
+        Expr* cur = CAR(list);
         if (expr_is_proper_list(cur) && is_call_to(cur, ",@")) {
             /*
              * Calls to splice are handled when parsing a list:
@@ -137,11 +133,7 @@ Expr* prim_quote(Env* env, Expr* args) {
      */
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(args, 1);
-    /*
-     * TODO: Don't create a copy, return the reference directly (after
-     * adding cons).
-     */
-    return expr_clone_tree(CAR(args));
+    return CAR(args);
 }
 
 Expr* prim_backquote(Env* env, Expr* args) {
