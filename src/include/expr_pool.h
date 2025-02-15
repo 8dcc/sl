@@ -120,7 +120,7 @@ extern ExprPool* g_expr_pool;
  * NOTE: This means that if the item was previously marked as 'DEFINED', you
  * will need to set it again.
  */
-enum EPoolItemFlags pool_item_flags(PoolItem* item);
+enum EPoolItemFlags pool_item_flags(const PoolItem* item);
 void pool_item_flag_set(PoolItem* item, enum EPoolItemFlags flag);
 void pool_item_flag_unset(PoolItem* item, enum EPoolItemFlags flag);
 
@@ -184,6 +184,22 @@ void pool_dump(FILE* fp);
 
 /*----------------------------------------------------------------------------*/
 /* Static functions */
+
+/*
+ * Is the specified item flagged as free?
+ *
+ * TODO: Turn into macros, use in 'gc_collect'.
+ */
+static inline bool pool_item_is_free(PoolItem* pool_item) {
+    return (pool_item_flags(pool_item) & POOL_FLAG_FREE) != 0;
+}
+
+/*
+ * Is the specified item flagged for garbage collection?
+ */
+static inline bool pool_item_is_gcmarked(PoolItem* pool_item) {
+    return (pool_item_flags(pool_item) & POOL_FLAG_GCMARKED) != 0;
+}
 
 /*
  * Return the pool item for the specified expression.

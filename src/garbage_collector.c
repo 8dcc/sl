@@ -34,7 +34,7 @@ void gc_unmark_all(void) {
             pool_item_flag_unset(&a->arr[i], POOL_FLAG_GCMARKED);
 }
 
-void gc_mark_env(Env* env) {
+void gc_mark_env_contents(Env* env) {
     SL_ASSERT(env != NULL);
 
     for (size_t i = 0; i < env->size; i++)
@@ -43,6 +43,11 @@ void gc_mark_env(Env* env) {
 
 void gc_mark_expr(Expr* e) {
     SL_ASSERT(e != NULL);
+
+    PoolItem* pool_item = pool_item_from_expr(e);
+    if (pool_item_is_gcmarked(pool_item))
+        return;
+    pool_item_flag_set(pool_item, POOL_FLAG_GCMARKED);
 
     switch (e->type) {
         case EXPR_PAIR:
@@ -65,9 +70,6 @@ void gc_mark_expr(Expr* e) {
         case EXPR_PRIM:
             break;
     }
-
-    PoolItem* pool_item = pool_item_from_expr(e);
-    pool_item_flag_set(pool_item, POOL_FLAG_GCMARKED);
 }
 
 void gc_collect(void) {

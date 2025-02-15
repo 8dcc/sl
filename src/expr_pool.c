@@ -60,13 +60,6 @@ ExprPool* g_expr_pool = NULL;
 /* Static functions */
 
 /*
- * Is the specified item flagged as free?
- */
-static inline bool pool_item_is_free(PoolItem* pool_item) {
-    return (pool_item_flags(pool_item) & POOL_FLAG_FREE) != 0;
-}
-
-/*
  * Free all previously-allocated members of an expression when necessary.
  * Doesn't free other expressions, just members that were allocated using
  * 'mem_alloc' or similar. Doesn't free the 'Expr' structure itself.
@@ -98,7 +91,7 @@ static void free_heap_expr_members(Expr* e) {
 /*----------------------------------------------------------------------------*/
 /* Public wrappers */
 
-enum EPoolItemFlags pool_item_flags(PoolItem* pool_item) {
+enum EPoolItemFlags pool_item_flags(const PoolItem* pool_item) {
     VALGRIND_MAKE_MEM_DEFINED(&pool_item->flags, sizeof(enum EPoolItemFlags));
     const enum EPoolItemFlags result = pool_item->flags;
     VALGRIND_MAKE_MEM_NOACCESS(&pool_item->flags, sizeof(enum EPoolItemFlags));
