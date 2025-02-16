@@ -29,7 +29,17 @@
     (my-nested-lambda x)))
 (test-nested 5)
 
-;; Example for testing functions as arguments
+;; Example for showing how closures work. The inner lambda can access 'a' (bound
+;; whenever the outer lambda is called) beacuse the parent environment of the
+;; inner lambda is set whenever it was declared, not when it is called.
+(define get-inner
+  (lambda (a)
+    (lambda (b)
+      (+ a b))))
+(define inner (get-inner 10))
+(inner 20)
+
+;; Example for testing functions as arguments.
 (define summation
   (lambda (i n f)
     (if (> i n)
@@ -38,14 +48,14 @@
          (summation (+ i 1) n f)))))
 (summation 1 5 (lambda (x) (* x 2)))
 
-;; Example function with optional arguments
+;; Example function with optional arguments.
 (define test-rest
   (lambda (a b &rest etc)
     (+ a b
        (apply + etc))))
 (test-rest 1 2 10 20)
 
-;; Example recursive function for calculating the factorial of a number
+;; Example recursive function for calculating the factorial of a number.
 (define fact-recur
   (lambda (n)
     (if (equal? n 0)
@@ -53,7 +63,7 @@
       (* n (fact-recur (- n 1))))))
 (fact-recur 5)
 
-;; Example iterative function for calculating the factorial of a number
+;; Example iterative function for calculating the factorial of a number.
 ;; TODO: Tail-call optimization
 (define fact-iter
   (lambda (n)

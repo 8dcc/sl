@@ -61,22 +61,29 @@ LambdaCtx* lambdactx_new(void);
 /*
  * Initialize a new 'LambdaCtx' structure using the specified formal arguments
  * and the specified body. Note that the 'body' argument is a linked list of
- * expressions.
+ * expressions. The current environment is needed when the lambda is initialized
+ * to set its parent environment.
  *
  * The function returns an error code, which the caller should check, and
  * optionally print with 'lambdactx_strerror'.
  */
-enum ELambdaCtxErr lambdactx_init(LambdaCtx* ctx, const struct Expr* formals,
+enum ELambdaCtxErr lambdactx_init(struct Env* env, LambdaCtx* ctx,
+                                  const struct Expr* formals,
                                   const struct Expr* body);
 
 /*
  * Copy the specified 'LambdaCtx' structure into an allocated copy, and return
  * it.
+ *
+ * Note that the list of body expressions is copied by reference, and that the
+ * environment is cloned using `env_clone', which also copies references (i.e.
+ * expressions are not cloned).
  */
 LambdaCtx* lambdactx_clone(const LambdaCtx* ctx);
 
 /*
- * Free all members of a 'LambdaCtx' structure, and the structure itself.
+ * Free all members of a 'LambdaCtx' structure, including its environment, and
+ * the structure itself.
  */
 void lambdactx_free(LambdaCtx* ctx);
 

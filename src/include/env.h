@@ -58,12 +58,19 @@ struct EnvBinding {
 /*
  * An environment is simply an array of 'EnvBinding' structures, and a parent
  * environment.
+ *
+ * The 'is_used' member is needed to avoid accidentally freeing a lambda's
+ * environment if it's being used as the parent of another environment.
+ *
+ * TODO: It's not ideal to store garbage-collection information in this
+ * structure, this should be moved somewhere else if possible.
  */
 typedef struct Env Env;
 struct Env {
     Env* parent;
     size_t size;
     EnvBinding* bindings;
+    bool is_used;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -95,6 +102,9 @@ void env_init_defaults(Env* env);
 
 /*
  * Clone a linked list of Env structures into new allocated memory.
+ *
+ * Note that the expressions stored in the environment are copied by reference,
+ * they are not cloned.
  */
 Env* env_clone(Env* env);
 
@@ -113,14 +123,14 @@ void env_free(Env* env);
  * is responsible for checking the returned value, handling errors and
  * optionally printing them with 'env_strerror'.
  */
-enum EEnvErr env_bind(Env* env, const char* sym, const struct Expr* val,
+enum EEnvErr env_bind(Env* env, const char* sym, struct Expr* val,
                       enum EEnvBindingFlags flags);
 
 /*
  * Bind the symbol 'sym' to the expression 'val' in the top-most parent of
  * environment 'env', with the specified 'flags'.
  */
-enum EEnvErr env_bind_global(Env* env, const char* sym, const struct Expr* val,
+enum EEnvErr env_bind_global(Env* env, const char* sym, struct Expr* val,
                              enum EEnvBindingFlags flags);
 
 /*

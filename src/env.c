@@ -53,6 +53,7 @@ Env* env_new(void) {
     env->parent   = NULL;
     env->size     = 0;
     env->bindings = NULL;
+    env->is_used  = true;
     return env;
 }
 
@@ -177,12 +178,9 @@ Env* env_clone(Env* env) {
     cloned->size     = env->size;
     cloned->bindings = mem_alloc(cloned->size * sizeof(EnvBinding));
 
-    /*
-     * TODO: Should we clone the expressions, or store the original references?
-     */
     for (size_t i = 0; i < cloned->size; i++) {
         cloned->bindings[i].sym   = mem_strdup(env->bindings[i].sym);
-        cloned->bindings[i].val   = expr_clone_tree(env->bindings[i].val);
+        cloned->bindings[i].val   = env->bindings[i].val;
         cloned->bindings[i].flags = env->bindings[i].flags;
     }
 
@@ -206,7 +204,7 @@ void env_free(Env* env) {
 
 /*----------------------------------------------------------------------------*/
 
-enum EEnvErr env_bind(Env* env, const char* sym, const Expr* val,
+enum EEnvErr env_bind(Env* env, const char* sym, Expr* val,
                       enum EEnvBindingFlags flags) {
     SL_ASSERT(env != NULL);
     SL_ASSERT(sym != NULL);
@@ -217,8 +215,10 @@ enum EEnvErr env_bind(Env* env, const char* sym, const Expr* val,
      * are trying to bind. If we find a match, and it's not a constant binding,
      * overwrite its value and flags.
      *
-     * Otherwise, reallocate the 'bindings' array, add a clone of the symbol
-     * string, a clone of the value expression, and the flags we received.
+     * Otherwise, reallocate the `bindings' array, add a clone of the "symbol"
+     * string, add the "value" expression, and the flags we received.
+     *
+     * Note how, in both cases, we store the value by reference, not by copy.
      *
      * NOTE: This method doesn't check for symbols in parent environments,
      * ignoring their flags. In other words, you can overwrite special forms or
@@ -229,7 +229,7 @@ enum EEnvErr env_bind(Env* env, const char* sym, const Expr* val,
             if ((env->bindings[i].flags & ENV_FLAG_CONST) != 0)
                 return ENV_ERR_CONST;
 
-            env->bindings[i].val   = expr_clone_tree(val);
+            env->bindings[i].val   = val;
             env->bindings[i].flags = flags;
             return ENV_ERR_NONE;
         }
@@ -239,13 +239,13 @@ enum EEnvErr env_bind(Env* env, const char* sym, const Expr* val,
     mem_realloc(env->bindings, env->size * sizeof(EnvBinding));
 
     env->bindings[env->size - 1].sym   = mem_strdup(sym);
-    env->bindings[env->size - 1].val   = expr_clone_tree(val);
+    env->bindings[env->size - 1].val   = val;
     env->bindings[env->size - 1].flags = flags;
 
     return ENV_ERR_NONE;
 }
 
-enum EEnvErr env_bind_global(Env* env, const char* sym, const Expr* val,
+enum EEnvErr env_bind_global(Env* env, const char* sym, Expr* val,
                              enum EEnvBindingFlags flags) {
     while (env->parent != NULL)
         env = env->parent;
@@ -283,7 +283,7 @@ Expr* env_get(const Env* env, const char* sym) {
     if (binding == NULL)
         return NULL;
 
-    return expr_clone_tree(binding->val);
+    return binding->val;
 }
 
 enum EEnvBindingFlags env_get_flags(const Env* env, const char* sym) {

@@ -37,7 +37,7 @@ Expr* prim_equal(Env* env, Expr* args) {
         }
     }
 
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
 
 Expr* prim_equal_num(Env* env, Expr* args) {
@@ -57,7 +57,7 @@ Expr* prim_equal_num(Env* env, Expr* args) {
         }
     }
 
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
 
 Expr* prim_lt(Env* env, Expr* args) {
@@ -74,7 +74,7 @@ Expr* prim_lt(Env* env, Expr* args) {
         }
     }
 
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
 
 Expr* prim_gt(Env* env, Expr* args) {
@@ -91,5 +91,5 @@ Expr* prim_gt(Env* env, Expr* args) {
         }
     }
 
-    return (result) ? expr_clone(g_tru) : expr_clone(g_nil);
+    return (result) ? g_tru : g_nil;
 }
