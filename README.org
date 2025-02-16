@@ -7,6 +7,15 @@
 
 Simple Lisp interpreter made in C with no dependencies.
 
+Articles I wrote about Lisp, and this interpreter in particular:
+
+- [[https://8dcc.github.io/programming/cons-of-cons.html][The pros and cons of Cons]], specifically about this implementation.
+- [[https://8dcc.github.io/programming/conditional-lisp-macros.html][Replacing conditional Lisp primitives with macros]], more of a proof of concept
+  than anything practical.
+- [[https://8dcc.github.io/programming/understanding-y-combinator.html][Understanding the Y combinator]], about lambda calculus and Lisp in general.
+- [[https://8dcc.github.io/programming/pool-allocator.html][Writing a simple pool allocator in C]], for my [[https://github.com/8dcc/libpool][libpool]] project, but also used in
+  this interpreter.
+
 Some good resources for learning about Lisp:
 
 - [[https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html][Structure and Interpretation of Computer Programs]] by Hal Abelson and
