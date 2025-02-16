@@ -28,6 +28,25 @@
 #include "include/garbage_collector.h"
 #include "include/error.h"
 
+/*
+ * Mark an environment and its contents as currently in use.
+ */
+static inline void gc_mark_env(Env* env) {
+    env->is_used = true;
+    gc_mark_env_contents(env);
+}
+
+/*
+ * Mark an environment, its contents and all parent environments until there
+ * is no parent left.
+ */
+static inline void gc_mark_env_and_parents(Env* env) {
+    for (; env != NULL; env = env->parent)
+        gc_mark_env(env);
+}
+
+/*----------------------------------------------------------------------------*/
+
 void gc_unmark_all(void) {
     for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
         for (size_t i = 0; i < a->arr_sz; i++) {
@@ -77,9 +96,11 @@ void gc_mark_expr(Expr* e) {
 
         case EXPR_LAMBDA:
         case EXPR_MACRO:
-            /* Mark the environment of the lambda and its body */
-            e->val.lambda->env->is_used = true;
-            gc_mark_env_contents(e->val.lambda->env);
+            /*
+             * Mark the environment of the lambda (along with all parents) and
+             * its body.
+             */
+            gc_mark_env_and_parents(e->val.lambda->env);
             gc_mark_expr(e->val.lambda->body);
             break;
 
