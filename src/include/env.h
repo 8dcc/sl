@@ -64,6 +64,7 @@ struct EnvBinding {
  *
  * TODO: It's not ideal to store garbage-collection information in this
  * structure, this should be moved somewhere else if possible.
+ * TODO: If the previous change is made, we should update the GC diagram.
  */
 typedef struct Env Env;
 struct Env {
