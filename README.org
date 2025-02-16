@@ -135,26 +135,6 @@ the basic [[https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop][
 These are some things that need to be done. Feel free to make a PR if you want
 to contribute.
 
-** Better closures
-
-In the following example:
-
-#+begin_src scheme
-(define get-inner
-  (lambda (a)
-    (lambda (b)
-      (+ a b))))
-
-(define inner (get-inner 10))
-(inner 20) ; Error: Unbound symbol `a'
-#+end_src
-
-The function =inner= can't access =a=, even though it was defined when =get-inner=
-returned the lambda. This happens because the parent environment of =inner= is set
-whenever it gets called, not when it's defined. This means that it can access
-global symbols, and even =a= as long as =inner= was called /within/ the body of
-=get-inner=.
-
 ** Tail-call optimization
 
 The following code defines a /recursive procedure/ that performs an /iterative
