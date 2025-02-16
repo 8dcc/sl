@@ -37,54 +37,61 @@ Expr* expr_new(enum EExprType type) {
 
 /*----------------------------------------------------------------------------*/
 
-Expr* expr_clone(const Expr* e) {
-    if (e == NULL)
-        return NULL;
+void expr_set(Expr* dst, const Expr* src) {
+    SL_ASSERT(dst != NULL && src != NULL);
+
+    dst->type = src->type;
 
     /*
-     * Nothing allocated (e.g. symbol strings) is re-used from the old
-     * expression, everything is allocated and copied again.
+     * We have to be careful when setting certain expression types (like strings
+     * or lambdas), because since their values are pointers to the heap and they
+     * will be freed whenever the expression is garbage-collected.
      *
-     * Note that, in the case of pairs, this function doesn't clone the tree
-     * recursively, it just copies the old references; see also
-     * 'expr_clone_tree'.
+     * Even if we had a way of garbage-collecting strings and lambdas, it would
+     * be perhaps more intuitive to still clone these values.
      */
-    Expr* ret = expr_new(e->type);
-
-    switch (e->type) {
+    switch (src->type) {
         case EXPR_NUM_INT:
-            ret->val.n = e->val.n;
+            dst->val.n = src->val.n;
             break;
-
         case EXPR_NUM_FLT:
-            ret->val.f = e->val.f;
+            dst->val.f = src->val.f;
+            break;
+        case EXPR_PAIR:
+            CAR(dst) = CAR(src);
+            CDR(dst) = CDR(src);
+            break;
+        case EXPR_PRIM:
+            dst->val.prim = src->val.prim;
             break;
 
         case EXPR_ERR:
         case EXPR_SYMBOL:
         case EXPR_STRING:
-            ret->val.s = mem_strdup(e->val.s);
+            dst->val.s = mem_strdup(src->val.s);
             break;
-
-        case EXPR_PAIR:
-            CAR(ret) = CAR(e);
-            CDR(ret) = CDR(e);
-            break;
-
-        case EXPR_PRIM:
-            ret->val.prim = e->val.prim;
-            break;
-
         case EXPR_MACRO:
         case EXPR_LAMBDA:
-            ret->val.lambda = lambdactx_clone(e->val.lambda);
+            dst->val.lambda = lambdactx_clone(src->val.lambda);
             break;
 
         case EXPR_UNKNOWN:
-            SL_ERR("Trying to clone <unknown>");
+            SL_FATAL("Trying to set expression to type 'Unknown'.");
             break;
     }
+}
 
+Expr* expr_clone(const Expr* e) {
+    if (e == NULL)
+        return NULL;
+
+    /*
+     * Note that, in the case of pairs, since we call 'expr_set', the references
+     * are copied instead of cloning the tree recursively. For this purpose, see
+     * 'expr_clone_tree'.
+     */
+    Expr* ret = expr_new(e->type);
+    expr_set(ret, e);
     return ret;
 }
 

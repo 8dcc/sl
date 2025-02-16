@@ -146,6 +146,12 @@ struct Expr {
 Expr* expr_new(enum EExprType type);
 
 /*
+ * Set the value of a "destination" expression to the value of a "source"
+ * expression.
+ */
+void expr_set(Expr* dst, const Expr* src);
+
+/*
  * Clone the specified 'Expr' structure into an allocated copy, and return it.
  *
  * In the case of pairs, it copies the references, doesn't clone recursively. To
