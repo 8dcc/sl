@@ -17,6 +17,8 @@
  */
 
 #include <stddef.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "include/env.h"
 #include "include/expr.h"
@@ -70,6 +72,21 @@ Expr* prim_macroexpand(Env* env, Expr* args) {
     SL_EXPECT_TYPE(macro, EXPR_MACRO);
 
     return macro_expand(env, macro, macro_args);
+}
+
+Expr* prim_set(Env* env, Expr* args) {
+    SL_UNUSED(env);
+    SL_EXPECT_ARG_NUM(args, 2);
+    Expr* dst       = CAR(args);
+    const Expr* src = CADR(args);
+
+    /*
+     * The `set' primitive copies the value of the "source" argument into the
+     * "destination". Note that it doesn't replace the reference of the
+     * destination, it replaces its entire value and type.
+     */
+    expr_set(dst, src);
+    return dst;
 }
 
 Expr* prim_random(Env* env, Expr* args) {
