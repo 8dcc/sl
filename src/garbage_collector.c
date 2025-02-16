@@ -127,8 +127,8 @@ void gc_collect(void) {
             /*
              * Current expression is either marked, or already free. Ignore.
              */
-            if ((pool_item_flags(pool_item) &
-                 (POOL_FLAG_GCMARKED | POOL_FLAG_FREE)) != 0)
+            if (pool_item_is_gcmarked(pool_item) ||
+                pool_item_is_free(pool_item))
                 continue;
 
             /*

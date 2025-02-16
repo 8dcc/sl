@@ -183,23 +183,19 @@ void pool_print_stats(FILE* fp);
 void pool_dump(FILE* fp);
 
 /*----------------------------------------------------------------------------*/
-/* Static functions */
+/* Static functions and macros */
 
 /*
  * Is the specified item flagged as free?
- *
- * TODO: Turn into macros, use in 'gc_collect'.
  */
-static inline bool pool_item_is_free(PoolItem* pool_item) {
-    return (pool_item_flags(pool_item) & POOL_FLAG_FREE) != 0;
-}
+#define pool_item_is_free(pool_item)                                           \
+    ((pool_item_flags(pool_item) & POOL_FLAG_FREE) != 0)
 
 /*
  * Is the specified item flagged for garbage collection?
  */
-static inline bool pool_item_is_gcmarked(PoolItem* pool_item) {
-    return (pool_item_flags(pool_item) & POOL_FLAG_GCMARKED) != 0;
-}
+#define pool_item_is_gcmarked(pool_item)                                       \
+    ((pool_item_flags(pool_item) & POOL_FLAG_GCMARKED) != 0)
 
 /*
  * Return the pool item for the specified expression.
