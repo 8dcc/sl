@@ -2,6 +2,9 @@ Standard library loaded.
 Error: Unbound symbol: `unbound-error-var'.
 10
 20
+(1 2 3)
+foo
+(1 foo 3)
 <primitive 0xDEADBEEF>
 30
 my-addition

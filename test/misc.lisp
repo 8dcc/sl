@@ -7,6 +7,10 @@ unbound-error-var ; Intentional error.
 (define var1 10)
 (define var2 (* 2 var1))
 
+(define my-list '(1 2 3))
+(set (cadr my-list) 'foo)
+my-list
+
 (define my-addition +)
 (my-addition var1 var2)
 
