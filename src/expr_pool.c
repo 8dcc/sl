@@ -294,24 +294,32 @@ void pool_dump(FILE* fp) {
 
     for (ArrayStart* a = g_expr_pool->array_starts; a != NULL; a = a->next) {
         for (size_t i = 0; i < a->arr_sz; i++) {
-            const enum EPoolItemFlags flags = pool_item_flags(&a->arr[i]);
+            const PoolItem* pool_item = &a->arr[i];
             fprintf(fp,
                     "[%p] [%zu,%3zu] [F: %X] ",
-                    &a->arr[i],
+                    (void*)pool_item,
                     array_count,
                     i,
-                    flags);
+                    pool_item_flags(pool_item));
 
-            if ((flags & POOL_FLAG_FREE) == 0) {
+            if (pool_item_is_free(pool_item)) {
+                fprintf(fp, "<invalid>");
+            } else {
+                /*
+                 * Expression is not free, print it.
+                 *
+                 * This might fail if this function is called when the current
+                 * expression references another free expression.
+                 */
                 expr_print(fp, &a->arr[i].val.expr);
 
-                const enum EExprType type = a->arr[i].val.expr.type;
+                /* Current expression uses a pointer, also print it */
+                const Expr* e             = &pool_item->val.expr;
+                const enum EExprType type = e->type;
                 if (type == EXPR_ERR || type == EXPR_SYMBOL ||
                     type == EXPR_STRING || type == EXPR_LAMBDA ||
                     type == EXPR_MACRO)
-                    printf(" [%p]", a->arr[i].val.expr.val.s);
-            } else {
-                fprintf(fp, "<invalid>");
+                    fprintf(fp, " [%p]", (void*)e->val.s);
             }
 
             fputc('\n', fp);
