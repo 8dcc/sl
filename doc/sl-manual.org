@@ -832,6 +832,49 @@ These primitives don't fit into other categories. They are defined in
   expansion. Calling a macro simply means evaluating the expanded
   expression. See also [[macro][=macro=]].
 
+- Function: set destination source :: <<set>>
+
+  Set the value of =destination= to the value of =source=, and return the
+  =destination=.
+
+  Note that the value is copied, but the references themselves remain
+  unchanged. In the following code, we bind the symbol =my-var= to a list,
+  and then we overwrite the value (and expression type) of the second
+  element of the list. In other words, we are /not/ overwriting the
+  pointer in the list to point to a new expression, we are modifying the
+  value that the pointer is currently pointing to.
+
+  #+begin_src lisp
+  (define my-var (list 1 2 3))
+    ⇒ (1 2 3)
+
+  (set (cadr my-var) 'foo)
+    ⇒ foo
+
+  my-var
+    ⇒ (1 foo 3)
+  #+end_src
+
+  The following code shows another example that illustrates how the
+  values are modified, not the references.
+
+  #+begin_src lisp
+  (define foo 123)
+  (define bar 456)
+
+  (set foo bar)
+    ⇒ 456
+
+  (set bar 789)
+    ⇒ 789
+
+  foo
+    ⇒ 456
+  #+end_src
+
+  Keep in mind that this is /not/ a special form, so the arguments are
+  evaluated normally, before the call is made.
+
 - Function: random limit :: <<random>>
 
   Return a random number between zero and =limit=. The argument type must
