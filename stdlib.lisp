@@ -190,7 +190,7 @@
 ;;------------------------------------------------------------------------------
 
 (defmacro assert (predicate)
-  `(if ,predicate ,predicate
+  `(or ,predicate
        (error (append "Assertion `"
                       (write-to-str (quote ,predicate))
                       "' failed."))))
