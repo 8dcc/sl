@@ -23,7 +23,6 @@
 ;;   - `assoc'
 ;;   - `find'
 ;;   - `filter'
-;;   - `reduce'
 ;;   - More mapping functions (See Maclisp):
 ;;       - `map'
 ;;       - `mapc'
@@ -210,6 +209,16 @@
       nil
       (cons (f (car lst))
             (mapcar f (cdr lst)))))
+
+(defun reduce (f lst)
+  (defun iter (result lst)
+    (if (null? lst)
+        result
+        (iter (f result (car lst))
+              (cdr lst))))
+  (if (null? lst)
+      (f)
+      (iter (car lst) (cdr lst))))
 
 ;;------------------------------------------------------------------------------
 ;; Math functions
