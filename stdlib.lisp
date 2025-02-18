@@ -224,6 +224,22 @@
 ;; Math functions
 ;;------------------------------------------------------------------------------
 
+(defun min (&rest args)
+  (assert (not (null? args)))
+  (if (null? (cdr args))
+      (car args)
+      (reduce (lambda (a b)
+                (if (< a b) a b))
+              args)))
+
+(defun max (&rest args)
+  (assert (not (null? args)))
+  (if (null? (cdr args))
+      (car args)
+      (reduce (lambda (a b)
+                (if (> a b) a b))
+              args)))
+
 (defun expt (b e)
   (defun iter-positive (total e)
     (cond ((= e 0) 1)
