@@ -40,7 +40,20 @@ enum EEnvErr {
  */
 enum EEnvBindingFlags {
     ENV_FLAG_NONE    = 0,
+
+    /*
+     * If an environment binding is "constant", the 'val' pointer is not
+     * supposed to change. Keep in mind that this only affects the pointer
+     * itself (normally overwritten using `define'), not the data of the
+     * expression (which can still be overwritten using `set').
+     */
     ENV_FLAG_CONST   = (1 << 0),
+
+    /*
+     * If an environment binding is "special", the expression associated to that
+     * symbol will follow special evaluation rules. This is used, for example,
+     * when some primitives should receive their arguments unevaluated.
+     */
     ENV_FLAG_SPECIAL = (1 << 1),
 };
 
