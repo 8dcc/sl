@@ -79,7 +79,7 @@ LambdaCtx* lambdactx_new(void) {
 }
 
 enum ELambdaCtxErr lambdactx_init(Env* env, LambdaCtx* ctx, const Expr* formals,
-                                  const Expr* body) {
+                                  Expr* body) {
     SL_ASSERT(expr_is_proper_list(formals));
     SL_ASSERT(expr_is_proper_list(body));
 
@@ -108,7 +108,6 @@ enum ELambdaCtxErr lambdactx_init(Env* env, LambdaCtx* ctx, const Expr* formals,
      *     (lambda (a)
      *       (lambda (b)  ; Inner lambda needs to access 'a' later.
      *         (+ a b)))
-     *
      *
      * There is another problem: whenever we free a lambda, we are also freeing
      * its environment. Since the lifetime of the parent environment might be
@@ -145,10 +144,7 @@ enum ELambdaCtxErr lambdactx_init(Env* env, LambdaCtx* ctx, const Expr* formals,
     ctx->formals_num = mandatory;
     ctx->formals     = mem_alloc(mandatory * sizeof(char*));
     ctx->formal_rest = NULL;
-    /*
-     * TODO: Should we clone the expressions, or store the original references?
-     */
-    ctx->body = expr_clone_tree(body);
+    ctx->body        = body;
 
     /*
      * For each formal argument we counted above, store the symbol as a C string

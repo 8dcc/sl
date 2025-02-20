@@ -69,7 +69,7 @@ LambdaCtx* lambdactx_new(void);
  */
 enum ELambdaCtxErr lambdactx_init(struct Env* env, LambdaCtx* ctx,
                                   const struct Expr* formals,
-                                  const struct Expr* body);
+                                  struct Expr* body);
 
 /*
  * Copy the specified 'LambdaCtx' structure into an allocated copy, and return

@@ -234,7 +234,7 @@ Expr* prim_lambda(Env* env, Expr* args) {
 
     const Expr* formals = CAR(args);
     SL_EXPECT_PROPER_LIST(formals);
-    const Expr* body = CDR(args);
+    Expr* body = CDR(args);
     SL_EXPECT_PROPER_LIST(body);
 
     /*
@@ -264,7 +264,7 @@ Expr* prim_macro(Env* env, Expr* args) {
 
     const Expr* formals = CAR(args);
     SL_EXPECT_PROPER_LIST(formals);
-    const Expr* body = CDR(args);
+    Expr* body = CDR(args);
     SL_EXPECT_PROPER_LIST(body);
 
     LambdaCtx* ctx = lambdactx_new();
