@@ -875,6 +875,25 @@ These primitives don't fit into other categories. They are defined in
   Keep in mind that this is /not/ a special form, so the arguments are
   evaluated normally, before the call is made.
 
+- Function: clone expr :: <<clone>>
+
+  Return a newly allocated clone of the specified expression, with the
+  same value but in a different address.
+
+  #+begin_src lisp
+  (define foo 123)
+    ⇒ 123
+
+  (define bar (clone foo))
+    ⇒ 123
+
+  (set foo 456)
+    ⇒ 456
+
+  bar
+    ⇒ 123
+  #+end_src
+
 - Function: random limit :: <<random>>
 
   Return a random number between zero and =limit=. The argument type must
