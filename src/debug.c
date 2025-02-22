@@ -32,17 +32,14 @@ static void print_trace_number(FILE* fp) {
     fprintf(fp, "%zu: ", trace_nesting % 10);
 }
 
-bool debug_is_traced_function(const Env* env, const Expr* e) {
-    /*
-     * TODO: env_get() is being called way too many times here, specially
-     * considering the symbol is in the top-most environment. We should check
-     * from a C list, and somehow allow the user to add items to it.
-     */
-    Expr* debug_trace_list = env_get(env, "*debug-trace*");
-    if (debug_trace_list == NULL || !expr_is_proper_list(debug_trace_list))
+bool debug_is_traced_function(const Expr* e) {
+    const Expr* trace_list = g_debug_trace_list;
+    SL_ASSERT(trace_list != NULL);
+
+    if (expr_is_nil(trace_list))
         return false;
 
-    return expr_is_member(e, debug_trace_list);
+    return expr_is_member(e, trace_list);
 }
 
 void debug_trace_print_pre(FILE* fp, const Expr* func, const Expr* arg) {

@@ -26,9 +26,10 @@ struct Env;  /* env.h */
 struct Expr; /* expr.h */
 
 /*
- * Is the function 'e' being traced in the `*debug-trace*' Lisp variable?
+ * Is the specified function expression being traced according to
+ * 'g_debug_trace_list'?
  */
-bool debug_is_traced_function(const struct Env* env, const struct Expr* e);
+bool debug_is_traced_function(const struct Expr* e);
 
 /*
  * Print the opening and closing of a function trace.

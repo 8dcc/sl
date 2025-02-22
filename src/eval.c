@@ -108,8 +108,8 @@ static Expr* eval_function_call(Env* env, Expr* e) {
               "Expected function or macro, got '%s'.",
               exprtype2str(func->type));
 
-    /* Is this function in the `*debug-trace*' list? */
-    const bool should_print_trace = debug_is_traced_function(env, func);
+    /* Is this function in the `g_debug_trace_list' list? */
+    const bool should_print_trace = debug_is_traced_function(func);
 
     /*
      * Normally, we should evaluate each of the arguments before applying the
