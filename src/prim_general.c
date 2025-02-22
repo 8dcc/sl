@@ -89,6 +89,16 @@ Expr* prim_set(Env* env, Expr* args) {
     return dst;
 }
 
+Expr* prim_clone(Env* env, Expr* args) {
+    SL_UNUSED(env);
+    SL_EXPECT_ARG_NUM(args, 1);
+
+    /*
+     * Note how this function doesn't clone recursively.
+     */
+    return expr_clone(CAR(args));
+}
+
 Expr* prim_random(Env* env, Expr* args) {
     SL_UNUSED(env);
     SL_EXPECT_ARG_NUM(args, 1);

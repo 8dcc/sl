@@ -102,6 +102,7 @@ void env_init_defaults(Env* env) {
     BIND_PRIM(env, "apply", apply);
     BIND_PRIM(env, "macroexpand", macroexpand);
     BIND_PRIM(env, "set", set);
+    BIND_PRIM(env, "clone", clone);
     BIND_PRIM(env, "random", random);
     BIND_PRIM(env, "set-random-seed", set_random_seed);
 

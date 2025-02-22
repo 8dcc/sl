@@ -43,6 +43,7 @@ DECLARE_PRIM(eval);
 DECLARE_PRIM(apply);
 DECLARE_PRIM(macroexpand);
 DECLARE_PRIM(set);
+DECLARE_PRIM(clone);
 DECLARE_PRIM(random);
 DECLARE_PRIM(set_random_seed);
 
