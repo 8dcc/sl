@@ -194,10 +194,9 @@
                       (write-to-str (quote ,predicate))
                       "' failed."))))
 
-;; TODO: Toggle by removing `func' if it's already in `*debug-trace*'
 (defun trace (func)
   (assert (applicable? func))
-  (define-global *debug-trace* (cons func *debug-trace*))
+  (set *debug-trace* (cons func (clone *debug-trace*)))
   "Trace enabled.")
 
 ;;------------------------------------------------------------------------------
