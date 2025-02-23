@@ -25,7 +25,7 @@
  * accepting size parameters in some 'pool_*' functions. Still, since this value
  * was used from multiple sources, I think this is the best place.
  */
-#define BASE_POOL_SZ 512
+#define POOL_BASE_SZ 512
 
 /*----------------------------------------------------------------------------*/
 /* Enums and structures */

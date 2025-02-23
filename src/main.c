@@ -107,21 +107,30 @@ int main(int argc, char** argv) {
     FILE* file_input        = get_input_file(argc, argv);
     const bool print_prompt = (file_input == stdin && isatty(0));
 
-    /* Allocate the expression pool. It will be expanded when needed. */
-    if (!pool_init(BASE_POOL_SZ))
-        SL_FATAL("Failed to initialize pool of %d expressions.\n",
-                 BASE_POOL_SZ);
+    /*
+     * Allocate the initial expression pool. It will be expanded when needed.
+     */
+    if (!pool_init(POOL_BASE_SZ))
+        SL_FATAL("Failed to initialize the expression pool.");
 
-    /* Initialize global environment with symbols like "nil" */
+    /*
+     * Initialize global environment with the primitives and with symbols like
+     * 'nil'.
+     */
     Env* global_env = env_new();
     SL_ASSERT(global_env != NULL);
     env_init_defaults(global_env);
 
-    /* Set unique random seed, can be overwritten with 'prim_set_random_seed' */
+    /*
+     * Set unique random seed, can be overwritten with the `set-random-seed'
+     * Lisp primitive.
+     */
     srand(time(NULL));
 
 #ifndef SL_NO_STDLIB
-    /* Try to silently load the standard library from the current directory */
+    /*
+     * Try to silently load the standard library from the specified path.
+     */
     FILE* file_stdlib = fopen(STDLIB_PATH, "r");
     if (file_stdlib != NULL) {
         repl_until_eof(global_env, file_stdlib, false, false);
@@ -133,6 +142,9 @@ int main(int argc, char** argv) {
     if (print_prompt)
         fprintf(stderr, "Welcome to the Simple Lisp REPL.\n");
 
+    /*
+     * Actual user REPL.
+     */
     repl_until_eof(global_env, file_input, print_prompt, true);
 
     env_free(global_env);
