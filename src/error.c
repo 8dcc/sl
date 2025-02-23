@@ -22,6 +22,7 @@
 #include "include/expr.h"
 #include "include/util.h"
 #include "include/memory.h"
+#include "include/debug.h"
 #include "include/error.h"
 
 #define COL_RESET       "\x1B[0m"
@@ -31,12 +32,16 @@
 #define COL_BOLD_RED    "\x1B[1;31m"
 
 Expr* err(const char* fmt, ...) {
-    /*
-     * TODO: If compiled with SL_TRACE_ON_ERR, somehow print call stack as soon
-     * as this function is entered (for debugging, no need to integrate it into
-     * EXPR_ERR).
-     */
     va_list va;
+
+#ifdef SL_TRACE_ON_ERR
+    /*
+     * The callstack will be printed as soon as the error is created, so it will
+     * be shown before the REPL receives and prints the error itself. This
+     * doesn't look great, but it's still practical.
+     */
+    debug_callstack_print(stderr);
+#endif
 
     va_start(va, fmt);
     const int data_size = vsnprintf(NULL, 0, fmt, va);
