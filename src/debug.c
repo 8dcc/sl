@@ -21,6 +21,7 @@
 
 #include "include/env.h"
 #include "include/expr.h"
+#include "include/memory.h"
 #include "include/debug.h"
 
 /*
@@ -28,12 +29,22 @@
  */
 #define DEBUG_EXPR_PRINT expr_print
 
+#define DEBUG_CALLSTACK_BASE_SZ 100
+
 /*----------------------------------------------------------------------------*/
 
 /*
  * Number of nested functions that we are currently tracing.
  */
 static size_t trace_nesting = 0;
+
+/*
+ * The callstack pointer (an array of 'Expr' pointers), its size and the current
+ * position.
+ */
+static const Expr** callstack = NULL;
+static size_t callstack_sz    = 0;
+static size_t callstack_pos   = 0;
 
 /*----------------------------------------------------------------------------*/
 
@@ -80,4 +91,50 @@ void debug_trace_print_post(FILE* fp, const Expr* e) {
         DEBUG_EXPR_PRINT(fp, e);
 
     putchar('\n');
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool debug_callstack_init(void) {
+    SL_ASSERT(callstack == NULL);
+    callstack = mem_calloc(DEBUG_CALLSTACK_BASE_SZ, sizeof(Expr*));
+    return true;
+}
+
+void debug_callstack_free(void) {
+    if (callstack == NULL)
+        return;
+
+    free(callstack);
+    callstack = NULL;
+}
+
+void debug_callstack_push(const Expr* e) {
+    if (callstack_pos >= callstack_sz) {
+        callstack_sz += DEBUG_CALLSTACK_BASE_SZ;
+        mem_realloc(callstack, callstack_sz * sizeof(Expr*));
+    }
+
+    callstack[callstack_pos++] = e;
+}
+
+void debug_callstack_pop(void) {
+    SL_ASSERT(callstack_pos > 0);
+    callstack[--callstack_pos] = NULL;
+}
+
+void debug_callstack_print(FILE* fp) {
+    if (callstack_pos == 0) {
+        fprintf(fp, "Callstack: (no callstack)\n");
+        return;
+    }
+
+    fprintf(fp, "Callstack (recent first):\n");
+    for (size_t i = callstack_pos, j = 0; i > 0; i--, j++) {
+        const size_t real_i = i - 1;
+        SL_ASSERT(callstack[real_i] != NULL);
+        fprintf(fp, "  %zu: ", j);
+        DEBUG_EXPR_PRINT(fp, callstack[real_i]);
+        putchar('\n');
+    }
 }

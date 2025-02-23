@@ -82,11 +82,6 @@ static Expr* eval_list(Env* env, Expr* list) {
  * Evaluate a list expression as a function call, applying the (evaluated) `car'
  * to the `cdr'. This function is responsible for evaluating the arguments
  * (using 'eval_list') before applying the function, if necessary.
- *
- * TODO: Keep track of a simple call stack (perhaps with a fixed-size
- * array). Store 'Expr*' pointer and human-readable form (if available, before
- * evaluation). Perhaps this should be handled in 'debug.c' via some 'push',
- * 'pop' and 'print' functions.
  */
 static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* car = CAR(e);
@@ -138,6 +133,14 @@ static Expr* eval_function_call(Env* env, Expr* e) {
         args = cdr;
     }
 
+    /*
+     * Push the function into the callstack, and print its trace if necessary.
+     *
+     * We will store the evaluated/unevaluated function depending on whether or
+     * not it was a symbol, but we could add a variable for controlling this.
+     */
+    const Expr* debug_func = EXPR_SYMBOL_P(car) ? car : func;
+    debug_callstack_push(debug_func);
     if (should_print_trace)
         debug_trace_print_pre(stdout, car, args);
 
@@ -149,6 +152,11 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     if (applied == NULL)
         applied = err("Unknown error (?)");
 
+    /*
+     * Pop the function from the callstack, and print its return value if it's
+     * being traced.
+     */
+    debug_callstack_pop();
     if (should_print_trace)
         debug_trace_print_post(stdout, applied);
 

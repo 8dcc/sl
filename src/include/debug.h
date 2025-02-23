@@ -25,6 +25,8 @@
 struct Env;  /* env.h */
 struct Expr; /* expr.h */
 
+/*----------------------------------------------------------------------------*/
+
 /*
  * Is the specified function expression being traced according to
  * 'g_debug_trace_list'?
@@ -42,5 +44,41 @@ bool debug_is_traced_function(const struct Expr* e);
 void debug_trace_print_pre(FILE* fp, const struct Expr* func,
                            const struct Expr* args);
 void debug_trace_print_post(FILE* fp, const struct Expr* e);
+
+/*----------------------------------------------------------------------------*/
+
+/*
+ * Allocate and initialize the internal callstack. True is returned on success,
+ * or false otherwise.
+ *
+ * The internal callstack will be reallocated if necessary when calling
+ * 'debug_callstack_push'.
+ *
+ * The caller is responsible for calling this function only once (or an
+ * assertion will fail).
+ */
+bool debug_callstack_init(void);
+
+/*
+ * Free the internal callstack.
+ *
+ * If the callstack has been freed, the function ignores it but does not fail.
+ */
+void debug_callstack_free(void);
+
+/*
+ * Push the specified expression into the callstack.
+ */
+void debug_callstack_push(const struct Expr* e);
+
+/*
+ * Pop the last expression from the callstack.
+ */
+void debug_callstack_pop(void);
+
+/*
+ * Print the callstack to the specified file.
+ */
+void debug_callstack_print(FILE* fp);
 
 #endif /* DEBUG_H_ */

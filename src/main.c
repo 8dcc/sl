@@ -29,6 +29,8 @@
 #include "include/expr_pool.h"
 #include "include/util.h"
 #include "include/garbage_collector.h"
+#include "include/error.h"
+#include "include/debug.h"
 #include "include/read.h"
 #include "include/lexer.h"
 #include "include/parser.h"
@@ -114,6 +116,12 @@ int main(int argc, char** argv) {
         SL_FATAL("Failed to initialize the expression pool.");
 
     /*
+     * Initialize the callstack.
+     */
+    if (!debug_callstack_init())
+        SL_FATAL("Failed to initialize the Lisp callstack.");
+
+    /*
      * Initialize global environment with the primitives and with symbols like
      * 'nil'.
      */
@@ -148,6 +156,7 @@ int main(int argc, char** argv) {
     repl_until_eof(global_env, file_input, print_prompt, true);
 
     env_free(global_env);
+    debug_callstack_free();
     pool_close();
     fclose(file_input);
     return 0;
