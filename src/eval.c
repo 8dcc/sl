@@ -92,9 +92,6 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     Expr* car = CAR(e);
     Expr* cdr = CDR(e);
 
-    /* Check if the function is a special form symbol, before evaluating it */
-    const bool got_special_form = is_special_form(env, car);
-
     /*
      * Evaluate the expression representing the function. If the evaluation
      * fails, stop. Note that both the evaluated function and the evaluated list
@@ -108,7 +105,10 @@ static Expr* eval_function_call(Env* env, Expr* e) {
               "Expected function or macro, got '%s'.",
               exprtype2str(func->type));
 
-    /* Is this function in the `g_debug_trace_list' list? */
+    /*
+     * If the 'g_debug_trace_list' variable contains this (evaluated) function,
+     * we should print its trace below.
+     */
     const bool should_print_trace = debug_is_traced_function(func);
 
     /*
@@ -120,7 +120,7 @@ static Expr* eval_function_call(Env* env, Expr* e) {
      * This boolean will be used when evaluating and freeing.
      */
     const bool should_eval_args =
-      (!expr_is_nil(cdr) && !got_special_form && !EXPR_MACRO_P(func));
+      (!expr_is_nil(cdr) && !is_special_form(env, car) && !EXPR_MACRO_P(func));
 
     /*
      * If the arguments should be evaluated, evaluate them. If one of them
@@ -141,7 +141,10 @@ static Expr* eval_function_call(Env* env, Expr* e) {
     if (should_print_trace)
         debug_trace_print_pre(stdout, car, args);
 
-    /* Apply the evaluated function to the evaluated argument list */
+    /*
+     * Apply the evaluated function to the (potentially) evaluated argument
+     * list.
+     */
     Expr* applied = apply(env, func, args);
     if (applied == NULL)
         applied = err("Unknown error (?)");
