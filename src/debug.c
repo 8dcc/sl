@@ -23,7 +23,19 @@
 #include "include/expr.h"
 #include "include/debug.h"
 
+/*
+ * Function used for printing expressions in 'debug_*' functions.
+ */
+#define DEBUG_EXPR_PRINT expr_print
+
+/*----------------------------------------------------------------------------*/
+
+/*
+ * Number of nested functions that we are currently tracing.
+ */
 static size_t trace_nesting = 0;
+
+/*----------------------------------------------------------------------------*/
 
 static void print_trace_number(FILE* fp) {
     for (size_t i = 0; i <= trace_nesting; i++)
@@ -48,10 +60,10 @@ void debug_trace_print_pre(FILE* fp, const Expr* func, const Expr* arg) {
     print_trace_number(fp);
 
     fputc('(', fp);
-    expr_print(fp, func);
+    DEBUG_EXPR_PRINT(fp, func);
     for (; !expr_is_nil(arg); arg = CDR(arg)) {
         fputc(' ', fp);
-        expr_print(fp, CAR(arg));
+        DEBUG_EXPR_PRINT(fp, CAR(arg));
     }
     fprintf(fp, ")\n");
 
@@ -65,7 +77,7 @@ void debug_trace_print_post(FILE* fp, const Expr* e) {
     if (e == NULL)
         fprintf(fp, "ERR");
     else
-        expr_print(fp, e);
+        DEBUG_EXPR_PRINT(fp, e);
 
     putchar('\n');
 }
