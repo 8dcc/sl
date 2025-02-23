@@ -44,13 +44,14 @@
  * Allocate 'sz' bytes using stdlib's 'malloc' or 'calloc', ensuring a valid
  * pointer is returned.
  */
-void* mem_alloc(size_t sz);
-void* mem_calloc(size_t nmemb, size_t size);
+void* mem_alloc(size_t sz) __attribute__((malloc, warn_unused_result));
+void* mem_calloc(size_t nmemb, size_t size)
+  __attribute__((malloc, warn_unused_result));
 
 /*
  * Allocate a new string big enough to hold 's', and copy it. Ensures a valid
  * pointer is returned.
  */
-char* mem_strdup(const char* s);
+char* mem_strdup(const char* s) __attribute__((malloc, warn_unused_result));
 
 #endif /* MEMORY_H_ */
