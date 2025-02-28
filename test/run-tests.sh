@@ -17,21 +17,22 @@ file_err() {
 }
 
 remove_colors() {
+    # shellcheck disable=SC2001
     echo "$1" | sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'
 }
 
-if [ ! $(command -v dirname) ] ||
-       [ ! $(command -v readlink) ] ||
-       [ ! $(command -v valgrind) ]; then
+if [ ! "$(command -v dirname)" ] ||
+       [ ! "$(command -v readlink)" ] ||
+       [ ! "$(command -v valgrind)" ]; then
     err "Missing dependencies. Exiting..."
     exit 1
 fi
 
-SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+SCRIPT_DIR=$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")
 SL_BIN="${SCRIPT_DIR}/../sl"
 DIFFFLAGS="--unified=0 --color"
 
-for file in $(ls "$SCRIPT_DIR"/*.lisp); do
+for file in "$SCRIPT_DIR"/*.lisp; do
     file_msg "Testing" "$file"
 
     input_str=""
@@ -46,7 +47,7 @@ for file in $(ls "$SCRIPT_DIR"/*.lisp); do
         valgrind --leak-check=full   \
                  --track-origins=yes \
                  --error-exitcode=1  \
-                 $SL_BIN $file > /dev/null
+                 "$SL_BIN" "$file" > /dev/null
     valgrind_code=$?
 
     echo "-------------------------------------------------------------------"
@@ -56,11 +57,11 @@ for file in $(ls "$SCRIPT_DIR"/*.lisp); do
         exit 1
     fi
 
-    normal_output="$(echo -e "$input_str" | $SL_BIN $file 2>&1 | sed "s/<primitive 0x[[:xdigit:]]\+>/<primitive 0xDEADBEEF>/g")"
+    normal_output="$(echo -e "$input_str" | "$SL_BIN" "$file" 2>&1 | sed "s/<primitive 0x[[:xdigit:]]\+>/<primitive 0xDEADBEEF>/g")"
     desired_output_file="${file}.expected"
 
     # FIXME: Don't call 'diff' twice, but still show colors when printing.
-    diff <(remove_colors "$normal_output") $desired_output_file &>/dev/null
+    diff <(remove_colors "$normal_output") "$desired_output_file" &>/dev/null
     diff_code=$?
     if [ $diff_code -eq 1 ]; then
         err "Output mismatch. Showing differences and stopping..."
