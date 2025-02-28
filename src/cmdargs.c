@@ -41,18 +41,19 @@ CmdArgs cmdargs_parse(int argc, char** argv) {
     bool got_silent_opt = false;
 
     for (int i = 1; i < argc; i++) {
-        const char* arg = argv[i];
+        const char* arg      = argv[i];
+        const bool got_stdin = (arg[0] != '\0' && arg[1] == '\0');
 
         /*
          * If the argument doesn't start with a dash, it's not an option, and
          * it's assumed to be a filename.
          */
-        if (arg[0] != '-') {
+        if (arg[0] != '-' || got_stdin) {
             if (result.input_files_sz >= MAX_INPUT_FILES)
                 CMDARGS_FATAL("Exceeded the input file limit (%d). Aborting.",
                               MAX_INPUT_FILES);
 
-            FILE* fd = fopen(arg, "r");
+            FILE* fd = (got_stdin) ? stdin : fopen(arg, "r");
             if (fd == NULL)
                 CMDARGS_FATAL("Error opening '%s': %s.", arg, strerror(errno));
 
@@ -82,6 +83,8 @@ CmdArgs cmdargs_parse(int argc, char** argv) {
             got_silent_opt = true;
         } else if (!strcmp(arg, "--no-stdlib")) {
             result.load_sys_stdlib = false;
+        } else {
+            CMDARGS_FATAL("Unknown option '%s'.", arg);
         }
     }
 
