@@ -31,7 +31,7 @@ fi
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")
 SL_BIN="${SCRIPT_DIR}/../sl"
 SL_FLAGS=(--no-stdlib --silent "${SCRIPT_DIR}/../stdlib.lisp")
-DIFFFLAGS="--unified=0 --color"
+DIFF_FLAGS=(--unified=0 --color)
 
 for file in "$SCRIPT_DIR"/*.lisp; do
     file_msg "Testing" "$file"
@@ -66,7 +66,7 @@ for file in "$SCRIPT_DIR"/*.lisp; do
     diff_code=$?
     if [ $diff_code -eq 1 ]; then
         err "Output mismatch. Showing differences and stopping..."
-        diff $DIFFFLAGS <(echo "$normal_output") $desired_output_file
+        diff "${DIFF_FLAGS[@]}" <(echo "$normal_output") "$desired_output_file"
         exit 1
     elif [ $diff_code -ge 2 ]; then
         err "Error when running 'diff', aborting..."
