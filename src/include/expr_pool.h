@@ -7,13 +7,6 @@
 
 #include "expr.h"
 
-#if defined(SL_NO_POOL_VALGRIND)
-#define VALGRIND_MAKE_MEM_DEFINED(a, b)
-#define VALGRIND_MAKE_MEM_NOACCESS(a, b)
-#else
-#include <valgrind/memcheck.h>
-#endif
-
 /*----------------------------------------------------------------------------*/
 /* Macros */
 
