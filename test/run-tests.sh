@@ -30,6 +30,7 @@ fi
 
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")
 SL_BIN="${SCRIPT_DIR}/../sl"
+SL_FLAGS=(--no-stdlib --silent "${SCRIPT_DIR}/../stdlib.lisp")
 DIFFFLAGS="--unified=0 --color"
 
 for file in "$SCRIPT_DIR"/*.lisp; do
@@ -47,7 +48,7 @@ for file in "$SCRIPT_DIR"/*.lisp; do
         valgrind --leak-check=full   \
                  --track-origins=yes \
                  --error-exitcode=1  \
-                 "$SL_BIN" "$file" > /dev/null
+                 "$SL_BIN" "${SL_FLAGS[@]}" "$file" > /dev/null
     valgrind_code=$?
 
     echo "-------------------------------------------------------------------"
@@ -57,7 +58,7 @@ for file in "$SCRIPT_DIR"/*.lisp; do
         exit 1
     fi
 
-    normal_output="$(echo -e "$input_str" | "$SL_BIN" "$file" 2>&1 | sed "s/<primitive 0x[[:xdigit:]]\+>/<primitive 0xDEADBEEF>/g")"
+    normal_output="$(echo -e "$input_str" | "$SL_BIN" "${SL_FLAGS[@]}" "$file" 2>&1 | sed "s/<primitive 0x[[:xdigit:]]\+>/<primitive 0xDEADBEEF>/g")"
     desired_output_file="${file}.expected"
 
     # FIXME: Don't call 'diff' twice, but still show colors when printing.
