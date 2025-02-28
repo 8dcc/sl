@@ -39,17 +39,8 @@
 #include "include/memory.h"
 #include "include/error.h"
 
-#if defined(SL_NO_POOL_VALGRIND)
-#define VALGRIND_CREATE_MEMPOOL(a, b, c) ((void)0)
-#define VALGRIND_DESTROY_MEMPOOL(a)      ((void)0)
-#define VALGRIND_MEMPOOL_ALLOC(a, b, c)  ((void)0)
-#define VALGRIND_MEMPOOL_FREE(a, b)      ((void)0)
-#define VALGRIND_MAKE_MEM_DEFINED(a, b)  ((void)0)
-#define VALGRIND_MAKE_MEM_NOACCESS(a, b) ((void)0)
-#else
-#include <valgrind/valgrind.h>
-#include <valgrind/memcheck.h>
-#endif
+#include "include/valgrind_valgrind.h"
+#include "include/valgrind_memcheck.h"
 
 /*----------------------------------------------------------------------------*/
 /* Globals */
