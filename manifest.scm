@@ -6,4 +6,10 @@
   ;; Compilation
   "coreutils"
   "gcc-toolchain"
-  "make"))
+  "make"
+  ;; Optional compile-time dependencies
+  "valgrind"
+  ;; Dependencies for tests
+  "bash"
+  "diffutils"
+  "sed"))
