@@ -31,6 +31,7 @@
 #include "include/garbage_collector.h"
 #include "include/error.h"
 #include "include/debug.h"
+#include "include/cmdargs.h"
 #include "include/read.h"
 #include "include/lexer.h"
 #include "include/parser.h"
@@ -38,26 +39,8 @@
 
 #define STDLIB_PATH "/usr/local/lib/sl/stdlib.lisp"
 
-static FILE* get_input_file(int argc, char** argv) {
-    FILE* result = stdin;
-
-    if (argc > 1) {
-        const char* filename = argv[1];
-        result               = fopen(filename, "r");
-        if (result == NULL) {
-            fprintf(stderr,
-                    "Error opening '%s': %s.\n",
-                    filename,
-                    strerror(errno));
-            exit(1);
-        }
-    }
-
-    return result;
-}
-
-static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
-                           bool print_evaluated) {
+static void repl_until_eof(Env* env, FILE* file, bool print_evaluated,
+                           bool print_prompt) {
     for (;;) {
         if (print_prompt)
             printf("\nsl> ");
@@ -106,8 +89,8 @@ static void repl_until_eof(Env* env, FILE* file, bool print_prompt,
 }
 
 int main(int argc, char** argv) {
-    FILE* file_input        = get_input_file(argc, argv);
-    const bool print_prompt = (file_input == stdin && isatty(0));
+    CmdArgs cmd_args           = cmdargs_parse(argc, argv);
+    const bool interactive_run = (cmd_args.input_files_sz == 0 && isatty(0));
 
     /*
      * Allocate the initial expression pool. It will be expanded when needed.
@@ -135,29 +118,43 @@ int main(int argc, char** argv) {
      */
     srand(time(NULL));
 
-#ifndef SL_NO_STDLIB
     /*
-     * Try to silently load the standard library from the specified path.
+     * Try to silently load the standard library from the known path.
      */
-    FILE* file_stdlib = fopen(STDLIB_PATH, "r");
-    if (file_stdlib != NULL) {
-        repl_until_eof(global_env, file_stdlib, false, false);
-        fclose(file_stdlib);
-        fprintf(stderr, "Standard library loaded.\n");
+    if (cmd_args.load_sys_stdlib) {
+        FILE* file_stdlib = fopen(STDLIB_PATH, "r");
+        if (file_stdlib == NULL) {
+            fprintf(stderr,
+                    "Warning: Couldn't open standard library from '%s'.\n",
+                    STDLIB_PATH);
+        } else {
+            repl_until_eof(global_env, file_stdlib, false, false);
+            fclose(file_stdlib);
+            fprintf(stderr, "Standard library loaded.\n");
+        }
     }
-#endif
 
-    if (print_prompt)
+    if (interactive_run) {
+        /*
+         * The user didn't specify any input files in the command-line, start an
+         * interactive REPL from 'stdin'.
+         */
         fprintf(stderr, "Welcome to the Simple Lisp REPL.\n");
-
-    /*
-     * Actual user REPL.
-     */
-    repl_until_eof(global_env, file_input, print_prompt, true);
+        repl_until_eof(global_env, stdin, true, true);
+    } else {
+        /*
+         * Non-interactive run, just parse each input file sequencially.
+         */
+        for (size_t i = 0; i < cmd_args.input_files_sz; i++)
+            repl_until_eof(global_env,
+                           cmd_args.input_files[i].fd,
+                           !cmd_args.input_files[i].silent_eval,
+                           false);
+    }
 
     env_free(global_env);
     debug_callstack_free();
     pool_close();
-    fclose(file_input);
+    cmdargs_close_files(&cmd_args);
     return 0;
 }
