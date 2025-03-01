@@ -680,19 +680,19 @@ and Interpretation of Computer Programs/[fn::
   #+end_src
 
   Note that this primitive does not need to be a special form, since it
-  can be built with a macro and =if=.
+  can be built with a macro and =if=. Note that I decided to use =let= for
+  readability, but we could have called a lambda instead[fn::For more
+  information on the variants of this macro, see my blog article
+  [[https://8dcc.github.io/programming/conditional-lisp-macros.html][/Replacing conditional Lisp primitives with macros/]].]
 
   #+begin_src lisp
   (defmacro my-or (&rest exprs)
     (if (null? exprs)
         nil
         ;; TODO: Don't overwrite "result", generate unique symbol.
-        ;; NOTE: We could also use the `let' macro.
-        `((lambda (result)
-            (if result
-                result
-                (my-or ,@(cdr exprs))))
-          ,(car exprs))))
+        `(let ((result ,(car exprs)))
+           (if result result
+               (my-or ,@(cdr exprs))))))
   #+end_src
 
 - Special Form: and &rest exprs :: <<and>>
@@ -713,25 +713,20 @@ and Interpretation of Computer Programs/[fn::
     ⇒ tru
   #+end_src
 
-  Just like with =or=, this primitive does not need to be a special form:
+  Just like with =or=, this primitive does not need to be a special
+  form. Just like with =let=, note that I used =cond= for readability, but
+  you could nest two =if= calls instead.
 
   #+begin_src lisp
   (defmacro my-and (&rest exprs)
-    (if (null? exprs)
-        tru
-        ;; TODO: Don't overwrite "result", generate unique symbol.
-        ;; NOTE: We could also use the `let' macro.
-        `((lambda (result)
-            (if result
-                ,(if (null? (cdr exprs))
-                     'result
-                     `(my-and ,@(cdr exprs)))
-                nil))
-          ,(car exprs))))
+    (cond ((null? exprs) tru)
+          ((null? (cdr exprs)) (car exprs))
+          ;; TODO: Don't overwrite "result", generate unique symbol.
+          (tru `(let ((result ,(car exprs)))
+                  (if result
+                      (my-and ,@(cdr exprs))
+                      nil)))))
   #+end_src
-
-  If you have trouble understanding the nested backquotes, see
-  [[backquote][=backquote=]].
 
 ** General Primitives
 
