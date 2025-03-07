@@ -41,8 +41,15 @@ static inline void gc_mark_env(Env* env) {
  * is no parent left.
  */
 static inline void gc_mark_env_and_parents(Env* env) {
-    for (; env != NULL; env = env->parent)
-        gc_mark_env(env);
+    for (; env != NULL; env = env->parent) {
+        /*
+         * We assume that, if an environment is marked as "used", all of its
+         * expressions have been marked with 'gc_mark_expr' too, just like
+         * 'gc_mark_env_contents' does.
+         */
+        if (!env->is_used)
+            gc_mark_env(env);
+    }
 }
 
 /*----------------------------------------------------------------------------*/
