@@ -113,7 +113,7 @@ static void read_user_string(FILE* fp, char** dst, size_t* dst_sz,
     while (c != '\"') {
         if (*dst_pos + 1 >= *dst_sz) {
             *dst_sz += READ_BUFSZ;
-            mem_realloc(*dst, *dst_sz);
+            mem_realloc(dst, *dst_sz);
         }
 
         c = fgetc(fp);
@@ -150,7 +150,7 @@ static char* read_user_list(FILE* fp) {
     while (nesting_level > 0) {
         if (result_pos + 1 >= result_sz) {
             result_sz += READ_BUFSZ;
-            mem_realloc(result, result_sz);
+            mem_realloc(&result, result_sz);
         }
 
         const int c = get_next_non_comment(fp);
@@ -227,7 +227,7 @@ static char* read_isolated_atom(FILE* fp) {
 
         if (result_pos + 1 >= result_sz) {
             result_sz += READ_BUFSZ;
-            mem_realloc(result, result_sz);
+            mem_realloc(&result, result_sz);
         }
 
         result[result_pos++] = get_next_non_comment(fp);

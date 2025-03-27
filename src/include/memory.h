@@ -20,25 +20,6 @@
 #define MEMORY_H_ 1
 
 #include <stddef.h>
-#include <stdlib.h> /* realloc() */
-
-#include "error.h" /* SL_FATAL() */
-
-/*
- * Use a macro to avoid assignment.
- *
- * TODO: Perhaps we could add an internal function that calls stdlib's 'realloc'
- * and 'SL_FATAL', to avoid having to include them in the header.
- */
-#define mem_realloc(PTR, SZ)                                                   \
-    do {                                                                       \
-        PTR = realloc(PTR, SZ);                                                \
-        if (PTR == NULL) {                                                     \
-            SL_FATAL("Reallocation failed.");                                  \
-        }                                                                      \
-    } while (0)
-
-/*----------------------------------------------------------------------------*/
 
 /*
  * Allocate 'sz' bytes using stdlib's 'malloc' or 'calloc', ensuring a valid
@@ -53,5 +34,21 @@ void* mem_calloc(size_t nmemb, size_t size)
  * pointer is returned.
  */
 char* mem_strdup(const char* s) __attribute__((malloc, warn_unused_result));
+
+/*
+ * Change the size of the memory block pointed to by the pointer that
+ * 'double_pointer' points to. Uses stdlib's 'realloc', ensuring a valid
+ * pointer is returned.
+ *
+ * Please note that, although the type of the 'double_ptr' parameter is
+ * 'void*', it's actually a double pointer, so the call to this function should
+ * look something like:
+ *
+ *    int* ptr = calloc(5, sizeof(int));
+ *    ptr[4] = 123;
+ *    mem_realloc(&ptr, 10);
+ *    ptr[9] = 456;
+ */
+void mem_realloc(void* double_ptr, size_t new_size);
 
 #endif /* MEMORY_H_ */

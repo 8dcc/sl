@@ -47,6 +47,17 @@ void* mem_calloc(size_t nmemb, size_t size) {
     return result;
 }
 
+void mem_realloc(void* double_ptr, size_t new_size) {
+    void** casted_ptr = double_ptr;
+    void* result      = realloc(*casted_ptr, new_size);
+    if (result == NULL)
+        SL_FATAL("Failed to reallocate into %zu bytes: %s (%d).",
+                 new_size,
+                 strerror(errno),
+                 errno);
+    *casted_ptr = result;
+}
+
 char* mem_strdup(const char* s) {
     char* result = strdup(s);
     if (result == NULL)

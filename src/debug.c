@@ -112,7 +112,7 @@ void debug_callstack_free(void) {
 void debug_callstack_push(const Expr* e) {
     if (callstack_pos >= callstack_sz) {
         callstack_sz += DEBUG_CALLSTACK_BASE_SZ;
-        mem_realloc(callstack, callstack_sz * sizeof(Expr*));
+        mem_realloc(&callstack, callstack_sz * sizeof(Expr*));
     }
 
     callstack[callstack_pos++] = e;

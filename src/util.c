@@ -131,7 +131,7 @@ bool sl_concat_format(char** dst, size_t* dst_sz, size_t* dst_offset,
 
     if (*dst_offset + data_size + 1 >= *dst_sz) {
         *dst_sz = *dst_offset + data_size + 1;
-        mem_realloc(*dst, *dst_sz);
+        mem_realloc(dst, *dst_sz);
     }
 
     char* real_dst = &(*dst)[*dst_offset];

@@ -238,7 +238,7 @@ enum EEnvErr env_bind(Env* env, const char* sym, Expr* val,
     }
 
     env->size++;
-    mem_realloc(env->bindings, env->size * sizeof(EnvBinding));
+    mem_realloc(&env->bindings, env->size * sizeof(EnvBinding));
 
     env->bindings[env->size - 1].sym   = mem_strdup(sym);
     env->bindings[env->size - 1].val   = val;

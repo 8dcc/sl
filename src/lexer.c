@@ -36,7 +36,7 @@ static size_t parse_user_string(const char* input, char** dst) {
 
         if (result_pos >= result_sz - 1) {
             result_sz += TOKEN_BUFSZ;
-            mem_realloc(result, result_sz);
+            mem_realloc(&result, result_sz);
         }
 
         /* Parse escape sequences */
@@ -185,7 +185,7 @@ Token* tokenize(char* input) {
     for (size_t i = 0; input != NULL; i++) {
         if (i >= tokens_num) {
             tokens_num += TOKEN_BUFSZ;
-            mem_realloc(tokens, tokens_num * sizeof(Token));
+            mem_realloc(&tokens, tokens_num * sizeof(Token));
         }
 
         /* Try to scan the token pointed to by 'input', and increase the pointer

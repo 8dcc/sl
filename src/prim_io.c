@@ -99,7 +99,7 @@ Expr* prim_scan_str(Env* env, Expr* args) {
     for (;;) {
         if (str_pos >= str_sz - 1) {
             str_sz += 100;
-            mem_realloc(str, str_sz);
+            mem_realloc(&str, str_sz);
         }
 
         const char c = getchar();

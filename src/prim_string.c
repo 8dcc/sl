@@ -75,7 +75,7 @@ Expr* prim_format(Env* env, Expr* args) {
     while (*fmt != '\0') {
         if (dst_pos >= dst_sz - 1) {
             dst_sz += FORMAT_BUFSZ;
-            mem_realloc(dst, dst_sz);
+            mem_realloc(&dst, dst_sz);
         }
 
         /*
