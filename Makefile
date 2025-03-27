@@ -1,7 +1,15 @@
 
 CC=gcc
 CPPFLAGS=
-CFLAGS=-std=gnu99 -Wall -Wextra -ggdb3
+
+# The project uses the 'c11' standard because it uses '_Static_assert', but it
+# can be compiled with 'gnu99', or the 'SL_STATIC_ASSERT' macro could be
+# modified.
+#
+# We don't include '-Wpedantic' because it warns about passing a function
+# pointer to a "%p" format specifier.
+CFLAGS=-std=c11 -Wall -Wextra -Wshadow -ggdb3
+
 LDLIBS=-lm
 
 SRC=main.c \
