@@ -43,7 +43,7 @@ Expr* prim_add(Env* env, Expr* args) {
      *   (+ 9 5 1)       => 15
      *   (+ 9.0 5.0 1.0) => 15.0
      */
-    Expr* ret;
+    Expr* ret = NULL;
     if (no_args) {
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = 0;
@@ -96,7 +96,7 @@ Expr* prim_sub(Env* env, Expr* args) {
      *   (- 9 5 1)       => 3
      *   (- 9.0 5.0 1.0) => 3.0
      */
-    Expr* ret;
+    Expr* ret = NULL;
     if (no_args) {
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = 0;
@@ -152,7 +152,7 @@ Expr* prim_mul(Env* env, Expr* args) {
      *   (* 9 5 1)       => 3
      *   (* 9.0 5.0 1.0) => 3.0
      */
-    Expr* ret;
+    Expr* ret = NULL;
     if (no_args) {
         ret        = expr_new(EXPR_NUM_INT);
         ret->val.n = 1;
