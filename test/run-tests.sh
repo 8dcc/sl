@@ -1,4 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+# Copyright 2025 8dcc
+#
+# This file is part of SL.
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program. If not, see <https://www.gnu.org/licenses/>.
 
 msg() {
     echo -e "\033[32;1m$1\033[0m"
@@ -21,12 +36,13 @@ remove_colors() {
     echo "$1" | sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'
 }
 
-if [ ! "$(command -v dirname)" ] ||
-       [ ! "$(command -v readlink)" ] ||
-       [ ! "$(command -v valgrind)" ]; then
-    err "Missing dependencies. Exiting..."
-    exit 1
-fi
+dependencies=('dirname' 'readlink' 'valgrind')
+for dependency in "${dependencies[@]}"; do
+    if [ ! "$(command -v "$dependency")" ]; then
+        err "The '$dependency' command is required. Exiting..."
+        exit 1
+    fi
+done
 
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")
 SL_BIN="${SCRIPT_DIR}/../sl"
