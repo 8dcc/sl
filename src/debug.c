@@ -101,6 +101,11 @@ bool debug_callstack_init(void) {
     return true;
 }
 
+size_t debug_callstack_get_pos(void) {
+    SL_ASSERT(callstack != NULL);
+    return callstack_pos;
+}
+
 void debug_callstack_free(void) {
     if (callstack == NULL)
         return;

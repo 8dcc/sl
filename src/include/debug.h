@@ -60,6 +60,11 @@ void debug_trace_print_post(FILE* fp, const struct Expr* e);
 bool debug_callstack_init(void);
 
 /*
+ * Get the current position in the debug callstack.
+ */
+size_t debug_callstack_get_pos(void);
+
+/*
  * Free the internal callstack.
  *
  * If the callstack has been freed, the function ignores it but does not fail.
