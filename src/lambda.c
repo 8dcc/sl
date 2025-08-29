@@ -189,6 +189,8 @@ LambdaCtx* lambdactx_clone(const LambdaCtx* ctx) {
 }
 
 void lambdactx_free(LambdaCtx* ctx) {
+    SL_ASSERT(ctx != NULL);
+
     /*
      * 1. Free the lambda environment. We assume that if the environment was in
      *    use somewhere else, the 'LambdaCtx' wouldn't have been freed.  Either

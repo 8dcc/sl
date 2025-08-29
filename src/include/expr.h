@@ -146,6 +146,17 @@ struct Expr {
 Expr* expr_new(enum EExprType type);
 
 /*
+ * Free all previously-allocated members of an expression when necessary, and
+ * set them to NULL. Doesn't free the 'Expr' structure itself.
+ *
+ * Note that this function doesn't indirectly free other expressions; it only
+ * frees "private" pointers that this expression "owns", that is, no other
+ * expression or structure should store a copy of those pointers. See the
+ * comment in 'Expr' above for more information.
+ */
+void expr_free_heap_members(Expr* expr);
+
+/*
  * Set the value of a "destination" expression to the value of a "source"
  * expression.
  */

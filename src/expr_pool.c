@@ -48,38 +48,6 @@
 ExprPool* g_expr_pool = NULL;
 
 /*----------------------------------------------------------------------------*/
-/* Static functions */
-
-/*
- * Free all previously-allocated members of an expression when necessary.
- * Doesn't free other expressions, just members that were allocated using
- * 'mem_alloc' or similar. Doesn't free the 'Expr' structure itself.
- */
-static void free_heap_expr_members(Expr* e) {
-    SL_ASSERT(e != NULL);
-
-    switch (e->type) {
-        case EXPR_ERR:
-        case EXPR_SYMBOL:
-        case EXPR_STRING:
-            free(e->val.s);
-            break;
-
-        case EXPR_LAMBDA:
-        case EXPR_MACRO:
-            lambdactx_free(e->val.lambda);
-            break;
-
-        case EXPR_UNKNOWN:
-        case EXPR_NUM_INT:
-        case EXPR_NUM_FLT:
-        case EXPR_PRIM:
-        case EXPR_PAIR:
-            break;
-    }
-}
-
-/*----------------------------------------------------------------------------*/
 /* Public wrappers */
 
 enum EPoolItemFlags pool_item_flags(const PoolItem* pool_item) {
@@ -243,7 +211,7 @@ void pool_free(Expr* e) {
      * currently allocated using the functions in 'memory.c', not with a pool.
      * Note that this function doesn't try to free any 'Expr' at all.
      */
-    free_heap_expr_members(e);
+    expr_free_heap_members(e);
 
     pool_item->val.next     = g_expr_pool->free_items;
     g_expr_pool->free_items = pool_item;

@@ -35,6 +35,36 @@ Expr* expr_new(enum EExprType type) {
     return ret;
 }
 
+void expr_free_heap_members(Expr* e) {
+    SL_ASSERT(e != NULL);
+
+    switch (e->type) {
+        case EXPR_ERR:
+        case EXPR_SYMBOL:
+        case EXPR_STRING:
+            if (e->val.s != NULL) {
+                free(e->val.s);
+                e->val.s = NULL;
+            }
+            break;
+
+        case EXPR_LAMBDA:
+        case EXPR_MACRO:
+            if (e->val.lambda != NULL) {
+                lambdactx_free(e->val.lambda);
+                e->val.lambda = NULL;
+            }
+            break;
+
+        case EXPR_UNKNOWN:
+        case EXPR_NUM_INT:
+        case EXPR_NUM_FLT:
+        case EXPR_PRIM:
+        case EXPR_PAIR:
+            break;
+    }
+}
+
 /*----------------------------------------------------------------------------*/
 
 void expr_set(Expr* dst, const Expr* src) {
