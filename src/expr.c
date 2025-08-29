@@ -70,6 +70,9 @@ void expr_free_heap_members(Expr* e) {
 void expr_set(Expr* dst, const Expr* src) {
     SL_ASSERT(dst != NULL && src != NULL);
 
+    /* If we were going to overwrite "private" pointers, free them first */
+    expr_free_heap_members(dst);
+
     dst->type = src->type;
 
     /*
@@ -84,13 +87,16 @@ void expr_set(Expr* dst, const Expr* src) {
         case EXPR_NUM_INT:
             dst->val.n = src->val.n;
             break;
+
         case EXPR_NUM_FLT:
             dst->val.f = src->val.f;
             break;
+
         case EXPR_PAIR:
             CAR(dst) = CAR(src);
             CDR(dst) = CDR(src);
             break;
+
         case EXPR_PRIM:
             dst->val.prim = src->val.prim;
             break;
@@ -100,6 +106,7 @@ void expr_set(Expr* dst, const Expr* src) {
         case EXPR_STRING:
             dst->val.s = mem_strdup(src->val.s);
             break;
+
         case EXPR_MACRO:
         case EXPR_LAMBDA:
             dst->val.lambda = lambdactx_clone(src->val.lambda);
