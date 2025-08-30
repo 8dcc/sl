@@ -21,19 +21,22 @@
 
 #include <stddef.h>
 
+#ifndef WARN_UNUSED_RESULT
+#define WARN_UNUSED_RESULT __attribute__((malloc, warn_unused_result))
+#endif /* WARN_UNUSED_RESULT */
+
 /*
  * Allocate 'sz' bytes using stdlib's 'malloc' or 'calloc', ensuring a valid
  * pointer is returned.
  */
-void* mem_alloc(size_t sz) __attribute__((malloc, warn_unused_result));
-void* mem_calloc(size_t nmemb, size_t size)
-  __attribute__((malloc, warn_unused_result));
+void* mem_alloc(size_t sz) WARN_UNUSED_RESULT;
+void* mem_calloc(size_t nmemb, size_t size) WARN_UNUSED_RESULT;
 
 /*
  * Allocate a new string big enough to hold 's', and copy it. Ensures a valid
  * pointer is returned.
  */
-char* mem_strdup(const char* s) __attribute__((malloc, warn_unused_result));
+char* mem_strdup(const char* s) WARN_UNUSED_RESULT;
 
 /*
  * Change the size of the memory block pointed to by the pointer that
