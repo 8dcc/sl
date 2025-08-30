@@ -49,6 +49,44 @@ A copy of the license should be included along with the manual. If not,
 see https://www.gnu.org/licenses/.
 #+end_quote
 
+* Building the interpreter
+
+In order to compile the interpreter, the following dependencies have to
+be installed:
+
+- GNU Coreutils, for =mkdir=, =rm= and =install=.
+- A C11 compiler[fn::The program can actually be compiled with a C99
+  compiler that supports =-std=gnu99=, or the =SL_STATIC_ASSERT= macro could
+  be modified to avoid using =_Static_assert= altogether.], such as =gcc= or
+  =clang=.
+- GNU Make.
+
+Furthermore, since the interpreter has [[https://valgrind.org/][Valgrind]] support, it is required
+as a compile-time dependency, unless =SL_NO_POOL_VALGRIND= is defined.
+
+Some Lisp examples are included in this repository, and can be tested by
+running the =run-tests.sh= script. This script has some additional
+dependencies, such as:
+
+- GNU Bash.
+- GNU Diffutils.
+- GNU sed.
+
+The following preprocessor macros can be defined at compile-time to
+alter the behavior of the program:
+
+- =SL_NO_POOL_VALGRIND=: When defined, the interpreter's pool allocator
+  won't be integrated with Valgrind.
+- =SL_CALLSTACK_ON_ERR=: When defined, the interpreter will print the
+  current call stack to =stderr= whenever a Lisp error occurs[fn::Note
+  that the callstack is printed whenever the error occurs, which usually
+  happens before the actual error message is printed.].
+- =SL_NO_COLOR=: When defined, the interpreter won't use ANSI escape
+  sequences for printing colored messages.
+- =SL_DEBUG_MAX_CALLSTACK=: When defined, specifies the number of maximum
+  nested calls that the interpreter should support before raising a
+  /stack overflow/ error.
+
 * General concepts
 
 This section will explain some important concepts about the Lisp syntax,
