@@ -105,7 +105,7 @@ bool sl_regex_match_groups(const char* pat, const char* str, bool ignore_case,
     regfree(&r);
 
     if (code != REG_NOERROR) {
-        free(*pmatch);
+        mem_free(*pmatch);
         *nmatch = 0;
         *pmatch = NULL;
         return false;

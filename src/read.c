@@ -256,7 +256,7 @@ static char* read_quoted_expr(FILE* fp) {
     result[0]    = quote_char;
     memcpy(&result[1], expr_str, expr_len + 1);
 
-    free(expr_str);
+    mem_free(expr_str);
     return result;
 }
 

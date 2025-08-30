@@ -27,8 +27,9 @@
 #include "include/env.h"
 #include "include/expr.h"
 #include "include/expr_pool.h"
-#include "include/util.h"
 #include "include/garbage_collector.h"
+#include "include/util.h"
+#include "include/memory.h"
 #include "include/error.h"
 #include "include/debug.h"
 #include "include/cmdargs.h"
@@ -60,7 +61,7 @@ static void repl_until_eof(Env* env, FILE* file, bool print_evaluated,
         Token* tokens = tokenize(input);
 
         /* We are done with the string from 'read_expr', free it */
-        free(input);
+        mem_free(input);
 
         /* Get expression (AST) from token array */
         Expr* expr = parse(tokens);

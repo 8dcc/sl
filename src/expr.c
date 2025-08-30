@@ -43,7 +43,7 @@ void expr_free_heap_members(Expr* e) {
         case EXPR_SYMBOL:
         case EXPR_STRING:
             if (e->val.s != NULL) {
-                free(e->val.s);
+                mem_free(e->val.s);
                 e->val.s = NULL;
             }
             break;

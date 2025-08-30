@@ -207,11 +207,11 @@ void lambdactx_free(LambdaCtx* ctx) {
     env_free(ctx->env);
 
     for (size_t i = 0; i < ctx->formals_num; i++)
-        free(ctx->formals[i]);
-    free(ctx->formals);
+        mem_free(ctx->formals[i]);
+    mem_free(ctx->formals);
 
-    free(ctx->formal_rest);
-    free(ctx);
+    mem_free(ctx->formal_rest);
+    mem_free(ctx);
 }
 
 /*----------------------------------------------------------------------------*/

@@ -42,7 +42,7 @@ Expr* prim_write_to_str(Env* env, Expr* args) {
     fclose(fp);
 
     if (!success) {
-        free(str);
+        mem_free(str);
         return err("Couldn't write expression of type '%s'.",
                    exprtype2str(arg->type));
     }
@@ -91,7 +91,7 @@ Expr* prim_format(Env* env, Expr* args) {
 
         /* Make sure the user supplied enough arguments. */
         if (expr_is_nil(args)) {
-            free(dst);
+            mem_free(dst);
             return err("Not enough arguments for the specified format.");
         }
 
@@ -148,7 +148,7 @@ Expr* prim_format(Env* env, Expr* args) {
          */
         const Expr* arg = CAR(args);
         if (expr_type != arg->type) {
-            free(dst);
+            mem_free(dst);
             return err("Format specifier expected argument of type '%s', got "
                        "'%s'.",
                        exprtype2str(expr_type),
@@ -320,6 +320,6 @@ Expr* prim_re_match_groups(Env* env, Expr* args) {
         CDR(cur_copy) = g_nil;
     }
 
-    free(pmatch);
+    mem_free(pmatch);
     return dummy_copy.val.pair.cdr;
 }

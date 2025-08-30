@@ -198,10 +198,10 @@ void env_free(Env* env) {
      * they will be garbage-collected if necessary.
      */
     for (size_t i = 0; i < env->size; i++)
-        free(env->bindings[i].sym);
+        mem_free(env->bindings[i].sym);
 
-    free(env->bindings);
-    free(env);
+    mem_free(env->bindings);
+    mem_free(env);
 }
 
 /*----------------------------------------------------------------------------*/

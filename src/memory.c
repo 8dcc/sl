@@ -64,3 +64,7 @@ char* mem_strdup(const char* s) {
         SL_FATAL("Failed to copy string: %s (%d).", strerror(errno), errno);
     return result;
 }
+
+void mem_free(void* ptr) {
+    free(ptr);
+}

@@ -27,14 +27,16 @@
 
 /*
  * Allocate 'sz' bytes using stdlib's 'malloc' or 'calloc', ensuring a valid
- * pointer is returned.
+ * pointer is returned. The caller is responsible for freeing the returned
+ * pointer with 'mem_free'.
  */
 void* mem_alloc(size_t sz) WARN_UNUSED_RESULT;
 void* mem_calloc(size_t nmemb, size_t size) WARN_UNUSED_RESULT;
 
 /*
  * Allocate a new string big enough to hold 's', and copy it. Ensures a valid
- * pointer is returned.
+ * pointer is returned. The caller is responsible for freeing the returned
+ * pointer with 'mem_free'.
  */
 char* mem_strdup(const char* s) WARN_UNUSED_RESULT;
 
@@ -53,5 +55,12 @@ char* mem_strdup(const char* s) WARN_UNUSED_RESULT;
  *    ptr[9] = 456;
  */
 void mem_realloc(void* double_ptr, size_t new_size);
+
+/*
+ * Free the memory space pointed to by the specified pointer, which must have
+ * been returned by a memory-allocation function. This function supports NULL as
+ * its argument.
+ */
+void mem_free(void* ptr);
 
 #endif /* MEMORY_H_ */

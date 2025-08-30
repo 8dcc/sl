@@ -110,7 +110,7 @@ void debug_callstack_free(void) {
     if (callstack == NULL)
         return;
 
-    free(callstack);
+    mem_free(callstack);
     callstack = NULL;
 }
 

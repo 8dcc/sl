@@ -48,7 +48,7 @@ Expr* prim_read(Env* env, Expr* args) {
     SL_EXPECT(str != NULL, "Error reading expression.");
 
     Token* tokens = tokenize(str);
-    free(str);
+    mem_free(str);
 
     Expr* expr = parse(tokens);
     tokens_free(tokens);

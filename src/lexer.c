@@ -199,9 +199,9 @@ Token* tokenize(char* input) {
 void tokens_free(Token* arr) {
     for (int i = 0; arr[i].type != TOKEN_EOF; i++)
         if (arr[i].type == TOKEN_SYMBOL || arr[i].type == TOKEN_STRING)
-            free(arr[i].val.s);
+            mem_free(arr[i].val.s);
 
-    free(arr);
+    mem_free(arr);
 }
 
 bool is_token_separator(char c) {

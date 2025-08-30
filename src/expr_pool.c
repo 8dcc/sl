@@ -150,8 +150,8 @@ void pool_close(void) {
      */
     for (array_start = g_expr_pool->array_starts; array_start != NULL;) {
         ArrayStart* next = array_start->next;
-        free(array_start->arr);
-        free(array_start);
+        mem_free(array_start->arr);
+        mem_free(array_start);
         array_start = next;
     }
 
@@ -159,7 +159,7 @@ void pool_close(void) {
      * And the 'ExprPool' structure.
      */
     VALGRIND_DESTROY_MEMPOOL(g_expr_pool);
-    free(g_expr_pool);
+    mem_free(g_expr_pool);
     g_expr_pool = NULL;
 }
 
