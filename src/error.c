@@ -34,14 +34,14 @@
 Expr* err(const char* fmt, ...) {
     va_list va;
 
-#ifdef SL_TRACE_ON_ERR
+#ifdef SL_CALLSTACK_ON_ERR
     /*
      * The callstack will be printed as soon as the error is created, so it will
      * be shown before the REPL receives and prints the error itself. This
      * doesn't look great, but it's still practical.
      */
     debug_callstack_print(stderr);
-#endif
+#endif /* SL_CALLSTACK_ON_ERR */
 
     va_start(va, fmt);
     const int data_size = vsnprintf(NULL, 0, fmt, va);
@@ -65,7 +65,7 @@ void err_print(FILE* fp, const Expr* e) {
 
 #ifdef SL_NO_COLOR
     fprintf(fp, "Error: %s", e->val.s);
-#else
+#else  /* not SL_NO_COLOR) */
     fprintf(fp,
             "%sError%s: %s%s%s",
             COL_BOLD_RED,
@@ -73,7 +73,7 @@ void err_print(FILE* fp, const Expr* e) {
             COL_NORM_YELLOW,
             e->val.s,
             COL_RESET);
-#endif
+#endif /* not SL_NO_COLOR */
 }
 
 /*----------------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ void sl_print_err(const char* func, const char* fmt, ...) {
 #ifdef SL_NO_COLOR
     fprintf(stderr, "%s: ", func);
     vfprintf(stderr, fmt, va);
-#else
+#else  /* not SL_NO_COLOR */
     fprintf(stderr,
             "%s%s%s: %s",
             COL_BOLD_CYAN,
@@ -94,14 +94,17 @@ void sl_print_err(const char* func, const char* fmt, ...) {
             COL_NORM_YELLOW);
     vfprintf(stderr, fmt, va);
     fprintf(stderr, "%s", COL_RESET);
-#endif
+#endif /* not SL_NO_COLOR */
 
     fputc('\n', stderr);
 
     va_end(va);
 }
 
-void sl_print_ftl(const char* file, int line, const char* func, const char* fmt,
+void sl_print_ftl(const char* file,
+                  int line,
+                  const char* func,
+                  const char* fmt,
                   ...) {
     va_list va;
     va_start(va, fmt);
@@ -109,7 +112,7 @@ void sl_print_ftl(const char* file, int line, const char* func, const char* fmt,
 #ifdef SL_NO_COLOR
     fprintf(stderr, "%s:%d: %s: ", file, line, func);
     vfprintf(stderr, fmt, va);
-#else
+#else  /* not SL_NO_COLOR */
     fprintf(stderr,
             "%s:%d: %s%s%s: %s",
             file,
@@ -120,7 +123,7 @@ void sl_print_ftl(const char* file, int line, const char* func, const char* fmt,
             COL_NORM_RED);
     vfprintf(stderr, fmt, va);
     fprintf(stderr, "%s", COL_RESET);
-#endif
+#endif /* not SL_NO_COLOR */
 
     fputc('\n', stderr);
 

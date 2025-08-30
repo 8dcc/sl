@@ -2,11 +2,11 @@
 #ifndef SL_VALGRIND_MEMCHECK_H_
 #define SL_VALGRIND_MEMCHECK_H_ 1
 
-#if defined(SL_NO_POOL_VALGRIND)
+#ifdef SL_NO_POOL_VALGRIND
 #define VALGRIND_MAKE_MEM_DEFINED(a, b)  ((void)0)
 #define VALGRIND_MAKE_MEM_NOACCESS(a, b) ((void)0)
-#else
+#else /* not SL_NO_POOL_VALGRIND */
 #include <valgrind/memcheck.h>
-#endif
+#endif /* not SL_NO_POOL_VALGRIND */
 
 #endif /* SL_VALGRIND_MEMCHECK_H_ */

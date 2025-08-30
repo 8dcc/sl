@@ -84,12 +84,12 @@ static Expr* eval_list(Env* env, Expr* list) {
  * (using 'eval_list') before applying the function, if necessary.
  */
 static Expr* eval_function_call(Env* env, Expr* e) {
-#ifdef DEBUG_MAX_CALLSTACK
+#ifdef SL_DEBUG_MAX_CALLSTACK
     /* First, make sure we are not "overflowing" the call stack. */
-    if (debug_callstack_get_pos() > DEBUG_MAX_CALLSTACK)
+    if (debug_callstack_get_pos() > SL_DEBUG_MAX_CALLSTACK)
         return err("Stack overflow (exceeded %d nested calls)",
-                   DEBUG_MAX_CALLSTACK);
-#endif /* DEBUG_MAX_CALLSTACK */
+                   SL_DEBUG_MAX_CALLSTACK);
+#endif /* SL_DEBUG_MAX_CALLSTACK */
 
     Expr* car = CAR(e);
     Expr* cdr = CDR(e);
