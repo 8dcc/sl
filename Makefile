@@ -1,6 +1,6 @@
 
 CC=gcc
-CPPFLAGS=
+CPPFLAGS=-DSL_DEBUG_MAX_CALLSTACK=10000
 
 # The project uses the 'c11' standard because it uses '_Static_assert', but it
 # can be compiled with 'gnu99', or the 'SL_STATIC_ASSERT' macro could be
