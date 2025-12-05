@@ -89,7 +89,7 @@ bool sl_regex_match_groups(const char* pat, const char* str, bool ignore_case,
     if (ignore_case)
         cflags |= REG_ICASE;
 
-    if (regcomp(&r, pat, cflags) != REG_NOERROR) {
+    if (regcomp(&r, pat, cflags) != 0) {
         SL_ERR("Failed to compile pattern \"%s\"", pat);
         return false;
     }
@@ -104,7 +104,7 @@ bool sl_regex_match_groups(const char* pat, const char* str, bool ignore_case,
     const int code = regexec(&r, str, *nmatch, *pmatch, 0);
     regfree(&r);
 
-    if (code != REG_NOERROR) {
+    if (code != 0) {
         mem_free(*pmatch);
         *nmatch = 0;
         *pmatch = NULL;
