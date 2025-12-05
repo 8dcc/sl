@@ -102,7 +102,7 @@ Expr* prim_scan_str(Env* env, Expr* args) {
             mem_realloc(&str, str_sz);
         }
 
-        const char c = getchar();
+        const int c = getchar();
         if (c == EOF || c == '\0' || is_char_in_str(c, delimiters))
             break;
 
